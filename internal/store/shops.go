@@ -4,18 +4,15 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/hex"
-	"errors"
 	"fmt"
 
-	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/betallsoph/shiftz/internal/ent"
+	"github.com/betallsoph/shiftz/internal/ent/shop"
 )
 
-// ShopRepo is the example repository for the shops table. All other
-// repositories follow the same pattern: plain SQL, explicit scanning,
-// shop_id scoping on every tenant-owned row.
+// ShopRepo covers the shops table.
 type ShopRepo struct {
-	pool *pgxpool.Pool
+	client *ent.Client
 }
 
 // Create inserts a new shop with a fresh invite code and returns it.
@@ -24,40 +21,40 @@ func (r *ShopRepo) Create(ctx context.Context, name, timezone string, ownerTeleg
 	if err != nil {
 		return nil, err
 	}
-	row := r.pool.QueryRow(ctx, `
-		INSERT INTO shops (name, timezone, invite_code, owner_telegram_id)
-		VALUES ($1, $2, $3, $4)
-		RETURNING id, name, timezone, invite_code, owner_telegram_id, created_at`,
-		name, timezone, code, ownerTelegramID)
-	return scanShop(row)
+	row, err := r.client.Shop.Create().
+		SetName(name).
+		SetTimezone(timezone).
+		SetInviteCode(code).
+		SetOwnerTelegramID(ownerTelegramID).
+		Save(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("store: create shop: %w", err)
+	}
+	return shopFromEnt(row), nil
 }
 
 // ByID fetches a shop by primary key.
 func (r *ShopRepo) ByID(ctx context.Context, id int64) (*Shop, error) {
-	row := r.pool.QueryRow(ctx, `
-		SELECT id, name, timezone, invite_code, owner_telegram_id, created_at
-		FROM shops WHERE id = $1`, id)
-	return scanShop(row)
+	row, err := r.client.Shop.Get(ctx, int(id))
+	if ent.IsNotFound(err) {
+		return nil, ErrNotFound
+	}
+	if err != nil {
+		return nil, fmt.Errorf("store: shop by id: %w", err)
+	}
+	return shopFromEnt(row), nil
 }
 
 // ByInviteCode fetches the shop an employee is joining.
 func (r *ShopRepo) ByInviteCode(ctx context.Context, code string) (*Shop, error) {
-	row := r.pool.QueryRow(ctx, `
-		SELECT id, name, timezone, invite_code, owner_telegram_id, created_at
-		FROM shops WHERE invite_code = $1`, code)
-	return scanShop(row)
-}
-
-func scanShop(row pgx.Row) (*Shop, error) {
-	var s Shop
-	err := row.Scan(&s.ID, &s.Name, &s.Timezone, &s.InviteCode, &s.OwnerTelegramID, &s.CreatedAt)
-	if errors.Is(err, pgx.ErrNoRows) {
+	row, err := r.client.Shop.Query().Where(shop.InviteCode(code)).Only(ctx)
+	if ent.IsNotFound(err) {
 		return nil, ErrNotFound
 	}
 	if err != nil {
-		return nil, fmt.Errorf("store: scan shop: %w", err)
+		return nil, fmt.Errorf("store: shop by invite code: %w", err)
 	}
-	return &s, nil
+	return shopFromEnt(row), nil
 }
 
 func newInviteCode() (string, error) {

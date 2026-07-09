@@ -43,7 +43,7 @@ func run(log *slog.Logger) error {
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
-		if err := st.Pool.Ping(r.Context()); err != nil {
+		if err := st.Ping(r.Context()); err != nil {
 			http.Error(w, "db unreachable", http.StatusServiceUnavailable)
 			return
 		}

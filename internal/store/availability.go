@@ -5,38 +5,51 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/betallsoph/shiftz/internal/ent"
+	"github.com/betallsoph/shiftz/internal/ent/availability"
 )
 
 // AvailabilityRepo stores the structured availability slots parsed from
 // employees' free-text messages.
 type AvailabilityRepo struct {
-	pool *pgxpool.Pool
+	client *ent.Client
 }
 
 // ReplaceWeek atomically replaces an employee's availability for the week
 // starting at weekStart with the given slots. rawText preserves the original
 // message for auditing and re-parsing.
 func (r *AvailabilityRepo) ReplaceWeek(ctx context.Context, shopID, employeeID int64, weekStart time.Time, slots []AvailabilitySlot, rawText string) error {
-	tx, err := r.pool.Begin(ctx)
+	tx, err := r.client.Tx(ctx)
 	if err != nil {
 		return fmt.Errorf("store: begin: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer tx.Rollback() //nolint:errcheck // no-op after commit
 
-	if _, err := tx.Exec(ctx, `
-		DELETE FROM availability
-		WHERE shop_id = $1 AND employee_id = $2 AND week_start = $3`,
-		shopID, employeeID, weekStart); err != nil {
+	_, err = tx.Availability.Delete().
+		Where(
+			availability.ShopID(int(shopID)),
+			availability.EmployeeID(int(employeeID)),
+			availability.WeekStart(weekStart),
+		).
+		Exec(ctx)
+	if err != nil {
 		return fmt.Errorf("store: clear availability: %w", err)
 	}
-	for _, slot := range slots {
-		if _, err := tx.Exec(ctx, `
-			INSERT INTO availability (shop_id, employee_id, week_start, starts_at, ends_at, preference, note, raw_text)
-			VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-			shopID, employeeID, weekStart, slot.Start, slot.End, slot.Preference, slot.Note, rawText); err != nil {
-			return fmt.Errorf("store: insert availability: %w", err)
-		}
+
+	builders := make([]*ent.AvailabilityCreate, len(slots))
+	for i, slot := range slots {
+		builders[i] = tx.Availability.Create().
+			SetShopID(int(shopID)).
+			SetEmployeeID(int(employeeID)).
+			SetWeekStart(weekStart).
+			SetStartsAt(slot.Start).
+			SetEndsAt(slot.End).
+			SetPreference(slot.Preference).
+			SetNote(slot.Note).
+			SetRawText(rawText)
 	}
-	return tx.Commit(ctx)
+	if _, err := tx.Availability.CreateBulk(builders...).Save(ctx); err != nil {
+		return fmt.Errorf("store: insert availability: %w", err)
+	}
+	return tx.Commit()
 }
