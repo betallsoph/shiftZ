@@ -5,6 +5,7 @@ package scheduleassignment
 import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/google/uuid"
 )
 
 const (
@@ -20,6 +21,8 @@ const (
 	FieldShiftID = "shift_id"
 	// FieldEmployeeID holds the string denoting the employee_id field in the database.
 	FieldEmployeeID = "employee_id"
+	// FieldDate holds the string denoting the date field in the database.
+	FieldDate = "date"
 	// EdgeShop holds the string denoting the shop edge name in mutations.
 	EdgeShop = "shop"
 	// EdgeSchedule holds the string denoting the schedule edge name in mutations.
@@ -67,6 +70,7 @@ var Columns = []string{
 	FieldScheduleID,
 	FieldShiftID,
 	FieldEmployeeID,
+	FieldDate,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -78,6 +82,11 @@ func ValidColumn(column string) bool {
 	}
 	return false
 }
+
+var (
+	// DefaultID holds the default value on creation for the "id" field.
+	DefaultID func() uuid.UUID
+)
 
 // OrderOption defines the ordering options for the ScheduleAssignment queries.
 type OrderOption func(*sql.Selector)
@@ -105,6 +114,11 @@ func ByShiftID(opts ...sql.OrderTermOption) OrderOption {
 // ByEmployeeID orders the results by the employee_id field.
 func ByEmployeeID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldEmployeeID, opts...).ToFunc()
+}
+
+// ByDate orders the results by the date field.
+func ByDate(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDate, opts...).ToFunc()
 }
 
 // ByShopField orders the results by shop field.
@@ -138,7 +152,7 @@ func newShopStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ShopInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, true, ShopTable, ShopColumn),
+		sqlgraph.Edge(sqlgraph.M2O, false, ShopTable, ShopColumn),
 	)
 }
 func newScheduleStep() *sqlgraph.Step {

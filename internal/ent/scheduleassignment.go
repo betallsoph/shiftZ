@@ -5,6 +5,7 @@ package ent
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -13,21 +14,24 @@ import (
 	"github.com/betallsoph/shiftz/internal/ent/scheduleassignment"
 	"github.com/betallsoph/shiftz/internal/ent/shift"
 	"github.com/betallsoph/shiftz/internal/ent/shop"
+	"github.com/google/uuid"
 )
 
 // ScheduleAssignment is the model entity for the ScheduleAssignment schema.
 type ScheduleAssignment struct {
 	config `json:"-"`
 	// ID of the ent.
-	ID int `json:"id,omitempty"`
+	ID uuid.UUID `json:"id,omitempty"`
 	// ShopID holds the value of the "shop_id" field.
-	ShopID int `json:"shop_id,omitempty"`
+	ShopID uuid.UUID `json:"shop_id,omitempty"`
 	// ScheduleID holds the value of the "schedule_id" field.
-	ScheduleID int `json:"schedule_id,omitempty"`
+	ScheduleID uuid.UUID `json:"schedule_id,omitempty"`
 	// ShiftID holds the value of the "shift_id" field.
-	ShiftID int `json:"shift_id,omitempty"`
+	ShiftID uuid.UUID `json:"shift_id,omitempty"`
 	// EmployeeID holds the value of the "employee_id" field.
-	EmployeeID int `json:"employee_id,omitempty"`
+	EmployeeID uuid.UUID `json:"employee_id,omitempty"`
+	// Date holds the value of the "date" field.
+	Date time.Time `json:"date,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ScheduleAssignmentQuery when eager-loading is set.
 	Edges        ScheduleAssignmentEdges `json:"edges"`
@@ -98,8 +102,10 @@ func (*ScheduleAssignment) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case scheduleassignment.FieldDate:
+			values[i] = new(sql.NullTime)
 		case scheduleassignment.FieldID, scheduleassignment.FieldShopID, scheduleassignment.FieldScheduleID, scheduleassignment.FieldShiftID, scheduleassignment.FieldEmployeeID:
-			values[i] = new(sql.NullInt64)
+			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -116,34 +122,40 @@ func (_m *ScheduleAssignment) assignValues(columns []string, values []any) error
 	for i := range columns {
 		switch columns[i] {
 		case scheduleassignment.FieldID:
-			value, ok := values[i].(*sql.NullInt64)
-			if !ok {
-				return fmt.Errorf("unexpected type %T for field id", value)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field id", values[i])
+			} else if value != nil {
+				_m.ID = *value
 			}
-			_m.ID = int(value.Int64)
 		case scheduleassignment.FieldShopID:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
+			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field shop_id", values[i])
-			} else if value.Valid {
-				_m.ShopID = int(value.Int64)
+			} else if value != nil {
+				_m.ShopID = *value
 			}
 		case scheduleassignment.FieldScheduleID:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
+			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field schedule_id", values[i])
-			} else if value.Valid {
-				_m.ScheduleID = int(value.Int64)
+			} else if value != nil {
+				_m.ScheduleID = *value
 			}
 		case scheduleassignment.FieldShiftID:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
+			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field shift_id", values[i])
-			} else if value.Valid {
-				_m.ShiftID = int(value.Int64)
+			} else if value != nil {
+				_m.ShiftID = *value
 			}
 		case scheduleassignment.FieldEmployeeID:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
+			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field employee_id", values[i])
+			} else if value != nil {
+				_m.EmployeeID = *value
+			}
+		case scheduleassignment.FieldDate:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field date", values[i])
 			} else if value.Valid {
-				_m.EmployeeID = int(value.Int64)
+				_m.Date = value.Time
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -212,6 +224,9 @@ func (_m *ScheduleAssignment) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("employee_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.EmployeeID))
+	builder.WriteString(", ")
+	builder.WriteString("date=")
+	builder.WriteString(_m.Date.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

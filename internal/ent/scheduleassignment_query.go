@@ -17,6 +17,7 @@ import (
 	"github.com/betallsoph/shiftz/internal/ent/scheduleassignment"
 	"github.com/betallsoph/shiftz/internal/ent/shift"
 	"github.com/betallsoph/shiftz/internal/ent/shop"
+	"github.com/google/uuid"
 )
 
 // ScheduleAssignmentQuery is the builder for querying ScheduleAssignment entities.
@@ -80,7 +81,7 @@ func (_q *ScheduleAssignmentQuery) QueryShop() *ShopQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(scheduleassignment.Table, scheduleassignment.FieldID, selector),
 			sqlgraph.To(shop.Table, shop.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, scheduleassignment.ShopTable, scheduleassignment.ShopColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, scheduleassignment.ShopTable, scheduleassignment.ShopColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -178,8 +179,8 @@ func (_q *ScheduleAssignmentQuery) FirstX(ctx context.Context) *ScheduleAssignme
 
 // FirstID returns the first ScheduleAssignment ID from the query.
 // Returns a *NotFoundError when no ScheduleAssignment ID was found.
-func (_q *ScheduleAssignmentQuery) FirstID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (_q *ScheduleAssignmentQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
@@ -191,7 +192,7 @@ func (_q *ScheduleAssignmentQuery) FirstID(ctx context.Context) (id int, err err
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (_q *ScheduleAssignmentQuery) FirstIDX(ctx context.Context) int {
+func (_q *ScheduleAssignmentQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -229,8 +230,8 @@ func (_q *ScheduleAssignmentQuery) OnlyX(ctx context.Context) *ScheduleAssignmen
 // OnlyID is like Only, but returns the only ScheduleAssignment ID in the query.
 // Returns a *NotSingularError when more than one ScheduleAssignment ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (_q *ScheduleAssignmentQuery) OnlyID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (_q *ScheduleAssignmentQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
@@ -246,7 +247,7 @@ func (_q *ScheduleAssignmentQuery) OnlyID(ctx context.Context) (id int, err erro
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (_q *ScheduleAssignmentQuery) OnlyIDX(ctx context.Context) int {
+func (_q *ScheduleAssignmentQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -274,7 +275,7 @@ func (_q *ScheduleAssignmentQuery) AllX(ctx context.Context) []*ScheduleAssignme
 }
 
 // IDs executes the query and returns a list of ScheduleAssignment IDs.
-func (_q *ScheduleAssignmentQuery) IDs(ctx context.Context) (ids []int, err error) {
+func (_q *ScheduleAssignmentQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
 	if _q.ctx.Unique == nil && _q.path != nil {
 		_q.Unique(true)
 	}
@@ -286,7 +287,7 @@ func (_q *ScheduleAssignmentQuery) IDs(ctx context.Context) (ids []int, err erro
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (_q *ScheduleAssignmentQuery) IDsX(ctx context.Context) []int {
+func (_q *ScheduleAssignmentQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -406,7 +407,7 @@ func (_q *ScheduleAssignmentQuery) WithEmployee(opts ...func(*EmployeeQuery)) *S
 // Example:
 //
 //	var v []struct {
-//		ShopID int `json:"shop_id,omitempty"`
+//		ShopID uuid.UUID `json:"shop_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
@@ -429,7 +430,7 @@ func (_q *ScheduleAssignmentQuery) GroupBy(field string, fields ...string) *Sche
 // Example:
 //
 //	var v []struct {
-//		ShopID int `json:"shop_id,omitempty"`
+//		ShopID uuid.UUID `json:"shop_id,omitempty"`
 //	}
 //
 //	client.ScheduleAssignment.Query().
@@ -531,8 +532,8 @@ func (_q *ScheduleAssignmentQuery) sqlAll(ctx context.Context, hooks ...queryHoo
 }
 
 func (_q *ScheduleAssignmentQuery) loadShop(ctx context.Context, query *ShopQuery, nodes []*ScheduleAssignment, init func(*ScheduleAssignment), assign func(*ScheduleAssignment, *Shop)) error {
-	ids := make([]int, 0, len(nodes))
-	nodeids := make(map[int][]*ScheduleAssignment)
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*ScheduleAssignment)
 	for i := range nodes {
 		fk := nodes[i].ShopID
 		if _, ok := nodeids[fk]; !ok {
@@ -560,8 +561,8 @@ func (_q *ScheduleAssignmentQuery) loadShop(ctx context.Context, query *ShopQuer
 	return nil
 }
 func (_q *ScheduleAssignmentQuery) loadSchedule(ctx context.Context, query *ScheduleQuery, nodes []*ScheduleAssignment, init func(*ScheduleAssignment), assign func(*ScheduleAssignment, *Schedule)) error {
-	ids := make([]int, 0, len(nodes))
-	nodeids := make(map[int][]*ScheduleAssignment)
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*ScheduleAssignment)
 	for i := range nodes {
 		fk := nodes[i].ScheduleID
 		if _, ok := nodeids[fk]; !ok {
@@ -589,8 +590,8 @@ func (_q *ScheduleAssignmentQuery) loadSchedule(ctx context.Context, query *Sche
 	return nil
 }
 func (_q *ScheduleAssignmentQuery) loadShift(ctx context.Context, query *ShiftQuery, nodes []*ScheduleAssignment, init func(*ScheduleAssignment), assign func(*ScheduleAssignment, *Shift)) error {
-	ids := make([]int, 0, len(nodes))
-	nodeids := make(map[int][]*ScheduleAssignment)
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*ScheduleAssignment)
 	for i := range nodes {
 		fk := nodes[i].ShiftID
 		if _, ok := nodeids[fk]; !ok {
@@ -618,8 +619,8 @@ func (_q *ScheduleAssignmentQuery) loadShift(ctx context.Context, query *ShiftQu
 	return nil
 }
 func (_q *ScheduleAssignmentQuery) loadEmployee(ctx context.Context, query *EmployeeQuery, nodes []*ScheduleAssignment, init func(*ScheduleAssignment), assign func(*ScheduleAssignment, *Employee)) error {
-	ids := make([]int, 0, len(nodes))
-	nodeids := make(map[int][]*ScheduleAssignment)
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*ScheduleAssignment)
 	for i := range nodes {
 		fk := nodes[i].EmployeeID
 		if _, ok := nodeids[fk]; !ok {
@@ -657,7 +658,7 @@ func (_q *ScheduleAssignmentQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (_q *ScheduleAssignmentQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := sqlgraph.NewQuerySpec(scheduleassignment.Table, scheduleassignment.Columns, sqlgraph.NewFieldSpec(scheduleassignment.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewQuerySpec(scheduleassignment.Table, scheduleassignment.Columns, sqlgraph.NewFieldSpec(scheduleassignment.FieldID, field.TypeUUID))
 	_spec.From = _q.sql
 	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique

@@ -8,55 +8,56 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/betallsoph/shiftz/internal/ent/predicate"
+	"github.com/google/uuid"
 )
 
 // ID filters vertices based on their ID field.
-func ID(id int) predicate.Employee {
+func ID(id uuid.UUID) predicate.Employee {
 	return predicate.Employee(sql.FieldEQ(FieldID, id))
 }
 
 // IDEQ applies the EQ predicate on the ID field.
-func IDEQ(id int) predicate.Employee {
+func IDEQ(id uuid.UUID) predicate.Employee {
 	return predicate.Employee(sql.FieldEQ(FieldID, id))
 }
 
 // IDNEQ applies the NEQ predicate on the ID field.
-func IDNEQ(id int) predicate.Employee {
+func IDNEQ(id uuid.UUID) predicate.Employee {
 	return predicate.Employee(sql.FieldNEQ(FieldID, id))
 }
 
 // IDIn applies the In predicate on the ID field.
-func IDIn(ids ...int) predicate.Employee {
+func IDIn(ids ...uuid.UUID) predicate.Employee {
 	return predicate.Employee(sql.FieldIn(FieldID, ids...))
 }
 
 // IDNotIn applies the NotIn predicate on the ID field.
-func IDNotIn(ids ...int) predicate.Employee {
+func IDNotIn(ids ...uuid.UUID) predicate.Employee {
 	return predicate.Employee(sql.FieldNotIn(FieldID, ids...))
 }
 
 // IDGT applies the GT predicate on the ID field.
-func IDGT(id int) predicate.Employee {
+func IDGT(id uuid.UUID) predicate.Employee {
 	return predicate.Employee(sql.FieldGT(FieldID, id))
 }
 
 // IDGTE applies the GTE predicate on the ID field.
-func IDGTE(id int) predicate.Employee {
+func IDGTE(id uuid.UUID) predicate.Employee {
 	return predicate.Employee(sql.FieldGTE(FieldID, id))
 }
 
 // IDLT applies the LT predicate on the ID field.
-func IDLT(id int) predicate.Employee {
+func IDLT(id uuid.UUID) predicate.Employee {
 	return predicate.Employee(sql.FieldLT(FieldID, id))
 }
 
 // IDLTE applies the LTE predicate on the ID field.
-func IDLTE(id int) predicate.Employee {
+func IDLTE(id uuid.UUID) predicate.Employee {
 	return predicate.Employee(sql.FieldLTE(FieldID, id))
 }
 
 // ShopID applies equality check predicate on the "shop_id" field. It's identical to ShopIDEQ.
-func ShopID(v int) predicate.Employee {
+func ShopID(v uuid.UUID) predicate.Employee {
 	return predicate.Employee(sql.FieldEQ(FieldShopID, v))
 }
 
@@ -70,14 +71,19 @@ func DisplayName(v string) predicate.Employee {
 	return predicate.Employee(sql.FieldEQ(FieldDisplayName, v))
 }
 
+// Role applies equality check predicate on the "role" field. It's identical to RoleEQ.
+func Role(v string) predicate.Employee {
+	return predicate.Employee(sql.FieldEQ(FieldRole, v))
+}
+
 // MaxHoursPerWeek applies equality check predicate on the "max_hours_per_week" field. It's identical to MaxHoursPerWeekEQ.
 func MaxHoursPerWeek(v float64) predicate.Employee {
 	return predicate.Employee(sql.FieldEQ(FieldMaxHoursPerWeek, v))
 }
 
-// Active applies equality check predicate on the "active" field. It's identical to ActiveEQ.
-func Active(v bool) predicate.Employee {
-	return predicate.Employee(sql.FieldEQ(FieldActive, v))
+// IsActive applies equality check predicate on the "is_active" field. It's identical to IsActiveEQ.
+func IsActive(v bool) predicate.Employee {
+	return predicate.Employee(sql.FieldEQ(FieldIsActive, v))
 }
 
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
@@ -86,22 +92,22 @@ func CreatedAt(v time.Time) predicate.Employee {
 }
 
 // ShopIDEQ applies the EQ predicate on the "shop_id" field.
-func ShopIDEQ(v int) predicate.Employee {
+func ShopIDEQ(v uuid.UUID) predicate.Employee {
 	return predicate.Employee(sql.FieldEQ(FieldShopID, v))
 }
 
 // ShopIDNEQ applies the NEQ predicate on the "shop_id" field.
-func ShopIDNEQ(v int) predicate.Employee {
+func ShopIDNEQ(v uuid.UUID) predicate.Employee {
 	return predicate.Employee(sql.FieldNEQ(FieldShopID, v))
 }
 
 // ShopIDIn applies the In predicate on the "shop_id" field.
-func ShopIDIn(vs ...int) predicate.Employee {
+func ShopIDIn(vs ...uuid.UUID) predicate.Employee {
 	return predicate.Employee(sql.FieldIn(FieldShopID, vs...))
 }
 
 // ShopIDNotIn applies the NotIn predicate on the "shop_id" field.
-func ShopIDNotIn(vs ...int) predicate.Employee {
+func ShopIDNotIn(vs ...uuid.UUID) predicate.Employee {
 	return predicate.Employee(sql.FieldNotIn(FieldShopID, vs...))
 }
 
@@ -210,6 +216,71 @@ func DisplayNameContainsFold(v string) predicate.Employee {
 	return predicate.Employee(sql.FieldContainsFold(FieldDisplayName, v))
 }
 
+// RoleEQ applies the EQ predicate on the "role" field.
+func RoleEQ(v string) predicate.Employee {
+	return predicate.Employee(sql.FieldEQ(FieldRole, v))
+}
+
+// RoleNEQ applies the NEQ predicate on the "role" field.
+func RoleNEQ(v string) predicate.Employee {
+	return predicate.Employee(sql.FieldNEQ(FieldRole, v))
+}
+
+// RoleIn applies the In predicate on the "role" field.
+func RoleIn(vs ...string) predicate.Employee {
+	return predicate.Employee(sql.FieldIn(FieldRole, vs...))
+}
+
+// RoleNotIn applies the NotIn predicate on the "role" field.
+func RoleNotIn(vs ...string) predicate.Employee {
+	return predicate.Employee(sql.FieldNotIn(FieldRole, vs...))
+}
+
+// RoleGT applies the GT predicate on the "role" field.
+func RoleGT(v string) predicate.Employee {
+	return predicate.Employee(sql.FieldGT(FieldRole, v))
+}
+
+// RoleGTE applies the GTE predicate on the "role" field.
+func RoleGTE(v string) predicate.Employee {
+	return predicate.Employee(sql.FieldGTE(FieldRole, v))
+}
+
+// RoleLT applies the LT predicate on the "role" field.
+func RoleLT(v string) predicate.Employee {
+	return predicate.Employee(sql.FieldLT(FieldRole, v))
+}
+
+// RoleLTE applies the LTE predicate on the "role" field.
+func RoleLTE(v string) predicate.Employee {
+	return predicate.Employee(sql.FieldLTE(FieldRole, v))
+}
+
+// RoleContains applies the Contains predicate on the "role" field.
+func RoleContains(v string) predicate.Employee {
+	return predicate.Employee(sql.FieldContains(FieldRole, v))
+}
+
+// RoleHasPrefix applies the HasPrefix predicate on the "role" field.
+func RoleHasPrefix(v string) predicate.Employee {
+	return predicate.Employee(sql.FieldHasPrefix(FieldRole, v))
+}
+
+// RoleHasSuffix applies the HasSuffix predicate on the "role" field.
+func RoleHasSuffix(v string) predicate.Employee {
+	return predicate.Employee(sql.FieldHasSuffix(FieldRole, v))
+}
+
+// RoleEqualFold applies the EqualFold predicate on the "role" field.
+func RoleEqualFold(v string) predicate.Employee {
+	return predicate.Employee(sql.FieldEqualFold(FieldRole, v))
+}
+
+// RoleContainsFold applies the ContainsFold predicate on the "role" field.
+func RoleContainsFold(v string) predicate.Employee {
+	return predicate.Employee(sql.FieldContainsFold(FieldRole, v))
+}
+
 // MaxHoursPerWeekEQ applies the EQ predicate on the "max_hours_per_week" field.
 func MaxHoursPerWeekEQ(v float64) predicate.Employee {
 	return predicate.Employee(sql.FieldEQ(FieldMaxHoursPerWeek, v))
@@ -250,14 +321,14 @@ func MaxHoursPerWeekLTE(v float64) predicate.Employee {
 	return predicate.Employee(sql.FieldLTE(FieldMaxHoursPerWeek, v))
 }
 
-// ActiveEQ applies the EQ predicate on the "active" field.
-func ActiveEQ(v bool) predicate.Employee {
-	return predicate.Employee(sql.FieldEQ(FieldActive, v))
+// IsActiveEQ applies the EQ predicate on the "is_active" field.
+func IsActiveEQ(v bool) predicate.Employee {
+	return predicate.Employee(sql.FieldEQ(FieldIsActive, v))
 }
 
-// ActiveNEQ applies the NEQ predicate on the "active" field.
-func ActiveNEQ(v bool) predicate.Employee {
-	return predicate.Employee(sql.FieldNEQ(FieldActive, v))
+// IsActiveNEQ applies the NEQ predicate on the "is_active" field.
+func IsActiveNEQ(v bool) predicate.Employee {
+	return predicate.Employee(sql.FieldNEQ(FieldIsActive, v))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
@@ -323,21 +394,21 @@ func HasShopWith(preds ...predicate.Shop) predicate.Employee {
 	})
 }
 
-// HasAvailability applies the HasEdge predicate on the "availability" edge.
-func HasAvailability() predicate.Employee {
+// HasAvailabilities applies the HasEdge predicate on the "availabilities" edge.
+func HasAvailabilities() predicate.Employee {
 	return predicate.Employee(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, AvailabilityTable, AvailabilityColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, AvailabilitiesTable, AvailabilitiesColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasAvailabilityWith applies the HasEdge predicate on the "availability" edge with a given conditions (other predicates).
-func HasAvailabilityWith(preds ...predicate.Availability) predicate.Employee {
+// HasAvailabilitiesWith applies the HasEdge predicate on the "availabilities" edge with a given conditions (other predicates).
+func HasAvailabilitiesWith(preds ...predicate.Availability) predicate.Employee {
 	return predicate.Employee(func(s *sql.Selector) {
-		step := newAvailabilityStep()
+		step := newAvailabilitiesStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

@@ -5,33 +5,33 @@ package ent
 import (
 	"fmt"
 	"strings"
-	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/betallsoph/shiftz/internal/ent/shift"
 	"github.com/betallsoph/shiftz/internal/ent/shop"
+	"github.com/google/uuid"
 )
 
 // Shift is the model entity for the Shift schema.
 type Shift struct {
 	config `json:"-"`
 	// ID of the ent.
-	ID int `json:"id,omitempty"`
+	ID uuid.UUID `json:"id,omitempty"`
 	// ShopID holds the value of the "shop_id" field.
-	ShopID int `json:"shop_id,omitempty"`
-	// Role holds the value of the "role" field.
-	Role string `json:"role,omitempty"`
-	// StartsAt holds the value of the "starts_at" field.
-	StartsAt time.Time `json:"starts_at,omitempty"`
-	// EndsAt holds the value of the "ends_at" field.
-	EndsAt time.Time `json:"ends_at,omitempty"`
+	ShopID uuid.UUID `json:"shop_id,omitempty"`
+	// Name holds the value of the "name" field.
+	Name string `json:"name,omitempty"`
+	// Weekday holds the value of the "weekday" field.
+	Weekday int `json:"weekday,omitempty"`
+	// StartTime holds the value of the "start_time" field.
+	StartTime string `json:"start_time,omitempty"`
+	// EndTime holds the value of the "end_time" field.
+	EndTime string `json:"end_time,omitempty"`
 	// MinStaff holds the value of the "min_staff" field.
 	MinStaff int `json:"min_staff,omitempty"`
 	// MaxStaff holds the value of the "max_staff" field.
 	MaxStaff int `json:"max_staff,omitempty"`
-	// CreatedAt holds the value of the "created_at" field.
-	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ShiftQuery when eager-loading is set.
 	Edges        ShiftEdges `json:"edges"`
@@ -74,12 +74,12 @@ func (*Shift) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case shift.FieldID, shift.FieldShopID, shift.FieldMinStaff, shift.FieldMaxStaff:
+		case shift.FieldWeekday, shift.FieldMinStaff, shift.FieldMaxStaff:
 			values[i] = new(sql.NullInt64)
-		case shift.FieldRole:
+		case shift.FieldName, shift.FieldStartTime, shift.FieldEndTime:
 			values[i] = new(sql.NullString)
-		case shift.FieldStartsAt, shift.FieldEndsAt, shift.FieldCreatedAt:
-			values[i] = new(sql.NullTime)
+		case shift.FieldID, shift.FieldShopID:
+			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -96,34 +96,40 @@ func (_m *Shift) assignValues(columns []string, values []any) error {
 	for i := range columns {
 		switch columns[i] {
 		case shift.FieldID:
-			value, ok := values[i].(*sql.NullInt64)
-			if !ok {
-				return fmt.Errorf("unexpected type %T for field id", value)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field id", values[i])
+			} else if value != nil {
+				_m.ID = *value
 			}
-			_m.ID = int(value.Int64)
 		case shift.FieldShopID:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
+			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field shop_id", values[i])
-			} else if value.Valid {
-				_m.ShopID = int(value.Int64)
+			} else if value != nil {
+				_m.ShopID = *value
 			}
-		case shift.FieldRole:
+		case shift.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field role", values[i])
+				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
-				_m.Role = value.String
+				_m.Name = value.String
 			}
-		case shift.FieldStartsAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field starts_at", values[i])
+		case shift.FieldWeekday:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field weekday", values[i])
 			} else if value.Valid {
-				_m.StartsAt = value.Time
+				_m.Weekday = int(value.Int64)
 			}
-		case shift.FieldEndsAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field ends_at", values[i])
+		case shift.FieldStartTime:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field start_time", values[i])
 			} else if value.Valid {
-				_m.EndsAt = value.Time
+				_m.StartTime = value.String
+			}
+		case shift.FieldEndTime:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field end_time", values[i])
+			} else if value.Valid {
+				_m.EndTime = value.String
 			}
 		case shift.FieldMinStaff:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -136,12 +142,6 @@ func (_m *Shift) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field max_staff", values[i])
 			} else if value.Valid {
 				_m.MaxStaff = int(value.Int64)
-			}
-		case shift.FieldCreatedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field created_at", values[i])
-			} else if value.Valid {
-				_m.CreatedAt = value.Time
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -192,23 +192,23 @@ func (_m *Shift) String() string {
 	builder.WriteString("shop_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.ShopID))
 	builder.WriteString(", ")
-	builder.WriteString("role=")
-	builder.WriteString(_m.Role)
+	builder.WriteString("name=")
+	builder.WriteString(_m.Name)
 	builder.WriteString(", ")
-	builder.WriteString("starts_at=")
-	builder.WriteString(_m.StartsAt.Format(time.ANSIC))
+	builder.WriteString("weekday=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Weekday))
 	builder.WriteString(", ")
-	builder.WriteString("ends_at=")
-	builder.WriteString(_m.EndsAt.Format(time.ANSIC))
+	builder.WriteString("start_time=")
+	builder.WriteString(_m.StartTime)
+	builder.WriteString(", ")
+	builder.WriteString("end_time=")
+	builder.WriteString(_m.EndTime)
 	builder.WriteString(", ")
 	builder.WriteString("min_staff=")
 	builder.WriteString(fmt.Sprintf("%v", _m.MinStaff))
 	builder.WriteString(", ")
 	builder.WriteString("max_staff=")
 	builder.WriteString(fmt.Sprintf("%v", _m.MaxStaff))
-	builder.WriteString(", ")
-	builder.WriteString("created_at=")
-	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -10,11 +10,14 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/dialect/sql/sqljson"
 	"entgo.io/ent/schema/field"
 	"github.com/betallsoph/shiftz/internal/ent/availability"
 	"github.com/betallsoph/shiftz/internal/ent/employee"
 	"github.com/betallsoph/shiftz/internal/ent/predicate"
+	"github.com/betallsoph/shiftz/internal/ent/schema"
 	"github.com/betallsoph/shiftz/internal/ent/shop"
+	"github.com/google/uuid"
 )
 
 // AvailabilityUpdate is the builder for updating Availability entities.
@@ -31,13 +34,13 @@ func (_u *AvailabilityUpdate) Where(ps ...predicate.Availability) *AvailabilityU
 }
 
 // SetShopID sets the "shop_id" field.
-func (_u *AvailabilityUpdate) SetShopID(v int) *AvailabilityUpdate {
+func (_u *AvailabilityUpdate) SetShopID(v uuid.UUID) *AvailabilityUpdate {
 	_u.mutation.SetShopID(v)
 	return _u
 }
 
 // SetNillableShopID sets the "shop_id" field if the given value is not nil.
-func (_u *AvailabilityUpdate) SetNillableShopID(v *int) *AvailabilityUpdate {
+func (_u *AvailabilityUpdate) SetNillableShopID(v *uuid.UUID) *AvailabilityUpdate {
 	if v != nil {
 		_u.SetShopID(*v)
 	}
@@ -45,13 +48,13 @@ func (_u *AvailabilityUpdate) SetNillableShopID(v *int) *AvailabilityUpdate {
 }
 
 // SetEmployeeID sets the "employee_id" field.
-func (_u *AvailabilityUpdate) SetEmployeeID(v int) *AvailabilityUpdate {
+func (_u *AvailabilityUpdate) SetEmployeeID(v uuid.UUID) *AvailabilityUpdate {
 	_u.mutation.SetEmployeeID(v)
 	return _u
 }
 
 // SetNillableEmployeeID sets the "employee_id" field if the given value is not nil.
-func (_u *AvailabilityUpdate) SetNillableEmployeeID(v *int) *AvailabilityUpdate {
+func (_u *AvailabilityUpdate) SetNillableEmployeeID(v *uuid.UUID) *AvailabilityUpdate {
 	if v != nil {
 		_u.SetEmployeeID(*v)
 	}
@@ -72,79 +75,28 @@ func (_u *AvailabilityUpdate) SetNillableWeekStart(v *time.Time) *AvailabilityUp
 	return _u
 }
 
-// SetStartsAt sets the "starts_at" field.
-func (_u *AvailabilityUpdate) SetStartsAt(v time.Time) *AvailabilityUpdate {
-	_u.mutation.SetStartsAt(v)
+// SetSlots sets the "slots" field.
+func (_u *AvailabilityUpdate) SetSlots(v []schema.AvailabilitySlot) *AvailabilityUpdate {
+	_u.mutation.SetSlots(v)
 	return _u
 }
 
-// SetNillableStartsAt sets the "starts_at" field if the given value is not nil.
-func (_u *AvailabilityUpdate) SetNillableStartsAt(v *time.Time) *AvailabilityUpdate {
+// AppendSlots appends value to the "slots" field.
+func (_u *AvailabilityUpdate) AppendSlots(v []schema.AvailabilitySlot) *AvailabilityUpdate {
+	_u.mutation.AppendSlots(v)
+	return _u
+}
+
+// SetRawMessage sets the "raw_message" field.
+func (_u *AvailabilityUpdate) SetRawMessage(v string) *AvailabilityUpdate {
+	_u.mutation.SetRawMessage(v)
+	return _u
+}
+
+// SetNillableRawMessage sets the "raw_message" field if the given value is not nil.
+func (_u *AvailabilityUpdate) SetNillableRawMessage(v *string) *AvailabilityUpdate {
 	if v != nil {
-		_u.SetStartsAt(*v)
-	}
-	return _u
-}
-
-// SetEndsAt sets the "ends_at" field.
-func (_u *AvailabilityUpdate) SetEndsAt(v time.Time) *AvailabilityUpdate {
-	_u.mutation.SetEndsAt(v)
-	return _u
-}
-
-// SetNillableEndsAt sets the "ends_at" field if the given value is not nil.
-func (_u *AvailabilityUpdate) SetNillableEndsAt(v *time.Time) *AvailabilityUpdate {
-	if v != nil {
-		_u.SetEndsAt(*v)
-	}
-	return _u
-}
-
-// SetPreference sets the "preference" field.
-func (_u *AvailabilityUpdate) SetPreference(v int) *AvailabilityUpdate {
-	_u.mutation.ResetPreference()
-	_u.mutation.SetPreference(v)
-	return _u
-}
-
-// SetNillablePreference sets the "preference" field if the given value is not nil.
-func (_u *AvailabilityUpdate) SetNillablePreference(v *int) *AvailabilityUpdate {
-	if v != nil {
-		_u.SetPreference(*v)
-	}
-	return _u
-}
-
-// AddPreference adds value to the "preference" field.
-func (_u *AvailabilityUpdate) AddPreference(v int) *AvailabilityUpdate {
-	_u.mutation.AddPreference(v)
-	return _u
-}
-
-// SetNote sets the "note" field.
-func (_u *AvailabilityUpdate) SetNote(v string) *AvailabilityUpdate {
-	_u.mutation.SetNote(v)
-	return _u
-}
-
-// SetNillableNote sets the "note" field if the given value is not nil.
-func (_u *AvailabilityUpdate) SetNillableNote(v *string) *AvailabilityUpdate {
-	if v != nil {
-		_u.SetNote(*v)
-	}
-	return _u
-}
-
-// SetRawText sets the "raw_text" field.
-func (_u *AvailabilityUpdate) SetRawText(v string) *AvailabilityUpdate {
-	_u.mutation.SetRawText(v)
-	return _u
-}
-
-// SetNillableRawText sets the "raw_text" field if the given value is not nil.
-func (_u *AvailabilityUpdate) SetNillableRawText(v *string) *AvailabilityUpdate {
-	if v != nil {
-		_u.SetRawText(*v)
+		_u.SetRawMessage(*v)
 	}
 	return _u
 }
@@ -218,7 +170,7 @@ func (_u *AvailabilityUpdate) sqlSave(ctx context.Context) (_node int, err error
 	if err := _u.check(); err != nil {
 		return _node, err
 	}
-	_spec := sqlgraph.NewUpdateSpec(availability.Table, availability.Columns, sqlgraph.NewFieldSpec(availability.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewUpdateSpec(availability.Table, availability.Columns, sqlgraph.NewFieldSpec(availability.FieldID, field.TypeUUID))
 	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -229,23 +181,16 @@ func (_u *AvailabilityUpdate) sqlSave(ctx context.Context) (_node int, err error
 	if value, ok := _u.mutation.WeekStart(); ok {
 		_spec.SetField(availability.FieldWeekStart, field.TypeTime, value)
 	}
-	if value, ok := _u.mutation.StartsAt(); ok {
-		_spec.SetField(availability.FieldStartsAt, field.TypeTime, value)
+	if value, ok := _u.mutation.Slots(); ok {
+		_spec.SetField(availability.FieldSlots, field.TypeJSON, value)
 	}
-	if value, ok := _u.mutation.EndsAt(); ok {
-		_spec.SetField(availability.FieldEndsAt, field.TypeTime, value)
+	if value, ok := _u.mutation.AppendedSlots(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, availability.FieldSlots, value)
+		})
 	}
-	if value, ok := _u.mutation.Preference(); ok {
-		_spec.SetField(availability.FieldPreference, field.TypeInt, value)
-	}
-	if value, ok := _u.mutation.AddedPreference(); ok {
-		_spec.AddField(availability.FieldPreference, field.TypeInt, value)
-	}
-	if value, ok := _u.mutation.Note(); ok {
-		_spec.SetField(availability.FieldNote, field.TypeString, value)
-	}
-	if value, ok := _u.mutation.RawText(); ok {
-		_spec.SetField(availability.FieldRawText, field.TypeString, value)
+	if value, ok := _u.mutation.RawMessage(); ok {
+		_spec.SetField(availability.FieldRawMessage, field.TypeString, value)
 	}
 	if _u.mutation.ShopCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -255,7 +200,7 @@ func (_u *AvailabilityUpdate) sqlSave(ctx context.Context) (_node int, err error
 			Columns: []string{availability.ShopColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -268,7 +213,7 @@ func (_u *AvailabilityUpdate) sqlSave(ctx context.Context) (_node int, err error
 			Columns: []string{availability.ShopColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -284,7 +229,7 @@ func (_u *AvailabilityUpdate) sqlSave(ctx context.Context) (_node int, err error
 			Columns: []string{availability.EmployeeColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -297,7 +242,7 @@ func (_u *AvailabilityUpdate) sqlSave(ctx context.Context) (_node int, err error
 			Columns: []string{availability.EmployeeColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -326,13 +271,13 @@ type AvailabilityUpdateOne struct {
 }
 
 // SetShopID sets the "shop_id" field.
-func (_u *AvailabilityUpdateOne) SetShopID(v int) *AvailabilityUpdateOne {
+func (_u *AvailabilityUpdateOne) SetShopID(v uuid.UUID) *AvailabilityUpdateOne {
 	_u.mutation.SetShopID(v)
 	return _u
 }
 
 // SetNillableShopID sets the "shop_id" field if the given value is not nil.
-func (_u *AvailabilityUpdateOne) SetNillableShopID(v *int) *AvailabilityUpdateOne {
+func (_u *AvailabilityUpdateOne) SetNillableShopID(v *uuid.UUID) *AvailabilityUpdateOne {
 	if v != nil {
 		_u.SetShopID(*v)
 	}
@@ -340,13 +285,13 @@ func (_u *AvailabilityUpdateOne) SetNillableShopID(v *int) *AvailabilityUpdateOn
 }
 
 // SetEmployeeID sets the "employee_id" field.
-func (_u *AvailabilityUpdateOne) SetEmployeeID(v int) *AvailabilityUpdateOne {
+func (_u *AvailabilityUpdateOne) SetEmployeeID(v uuid.UUID) *AvailabilityUpdateOne {
 	_u.mutation.SetEmployeeID(v)
 	return _u
 }
 
 // SetNillableEmployeeID sets the "employee_id" field if the given value is not nil.
-func (_u *AvailabilityUpdateOne) SetNillableEmployeeID(v *int) *AvailabilityUpdateOne {
+func (_u *AvailabilityUpdateOne) SetNillableEmployeeID(v *uuid.UUID) *AvailabilityUpdateOne {
 	if v != nil {
 		_u.SetEmployeeID(*v)
 	}
@@ -367,79 +312,28 @@ func (_u *AvailabilityUpdateOne) SetNillableWeekStart(v *time.Time) *Availabilit
 	return _u
 }
 
-// SetStartsAt sets the "starts_at" field.
-func (_u *AvailabilityUpdateOne) SetStartsAt(v time.Time) *AvailabilityUpdateOne {
-	_u.mutation.SetStartsAt(v)
+// SetSlots sets the "slots" field.
+func (_u *AvailabilityUpdateOne) SetSlots(v []schema.AvailabilitySlot) *AvailabilityUpdateOne {
+	_u.mutation.SetSlots(v)
 	return _u
 }
 
-// SetNillableStartsAt sets the "starts_at" field if the given value is not nil.
-func (_u *AvailabilityUpdateOne) SetNillableStartsAt(v *time.Time) *AvailabilityUpdateOne {
+// AppendSlots appends value to the "slots" field.
+func (_u *AvailabilityUpdateOne) AppendSlots(v []schema.AvailabilitySlot) *AvailabilityUpdateOne {
+	_u.mutation.AppendSlots(v)
+	return _u
+}
+
+// SetRawMessage sets the "raw_message" field.
+func (_u *AvailabilityUpdateOne) SetRawMessage(v string) *AvailabilityUpdateOne {
+	_u.mutation.SetRawMessage(v)
+	return _u
+}
+
+// SetNillableRawMessage sets the "raw_message" field if the given value is not nil.
+func (_u *AvailabilityUpdateOne) SetNillableRawMessage(v *string) *AvailabilityUpdateOne {
 	if v != nil {
-		_u.SetStartsAt(*v)
-	}
-	return _u
-}
-
-// SetEndsAt sets the "ends_at" field.
-func (_u *AvailabilityUpdateOne) SetEndsAt(v time.Time) *AvailabilityUpdateOne {
-	_u.mutation.SetEndsAt(v)
-	return _u
-}
-
-// SetNillableEndsAt sets the "ends_at" field if the given value is not nil.
-func (_u *AvailabilityUpdateOne) SetNillableEndsAt(v *time.Time) *AvailabilityUpdateOne {
-	if v != nil {
-		_u.SetEndsAt(*v)
-	}
-	return _u
-}
-
-// SetPreference sets the "preference" field.
-func (_u *AvailabilityUpdateOne) SetPreference(v int) *AvailabilityUpdateOne {
-	_u.mutation.ResetPreference()
-	_u.mutation.SetPreference(v)
-	return _u
-}
-
-// SetNillablePreference sets the "preference" field if the given value is not nil.
-func (_u *AvailabilityUpdateOne) SetNillablePreference(v *int) *AvailabilityUpdateOne {
-	if v != nil {
-		_u.SetPreference(*v)
-	}
-	return _u
-}
-
-// AddPreference adds value to the "preference" field.
-func (_u *AvailabilityUpdateOne) AddPreference(v int) *AvailabilityUpdateOne {
-	_u.mutation.AddPreference(v)
-	return _u
-}
-
-// SetNote sets the "note" field.
-func (_u *AvailabilityUpdateOne) SetNote(v string) *AvailabilityUpdateOne {
-	_u.mutation.SetNote(v)
-	return _u
-}
-
-// SetNillableNote sets the "note" field if the given value is not nil.
-func (_u *AvailabilityUpdateOne) SetNillableNote(v *string) *AvailabilityUpdateOne {
-	if v != nil {
-		_u.SetNote(*v)
-	}
-	return _u
-}
-
-// SetRawText sets the "raw_text" field.
-func (_u *AvailabilityUpdateOne) SetRawText(v string) *AvailabilityUpdateOne {
-	_u.mutation.SetRawText(v)
-	return _u
-}
-
-// SetNillableRawText sets the "raw_text" field if the given value is not nil.
-func (_u *AvailabilityUpdateOne) SetNillableRawText(v *string) *AvailabilityUpdateOne {
-	if v != nil {
-		_u.SetRawText(*v)
+		_u.SetRawMessage(*v)
 	}
 	return _u
 }
@@ -526,7 +420,7 @@ func (_u *AvailabilityUpdateOne) sqlSave(ctx context.Context) (_node *Availabili
 	if err := _u.check(); err != nil {
 		return _node, err
 	}
-	_spec := sqlgraph.NewUpdateSpec(availability.Table, availability.Columns, sqlgraph.NewFieldSpec(availability.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewUpdateSpec(availability.Table, availability.Columns, sqlgraph.NewFieldSpec(availability.FieldID, field.TypeUUID))
 	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Availability.id" for update`)}
@@ -554,23 +448,16 @@ func (_u *AvailabilityUpdateOne) sqlSave(ctx context.Context) (_node *Availabili
 	if value, ok := _u.mutation.WeekStart(); ok {
 		_spec.SetField(availability.FieldWeekStart, field.TypeTime, value)
 	}
-	if value, ok := _u.mutation.StartsAt(); ok {
-		_spec.SetField(availability.FieldStartsAt, field.TypeTime, value)
+	if value, ok := _u.mutation.Slots(); ok {
+		_spec.SetField(availability.FieldSlots, field.TypeJSON, value)
 	}
-	if value, ok := _u.mutation.EndsAt(); ok {
-		_spec.SetField(availability.FieldEndsAt, field.TypeTime, value)
+	if value, ok := _u.mutation.AppendedSlots(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, availability.FieldSlots, value)
+		})
 	}
-	if value, ok := _u.mutation.Preference(); ok {
-		_spec.SetField(availability.FieldPreference, field.TypeInt, value)
-	}
-	if value, ok := _u.mutation.AddedPreference(); ok {
-		_spec.AddField(availability.FieldPreference, field.TypeInt, value)
-	}
-	if value, ok := _u.mutation.Note(); ok {
-		_spec.SetField(availability.FieldNote, field.TypeString, value)
-	}
-	if value, ok := _u.mutation.RawText(); ok {
-		_spec.SetField(availability.FieldRawText, field.TypeString, value)
+	if value, ok := _u.mutation.RawMessage(); ok {
+		_spec.SetField(availability.FieldRawMessage, field.TypeString, value)
 	}
 	if _u.mutation.ShopCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -580,7 +467,7 @@ func (_u *AvailabilityUpdateOne) sqlSave(ctx context.Context) (_node *Availabili
 			Columns: []string{availability.ShopColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -593,7 +480,7 @@ func (_u *AvailabilityUpdateOne) sqlSave(ctx context.Context) (_node *Availabili
 			Columns: []string{availability.ShopColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -609,7 +496,7 @@ func (_u *AvailabilityUpdateOne) sqlSave(ctx context.Context) (_node *Availabili
 			Columns: []string{availability.EmployeeColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -622,7 +509,7 @@ func (_u *AvailabilityUpdateOne) sqlSave(ctx context.Context) (_node *Availabili
 			Columns: []string{availability.EmployeeColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

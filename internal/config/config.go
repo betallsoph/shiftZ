@@ -29,6 +29,10 @@ type Config struct {
 	LLMProvider string
 	LLMAPIKey   string
 	LLMModel    string
+
+	// EntDebug logs every SQL statement ent generates. Dev only: verbose
+	// and includes query parameters.
+	EntDebug bool
 }
 
 // Load reads all settings from the environment, applying defaults for
@@ -43,6 +47,7 @@ func Load() *Config {
 		LLMProvider:           os.Getenv("LLM_PROVIDER"),
 		LLMAPIKey:             os.Getenv("LLM_API_KEY"),
 		LLMModel:              os.Getenv("LLM_MODEL"),
+		EntDebug:              os.Getenv("ENT_DEBUG") == "1" || os.Getenv("ENT_DEBUG") == "true",
 	}
 }
 

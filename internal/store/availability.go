@@ -5,51 +5,53 @@ import (
 	"fmt"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
+	"github.com/google/uuid"
+
 	"github.com/betallsoph/shiftz/internal/ent"
 	"github.com/betallsoph/shiftz/internal/ent/availability"
+	"github.com/betallsoph/shiftz/internal/ent/schema"
 )
 
-// AvailabilityRepo stores the structured availability slots parsed from
-// employees' free-text messages.
+// AvailabilityRepo stores weekly availability submissions: the structured
+// slots parsed from an employee's free-text message plus the original text.
 type AvailabilityRepo struct {
 	client *ent.Client
 }
 
-// ReplaceWeek atomically replaces an employee's availability for the week
-// starting at weekStart with the given slots. rawText preserves the original
-// message for auditing and re-parsing.
-func (r *AvailabilityRepo) ReplaceWeek(ctx context.Context, shopID, employeeID int64, weekStart time.Time, slots []AvailabilitySlot, rawText string) error {
-	tx, err := r.client.Tx(ctx)
-	if err != nil {
-		return fmt.Errorf("store: begin: %w", err)
+// ReplaceWeek stores an employee's availability for the week starting at
+// weekStart. One row per (shop, employee, week): resubmitting upserts,
+// replacing the slots and raw message wholesale.
+func (r *AvailabilityRepo) ReplaceWeek(ctx context.Context, shopID, employeeID uuid.UUID, weekStart time.Time, slots []AvailabilitySlot, rawMessage string) error {
+	stored := make([]schema.AvailabilitySlot, len(slots))
+	for i, s := range slots {
+		stored[i] = schema.AvailabilitySlot{
+			Start:      s.Start,
+			End:        s.End,
+			Preference: s.Preference,
+			Note:       s.Note,
+		}
 	}
-	defer tx.Rollback() //nolint:errcheck // no-op after commit
-
-	_, err = tx.Availability.Delete().
-		Where(
-			availability.ShopID(int(shopID)),
-			availability.EmployeeID(int(employeeID)),
-			availability.WeekStart(weekStart),
+	err := r.client.Availability.Create().
+		SetShopID(shopID).
+		SetEmployeeID(employeeID).
+		SetWeekStart(weekStart).
+		SetSlots(stored).
+		SetRawMessage(rawMessage).
+		OnConflict(
+			sql.ConflictColumns(
+				availability.FieldShopID,
+				availability.FieldEmployeeID,
+				availability.FieldWeekStart,
+			),
 		).
+		Update(func(u *ent.AvailabilityUpsert) {
+			u.UpdateSlots()
+			u.UpdateRawMessage()
+		}).
 		Exec(ctx)
 	if err != nil {
-		return fmt.Errorf("store: clear availability: %w", err)
+		return fmt.Errorf("store: replace availability week: %w", err)
 	}
-
-	builders := make([]*ent.AvailabilityCreate, len(slots))
-	for i, slot := range slots {
-		builders[i] = tx.Availability.Create().
-			SetShopID(int(shopID)).
-			SetEmployeeID(int(employeeID)).
-			SetWeekStart(weekStart).
-			SetStartsAt(slot.Start).
-			SetEndsAt(slot.End).
-			SetPreference(slot.Preference).
-			SetNote(slot.Note).
-			SetRawText(rawText)
-	}
-	if _, err := tx.Availability.CreateBulk(builders...).Save(ctx); err != nil {
-		return fmt.Errorf("store: insert availability: %w", err)
-	}
-	return tx.Commit()
+	return nil
 }

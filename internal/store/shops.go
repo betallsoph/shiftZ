@@ -6,6 +6,8 @@ import (
 	"encoding/hex"
 	"fmt"
 
+	"github.com/google/uuid"
+
 	"github.com/betallsoph/shiftz/internal/ent"
 	"github.com/betallsoph/shiftz/internal/ent/shop"
 )
@@ -16,7 +18,8 @@ type ShopRepo struct {
 }
 
 // Create inserts a new shop with a fresh invite code and returns it.
-func (r *ShopRepo) Create(ctx context.Context, name, timezone string, ownerTelegramID int64) (*Shop, error) {
+// telegramGroupID is the group chat the bot posts schedules and votes into.
+func (r *ShopRepo) Create(ctx context.Context, name, timezone string, telegramGroupID int64) (*Shop, error) {
 	code, err := newInviteCode()
 	if err != nil {
 		return nil, err
@@ -25,7 +28,7 @@ func (r *ShopRepo) Create(ctx context.Context, name, timezone string, ownerTeleg
 		SetName(name).
 		SetTimezone(timezone).
 		SetInviteCode(code).
-		SetOwnerTelegramID(ownerTelegramID).
+		SetTelegramGroupID(telegramGroupID).
 		Save(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("store: create shop: %w", err)
@@ -34,8 +37,8 @@ func (r *ShopRepo) Create(ctx context.Context, name, timezone string, ownerTeleg
 }
 
 // ByID fetches a shop by primary key.
-func (r *ShopRepo) ByID(ctx context.Context, id int64) (*Shop, error) {
-	row, err := r.client.Shop.Get(ctx, int(id))
+func (r *ShopRepo) ByID(ctx context.Context, id uuid.UUID) (*Shop, error) {
+	row, err := r.client.Shop.Get(ctx, id)
 	if ent.IsNotFound(err) {
 		return nil, ErrNotFound
 	}

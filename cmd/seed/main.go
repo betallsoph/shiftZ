@@ -1,7 +1,7 @@
-// Command seed populates a development database with a demo shop, a few
-// employees and a week of shifts, using the ent-backed store. Run it after
-// applying migrations; it is idempotent enough for repeated local use (each
-// run creates a fresh shop with a new invite code).
+// Command seed populates a development database so the solver can run
+// locally: one demo shop, five employees, a week of shift templates and an
+// availability submission per employee. Run it after applying migrations;
+// each run creates a fresh shop with a new invite code.
 package main
 
 import (
@@ -30,7 +30,7 @@ func run(log *slog.Logger) error {
 	}
 	ctx := context.Background()
 
-	st, err := store.New(ctx, cfg.DatabaseURL)
+	st, err := store.New(ctx, cfg.DatabaseURL, cfg.EntDebug)
 	if err != nil {
 		return err
 	}
@@ -46,32 +46,45 @@ func run(log *slog.Logger) error {
 	staff := []struct {
 		tgID int64
 		name string
+		role string
 	}{
-		{1001, "Anna"},
-		{1002, "Bob"},
-		{1003, "Chi"},
-		{1004, "Dave"},
+		{1001, "Anna", "barista"},
+		{1002, "Bob", "barista"},
+		{1003, "Chi", "kitchen"},
+		{1004, "Dave", "floor"},
+		{1005, "Eve", "floor"},
 	}
+	employees := make([]*store.Employee, 0, len(staff))
 	for _, s := range staff {
 		emp, err := st.Employees.Join(ctx, shop.InviteCode, s.tgID, s.name)
 		if err != nil {
 			return err
 		}
-		log.Info("created employee", "id", emp.ID, "name", emp.DisplayName)
+		// Role isn't part of the join flow (owners set it later); set it
+		// directly through the ent client.
+		if _, err := st.Client.Employee.UpdateOneID(emp.ID).SetRole(s.role).Save(ctx); err != nil {
+			return fmt.Errorf("seed role: %w", err)
+		}
+		employees = append(employees, emp)
+		log.Info("created employee", "id", emp.ID, "name", emp.DisplayName, "role", s.role)
 	}
 
-	// A week of morning/evening shifts starting next Monday. Shift rows are
-	// created through the ent client directly; a ShiftRepo grows once the
-	// bot needs to read them.
-	monday := nextMonday(time.Now().UTC())
-	for day := 0; day < 7; day++ {
-		date := monday.AddDate(0, 0, day)
-		for _, span := range []struct{ from, to int }{{8, 14}, {14, 20}} {
+	// Weekly shift templates: morning and evening, every day of the week.
+	// Shift templates are created through the ent client directly; a
+	// ShiftRepo grows once the bot needs to read them.
+	for weekday := 0; weekday < 7; weekday++ {
+		for _, tpl := range []struct {
+			name, from, to string
+		}{
+			{"morning", "08:00", "14:00"},
+			{"evening", "14:00", "20:00"},
+		} {
 			_, err := st.Client.Shift.Create().
-				SetShopID(int(shop.ID)).
-				SetRole("floor").
-				SetStartsAt(date.Add(time.Duration(span.from) * time.Hour)).
-				SetEndsAt(date.Add(time.Duration(span.to) * time.Hour)).
+				SetShopID(shop.ID).
+				SetName(tpl.name).
+				SetWeekday(weekday).
+				SetStartTime(tpl.from).
+				SetEndTime(tpl.to).
 				SetMinStaff(1).
 				SetMaxStaff(2).
 				Save(ctx)
@@ -80,7 +93,28 @@ func run(log *slog.Logger) error {
 			}
 		}
 	}
-	log.Info("created shifts", "week_start", monday.Format("2006-01-02"), "count", 14)
+	log.Info("created shift templates", "count", 14)
+
+	// One availability submission per employee for next week: everyone can
+	// work every day 08:00-20:00, so the demo problem is trivially feasible.
+	monday := nextMonday(time.Now().UTC())
+	for _, emp := range employees {
+		slots := make([]store.AvailabilitySlot, 0, 7)
+		for day := 0; day < 7; day++ {
+			date := monday.AddDate(0, 0, day)
+			slots = append(slots, store.AvailabilitySlot{
+				Start:      date.Add(8 * time.Hour),
+				End:        date.Add(20 * time.Hour),
+				Preference: 1,
+			})
+		}
+		raw := fmt.Sprintf("(seed) %s: any day next week works", emp.DisplayName)
+		if err := st.Availability.ReplaceWeek(ctx, shop.ID, emp.ID, monday, slots, raw); err != nil {
+			return err
+		}
+	}
+	log.Info("created availabilities", "week_start", monday.Format("2006-01-02"), "employees", len(employees))
+
 	fmt.Printf("\nSeeded. Join the demo shop in Telegram with:\n  /start %s\n", shop.InviteCode)
 	return nil
 }

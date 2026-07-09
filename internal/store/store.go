@@ -3,8 +3,9 @@
 // appears on every row and every query filters by it (or reaches rows
 // through a shop-scoped lookup).
 //
-// The repository interfaces predate ent and are kept stable so telegram,
-// scheduler and cmd code is independent of the persistence library.
+// The repositories wrap the ent client behind plain interfaces so solver,
+// telegram and llm code never imports ent directly — the dependency
+// direction stays clean and fakes are easy to write in tests.
 // This package must not import llm, telegram, solver or scheduler.
 package store
 
@@ -20,6 +21,9 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib" // database/sql driver ent runs on
 
 	"github.com/betallsoph/shiftz/internal/ent"
+	// Registers schema defaults and hooks (required because the Shift
+	// schema declares hooks; without this import defaults are nil).
+	_ "github.com/betallsoph/shiftz/internal/ent/runtime"
 )
 
 // ErrNotFound is returned when a query matches no rows.
@@ -40,8 +44,9 @@ type Store struct {
 }
 
 // New connects to Postgres via pgx's database/sql adapter and returns a
-// ready Store.
-func New(ctx context.Context, databaseURL string) (*Store, error) {
+// ready Store. With debug true, every generated SQL statement is logged
+// (dev only — it's verbose and logs parameters).
+func New(ctx context.Context, databaseURL string, debug bool) (*Store, error) {
 	db, err := sql.Open("pgx", databaseURL)
 	if err != nil {
 		return nil, fmt.Errorf("store: open: %w", err)
@@ -53,6 +58,9 @@ func New(ctx context.Context, databaseURL string) (*Store, error) {
 		return nil, fmt.Errorf("store: ping: %w", err)
 	}
 	client := ent.NewClient(ent.Driver(entsql.OpenDB(dialect.Postgres, db)))
+	if debug {
+		client = client.Debug()
+	}
 	return &Store{
 		Client:       client,
 		Shops:        &ShopRepo{client: client},

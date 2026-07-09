@@ -6,7 +6,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -15,6 +14,7 @@ import (
 	"github.com/betallsoph/shiftz/internal/ent/scheduleassignment"
 	"github.com/betallsoph/shiftz/internal/ent/shift"
 	"github.com/betallsoph/shiftz/internal/ent/shop"
+	"github.com/google/uuid"
 )
 
 // ShiftUpdate is the builder for updating Shift entities.
@@ -31,57 +31,78 @@ func (_u *ShiftUpdate) Where(ps ...predicate.Shift) *ShiftUpdate {
 }
 
 // SetShopID sets the "shop_id" field.
-func (_u *ShiftUpdate) SetShopID(v int) *ShiftUpdate {
+func (_u *ShiftUpdate) SetShopID(v uuid.UUID) *ShiftUpdate {
 	_u.mutation.SetShopID(v)
 	return _u
 }
 
 // SetNillableShopID sets the "shop_id" field if the given value is not nil.
-func (_u *ShiftUpdate) SetNillableShopID(v *int) *ShiftUpdate {
+func (_u *ShiftUpdate) SetNillableShopID(v *uuid.UUID) *ShiftUpdate {
 	if v != nil {
 		_u.SetShopID(*v)
 	}
 	return _u
 }
 
-// SetRole sets the "role" field.
-func (_u *ShiftUpdate) SetRole(v string) *ShiftUpdate {
-	_u.mutation.SetRole(v)
+// SetName sets the "name" field.
+func (_u *ShiftUpdate) SetName(v string) *ShiftUpdate {
+	_u.mutation.SetName(v)
 	return _u
 }
 
-// SetNillableRole sets the "role" field if the given value is not nil.
-func (_u *ShiftUpdate) SetNillableRole(v *string) *ShiftUpdate {
+// SetNillableName sets the "name" field if the given value is not nil.
+func (_u *ShiftUpdate) SetNillableName(v *string) *ShiftUpdate {
 	if v != nil {
-		_u.SetRole(*v)
+		_u.SetName(*v)
 	}
 	return _u
 }
 
-// SetStartsAt sets the "starts_at" field.
-func (_u *ShiftUpdate) SetStartsAt(v time.Time) *ShiftUpdate {
-	_u.mutation.SetStartsAt(v)
+// SetWeekday sets the "weekday" field.
+func (_u *ShiftUpdate) SetWeekday(v int) *ShiftUpdate {
+	_u.mutation.ResetWeekday()
+	_u.mutation.SetWeekday(v)
 	return _u
 }
 
-// SetNillableStartsAt sets the "starts_at" field if the given value is not nil.
-func (_u *ShiftUpdate) SetNillableStartsAt(v *time.Time) *ShiftUpdate {
+// SetNillableWeekday sets the "weekday" field if the given value is not nil.
+func (_u *ShiftUpdate) SetNillableWeekday(v *int) *ShiftUpdate {
 	if v != nil {
-		_u.SetStartsAt(*v)
+		_u.SetWeekday(*v)
 	}
 	return _u
 }
 
-// SetEndsAt sets the "ends_at" field.
-func (_u *ShiftUpdate) SetEndsAt(v time.Time) *ShiftUpdate {
-	_u.mutation.SetEndsAt(v)
+// AddWeekday adds value to the "weekday" field.
+func (_u *ShiftUpdate) AddWeekday(v int) *ShiftUpdate {
+	_u.mutation.AddWeekday(v)
 	return _u
 }
 
-// SetNillableEndsAt sets the "ends_at" field if the given value is not nil.
-func (_u *ShiftUpdate) SetNillableEndsAt(v *time.Time) *ShiftUpdate {
+// SetStartTime sets the "start_time" field.
+func (_u *ShiftUpdate) SetStartTime(v string) *ShiftUpdate {
+	_u.mutation.SetStartTime(v)
+	return _u
+}
+
+// SetNillableStartTime sets the "start_time" field if the given value is not nil.
+func (_u *ShiftUpdate) SetNillableStartTime(v *string) *ShiftUpdate {
 	if v != nil {
-		_u.SetEndsAt(*v)
+		_u.SetStartTime(*v)
+	}
+	return _u
+}
+
+// SetEndTime sets the "end_time" field.
+func (_u *ShiftUpdate) SetEndTime(v string) *ShiftUpdate {
+	_u.mutation.SetEndTime(v)
+	return _u
+}
+
+// SetNillableEndTime sets the "end_time" field if the given value is not nil.
+func (_u *ShiftUpdate) SetNillableEndTime(v *string) *ShiftUpdate {
+	if v != nil {
+		_u.SetEndTime(*v)
 	}
 	return _u
 }
@@ -134,14 +155,14 @@ func (_u *ShiftUpdate) SetShop(v *Shop) *ShiftUpdate {
 }
 
 // AddAssignmentIDs adds the "assignments" edge to the ScheduleAssignment entity by IDs.
-func (_u *ShiftUpdate) AddAssignmentIDs(ids ...int) *ShiftUpdate {
+func (_u *ShiftUpdate) AddAssignmentIDs(ids ...uuid.UUID) *ShiftUpdate {
 	_u.mutation.AddAssignmentIDs(ids...)
 	return _u
 }
 
 // AddAssignments adds the "assignments" edges to the ScheduleAssignment entity.
 func (_u *ShiftUpdate) AddAssignments(v ...*ScheduleAssignment) *ShiftUpdate {
-	ids := make([]int, len(v))
+	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
@@ -166,14 +187,14 @@ func (_u *ShiftUpdate) ClearAssignments() *ShiftUpdate {
 }
 
 // RemoveAssignmentIDs removes the "assignments" edge to ScheduleAssignment entities by IDs.
-func (_u *ShiftUpdate) RemoveAssignmentIDs(ids ...int) *ShiftUpdate {
+func (_u *ShiftUpdate) RemoveAssignmentIDs(ids ...uuid.UUID) *ShiftUpdate {
 	_u.mutation.RemoveAssignmentIDs(ids...)
 	return _u
 }
 
 // RemoveAssignments removes "assignments" edges to ScheduleAssignment entities.
 func (_u *ShiftUpdate) RemoveAssignments(v ...*ScheduleAssignment) *ShiftUpdate {
-	ids := make([]int, len(v))
+	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
@@ -209,6 +230,21 @@ func (_u *ShiftUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *ShiftUpdate) check() error {
+	if v, ok := _u.mutation.Weekday(); ok {
+		if err := shift.WeekdayValidator(v); err != nil {
+			return &ValidationError{Name: "weekday", err: fmt.Errorf(`ent: validator failed for field "Shift.weekday": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.StartTime(); ok {
+		if err := shift.StartTimeValidator(v); err != nil {
+			return &ValidationError{Name: "start_time", err: fmt.Errorf(`ent: validator failed for field "Shift.start_time": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.EndTime(); ok {
+		if err := shift.EndTimeValidator(v); err != nil {
+			return &ValidationError{Name: "end_time", err: fmt.Errorf(`ent: validator failed for field "Shift.end_time": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.MinStaff(); ok {
 		if err := shift.MinStaffValidator(v); err != nil {
 			return &ValidationError{Name: "min_staff", err: fmt.Errorf(`ent: validator failed for field "Shift.min_staff": %w`, err)}
@@ -229,7 +265,7 @@ func (_u *ShiftUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
 	}
-	_spec := sqlgraph.NewUpdateSpec(shift.Table, shift.Columns, sqlgraph.NewFieldSpec(shift.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewUpdateSpec(shift.Table, shift.Columns, sqlgraph.NewFieldSpec(shift.FieldID, field.TypeUUID))
 	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -237,14 +273,20 @@ func (_u *ShiftUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			}
 		}
 	}
-	if value, ok := _u.mutation.Role(); ok {
-		_spec.SetField(shift.FieldRole, field.TypeString, value)
+	if value, ok := _u.mutation.Name(); ok {
+		_spec.SetField(shift.FieldName, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.StartsAt(); ok {
-		_spec.SetField(shift.FieldStartsAt, field.TypeTime, value)
+	if value, ok := _u.mutation.Weekday(); ok {
+		_spec.SetField(shift.FieldWeekday, field.TypeInt, value)
 	}
-	if value, ok := _u.mutation.EndsAt(); ok {
-		_spec.SetField(shift.FieldEndsAt, field.TypeTime, value)
+	if value, ok := _u.mutation.AddedWeekday(); ok {
+		_spec.AddField(shift.FieldWeekday, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.StartTime(); ok {
+		_spec.SetField(shift.FieldStartTime, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.EndTime(); ok {
+		_spec.SetField(shift.FieldEndTime, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.MinStaff(); ok {
 		_spec.SetField(shift.FieldMinStaff, field.TypeInt, value)
@@ -266,7 +308,7 @@ func (_u *ShiftUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Columns: []string{shift.ShopColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -279,7 +321,7 @@ func (_u *ShiftUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Columns: []string{shift.ShopColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -295,7 +337,7 @@ func (_u *ShiftUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Columns: []string{shift.AssignmentsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scheduleassignment.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scheduleassignment.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -308,7 +350,7 @@ func (_u *ShiftUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Columns: []string{shift.AssignmentsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scheduleassignment.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scheduleassignment.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -324,7 +366,7 @@ func (_u *ShiftUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Columns: []string{shift.AssignmentsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scheduleassignment.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scheduleassignment.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -353,57 +395,78 @@ type ShiftUpdateOne struct {
 }
 
 // SetShopID sets the "shop_id" field.
-func (_u *ShiftUpdateOne) SetShopID(v int) *ShiftUpdateOne {
+func (_u *ShiftUpdateOne) SetShopID(v uuid.UUID) *ShiftUpdateOne {
 	_u.mutation.SetShopID(v)
 	return _u
 }
 
 // SetNillableShopID sets the "shop_id" field if the given value is not nil.
-func (_u *ShiftUpdateOne) SetNillableShopID(v *int) *ShiftUpdateOne {
+func (_u *ShiftUpdateOne) SetNillableShopID(v *uuid.UUID) *ShiftUpdateOne {
 	if v != nil {
 		_u.SetShopID(*v)
 	}
 	return _u
 }
 
-// SetRole sets the "role" field.
-func (_u *ShiftUpdateOne) SetRole(v string) *ShiftUpdateOne {
-	_u.mutation.SetRole(v)
+// SetName sets the "name" field.
+func (_u *ShiftUpdateOne) SetName(v string) *ShiftUpdateOne {
+	_u.mutation.SetName(v)
 	return _u
 }
 
-// SetNillableRole sets the "role" field if the given value is not nil.
-func (_u *ShiftUpdateOne) SetNillableRole(v *string) *ShiftUpdateOne {
+// SetNillableName sets the "name" field if the given value is not nil.
+func (_u *ShiftUpdateOne) SetNillableName(v *string) *ShiftUpdateOne {
 	if v != nil {
-		_u.SetRole(*v)
+		_u.SetName(*v)
 	}
 	return _u
 }
 
-// SetStartsAt sets the "starts_at" field.
-func (_u *ShiftUpdateOne) SetStartsAt(v time.Time) *ShiftUpdateOne {
-	_u.mutation.SetStartsAt(v)
+// SetWeekday sets the "weekday" field.
+func (_u *ShiftUpdateOne) SetWeekday(v int) *ShiftUpdateOne {
+	_u.mutation.ResetWeekday()
+	_u.mutation.SetWeekday(v)
 	return _u
 }
 
-// SetNillableStartsAt sets the "starts_at" field if the given value is not nil.
-func (_u *ShiftUpdateOne) SetNillableStartsAt(v *time.Time) *ShiftUpdateOne {
+// SetNillableWeekday sets the "weekday" field if the given value is not nil.
+func (_u *ShiftUpdateOne) SetNillableWeekday(v *int) *ShiftUpdateOne {
 	if v != nil {
-		_u.SetStartsAt(*v)
+		_u.SetWeekday(*v)
 	}
 	return _u
 }
 
-// SetEndsAt sets the "ends_at" field.
-func (_u *ShiftUpdateOne) SetEndsAt(v time.Time) *ShiftUpdateOne {
-	_u.mutation.SetEndsAt(v)
+// AddWeekday adds value to the "weekday" field.
+func (_u *ShiftUpdateOne) AddWeekday(v int) *ShiftUpdateOne {
+	_u.mutation.AddWeekday(v)
 	return _u
 }
 
-// SetNillableEndsAt sets the "ends_at" field if the given value is not nil.
-func (_u *ShiftUpdateOne) SetNillableEndsAt(v *time.Time) *ShiftUpdateOne {
+// SetStartTime sets the "start_time" field.
+func (_u *ShiftUpdateOne) SetStartTime(v string) *ShiftUpdateOne {
+	_u.mutation.SetStartTime(v)
+	return _u
+}
+
+// SetNillableStartTime sets the "start_time" field if the given value is not nil.
+func (_u *ShiftUpdateOne) SetNillableStartTime(v *string) *ShiftUpdateOne {
 	if v != nil {
-		_u.SetEndsAt(*v)
+		_u.SetStartTime(*v)
+	}
+	return _u
+}
+
+// SetEndTime sets the "end_time" field.
+func (_u *ShiftUpdateOne) SetEndTime(v string) *ShiftUpdateOne {
+	_u.mutation.SetEndTime(v)
+	return _u
+}
+
+// SetNillableEndTime sets the "end_time" field if the given value is not nil.
+func (_u *ShiftUpdateOne) SetNillableEndTime(v *string) *ShiftUpdateOne {
+	if v != nil {
+		_u.SetEndTime(*v)
 	}
 	return _u
 }
@@ -456,14 +519,14 @@ func (_u *ShiftUpdateOne) SetShop(v *Shop) *ShiftUpdateOne {
 }
 
 // AddAssignmentIDs adds the "assignments" edge to the ScheduleAssignment entity by IDs.
-func (_u *ShiftUpdateOne) AddAssignmentIDs(ids ...int) *ShiftUpdateOne {
+func (_u *ShiftUpdateOne) AddAssignmentIDs(ids ...uuid.UUID) *ShiftUpdateOne {
 	_u.mutation.AddAssignmentIDs(ids...)
 	return _u
 }
 
 // AddAssignments adds the "assignments" edges to the ScheduleAssignment entity.
 func (_u *ShiftUpdateOne) AddAssignments(v ...*ScheduleAssignment) *ShiftUpdateOne {
-	ids := make([]int, len(v))
+	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
@@ -488,14 +551,14 @@ func (_u *ShiftUpdateOne) ClearAssignments() *ShiftUpdateOne {
 }
 
 // RemoveAssignmentIDs removes the "assignments" edge to ScheduleAssignment entities by IDs.
-func (_u *ShiftUpdateOne) RemoveAssignmentIDs(ids ...int) *ShiftUpdateOne {
+func (_u *ShiftUpdateOne) RemoveAssignmentIDs(ids ...uuid.UUID) *ShiftUpdateOne {
 	_u.mutation.RemoveAssignmentIDs(ids...)
 	return _u
 }
 
 // RemoveAssignments removes "assignments" edges to ScheduleAssignment entities.
 func (_u *ShiftUpdateOne) RemoveAssignments(v ...*ScheduleAssignment) *ShiftUpdateOne {
-	ids := make([]int, len(v))
+	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
@@ -544,6 +607,21 @@ func (_u *ShiftUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *ShiftUpdateOne) check() error {
+	if v, ok := _u.mutation.Weekday(); ok {
+		if err := shift.WeekdayValidator(v); err != nil {
+			return &ValidationError{Name: "weekday", err: fmt.Errorf(`ent: validator failed for field "Shift.weekday": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.StartTime(); ok {
+		if err := shift.StartTimeValidator(v); err != nil {
+			return &ValidationError{Name: "start_time", err: fmt.Errorf(`ent: validator failed for field "Shift.start_time": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.EndTime(); ok {
+		if err := shift.EndTimeValidator(v); err != nil {
+			return &ValidationError{Name: "end_time", err: fmt.Errorf(`ent: validator failed for field "Shift.end_time": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.MinStaff(); ok {
 		if err := shift.MinStaffValidator(v); err != nil {
 			return &ValidationError{Name: "min_staff", err: fmt.Errorf(`ent: validator failed for field "Shift.min_staff": %w`, err)}
@@ -564,7 +642,7 @@ func (_u *ShiftUpdateOne) sqlSave(ctx context.Context) (_node *Shift, err error)
 	if err := _u.check(); err != nil {
 		return _node, err
 	}
-	_spec := sqlgraph.NewUpdateSpec(shift.Table, shift.Columns, sqlgraph.NewFieldSpec(shift.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewUpdateSpec(shift.Table, shift.Columns, sqlgraph.NewFieldSpec(shift.FieldID, field.TypeUUID))
 	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Shift.id" for update`)}
@@ -589,14 +667,20 @@ func (_u *ShiftUpdateOne) sqlSave(ctx context.Context) (_node *Shift, err error)
 			}
 		}
 	}
-	if value, ok := _u.mutation.Role(); ok {
-		_spec.SetField(shift.FieldRole, field.TypeString, value)
+	if value, ok := _u.mutation.Name(); ok {
+		_spec.SetField(shift.FieldName, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.StartsAt(); ok {
-		_spec.SetField(shift.FieldStartsAt, field.TypeTime, value)
+	if value, ok := _u.mutation.Weekday(); ok {
+		_spec.SetField(shift.FieldWeekday, field.TypeInt, value)
 	}
-	if value, ok := _u.mutation.EndsAt(); ok {
-		_spec.SetField(shift.FieldEndsAt, field.TypeTime, value)
+	if value, ok := _u.mutation.AddedWeekday(); ok {
+		_spec.AddField(shift.FieldWeekday, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.StartTime(); ok {
+		_spec.SetField(shift.FieldStartTime, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.EndTime(); ok {
+		_spec.SetField(shift.FieldEndTime, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.MinStaff(); ok {
 		_spec.SetField(shift.FieldMinStaff, field.TypeInt, value)
@@ -618,7 +702,7 @@ func (_u *ShiftUpdateOne) sqlSave(ctx context.Context) (_node *Shift, err error)
 			Columns: []string{shift.ShopColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -631,7 +715,7 @@ func (_u *ShiftUpdateOne) sqlSave(ctx context.Context) (_node *Shift, err error)
 			Columns: []string{shift.ShopColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -647,7 +731,7 @@ func (_u *ShiftUpdateOne) sqlSave(ctx context.Context) (_node *Shift, err error)
 			Columns: []string{shift.AssignmentsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scheduleassignment.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scheduleassignment.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -660,7 +744,7 @@ func (_u *ShiftUpdateOne) sqlSave(ctx context.Context) (_node *Shift, err error)
 			Columns: []string{shift.AssignmentsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scheduleassignment.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scheduleassignment.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -676,7 +760,7 @@ func (_u *ShiftUpdateOne) sqlSave(ctx context.Context) (_node *Shift, err error)
 			Columns: []string{shift.AssignmentsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scheduleassignment.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scheduleassignment.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

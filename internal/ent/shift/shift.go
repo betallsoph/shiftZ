@@ -3,10 +3,10 @@
 package shift
 
 import (
-	"time"
-
+	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/google/uuid"
 )
 
 const (
@@ -16,18 +16,18 @@ const (
 	FieldID = "id"
 	// FieldShopID holds the string denoting the shop_id field in the database.
 	FieldShopID = "shop_id"
-	// FieldRole holds the string denoting the role field in the database.
-	FieldRole = "role"
-	// FieldStartsAt holds the string denoting the starts_at field in the database.
-	FieldStartsAt = "starts_at"
-	// FieldEndsAt holds the string denoting the ends_at field in the database.
-	FieldEndsAt = "ends_at"
+	// FieldName holds the string denoting the name field in the database.
+	FieldName = "name"
+	// FieldWeekday holds the string denoting the weekday field in the database.
+	FieldWeekday = "weekday"
+	// FieldStartTime holds the string denoting the start_time field in the database.
+	FieldStartTime = "start_time"
+	// FieldEndTime holds the string denoting the end_time field in the database.
+	FieldEndTime = "end_time"
 	// FieldMinStaff holds the string denoting the min_staff field in the database.
 	FieldMinStaff = "min_staff"
 	// FieldMaxStaff holds the string denoting the max_staff field in the database.
 	FieldMaxStaff = "max_staff"
-	// FieldCreatedAt holds the string denoting the created_at field in the database.
-	FieldCreatedAt = "created_at"
 	// EdgeShop holds the string denoting the shop edge name in mutations.
 	EdgeShop = "shop"
 	// EdgeAssignments holds the string denoting the assignments edge name in mutations.
@@ -54,12 +54,12 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldShopID,
-	FieldRole,
-	FieldStartsAt,
-	FieldEndsAt,
+	FieldName,
+	FieldWeekday,
+	FieldStartTime,
+	FieldEndTime,
 	FieldMinStaff,
 	FieldMaxStaff,
-	FieldCreatedAt,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -72,9 +72,19 @@ func ValidColumn(column string) bool {
 	return false
 }
 
+// Note that the variables below are initialized by the runtime
+// package on the initialization of the application. Therefore,
+// it should be imported in the main as follows:
+//
+//	import _ "github.com/betallsoph/shiftz/internal/ent/runtime"
 var (
-	// DefaultRole holds the default value on creation for the "role" field.
-	DefaultRole string
+	Hooks [1]ent.Hook
+	// WeekdayValidator is a validator for the "weekday" field. It is called by the builders before save.
+	WeekdayValidator func(int) error
+	// StartTimeValidator is a validator for the "start_time" field. It is called by the builders before save.
+	StartTimeValidator func(string) error
+	// EndTimeValidator is a validator for the "end_time" field. It is called by the builders before save.
+	EndTimeValidator func(string) error
 	// DefaultMinStaff holds the default value on creation for the "min_staff" field.
 	DefaultMinStaff int
 	// MinStaffValidator is a validator for the "min_staff" field. It is called by the builders before save.
@@ -83,8 +93,8 @@ var (
 	DefaultMaxStaff int
 	// MaxStaffValidator is a validator for the "max_staff" field. It is called by the builders before save.
 	MaxStaffValidator func(int) error
-	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
-	DefaultCreatedAt func() time.Time
+	// DefaultID holds the default value on creation for the "id" field.
+	DefaultID func() uuid.UUID
 )
 
 // OrderOption defines the ordering options for the Shift queries.
@@ -100,19 +110,24 @@ func ByShopID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldShopID, opts...).ToFunc()
 }
 
-// ByRole orders the results by the role field.
-func ByRole(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldRole, opts...).ToFunc()
+// ByName orders the results by the name field.
+func ByName(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldName, opts...).ToFunc()
 }
 
-// ByStartsAt orders the results by the starts_at field.
-func ByStartsAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldStartsAt, opts...).ToFunc()
+// ByWeekday orders the results by the weekday field.
+func ByWeekday(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldWeekday, opts...).ToFunc()
 }
 
-// ByEndsAt orders the results by the ends_at field.
-func ByEndsAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldEndsAt, opts...).ToFunc()
+// ByStartTime orders the results by the start_time field.
+func ByStartTime(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldStartTime, opts...).ToFunc()
+}
+
+// ByEndTime orders the results by the end_time field.
+func ByEndTime(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldEndTime, opts...).ToFunc()
 }
 
 // ByMinStaff orders the results by the min_staff field.
@@ -123,11 +138,6 @@ func ByMinStaff(opts ...sql.OrderTermOption) OrderOption {
 // ByMaxStaff orders the results by the max_staff field.
 func ByMaxStaff(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldMaxStaff, opts...).ToFunc()
-}
-
-// ByCreatedAt orders the results by the created_at field.
-func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
 }
 
 // ByShopField orders the results by shop field.

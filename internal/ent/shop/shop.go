@@ -7,6 +7,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/google/uuid"
 )
 
 const (
@@ -20,24 +21,22 @@ const (
 	FieldTimezone = "timezone"
 	// FieldInviteCode holds the string denoting the invite_code field in the database.
 	FieldInviteCode = "invite_code"
-	// FieldOwnerTelegramID holds the string denoting the owner_telegram_id field in the database.
-	FieldOwnerTelegramID = "owner_telegram_id"
+	// FieldTelegramGroupID holds the string denoting the telegram_group_id field in the database.
+	FieldTelegramGroupID = "telegram_group_id"
+	// FieldPlan holds the string denoting the plan field in the database.
+	FieldPlan = "plan"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// EdgeEmployees holds the string denoting the employees edge name in mutations.
 	EdgeEmployees = "employees"
-	// EdgeAvailability holds the string denoting the availability edge name in mutations.
-	EdgeAvailability = "availability"
 	// EdgeShifts holds the string denoting the shifts edge name in mutations.
 	EdgeShifts = "shifts"
 	// EdgeSchedules holds the string denoting the schedules edge name in mutations.
 	EdgeSchedules = "schedules"
-	// EdgeAssignments holds the string denoting the assignments edge name in mutations.
-	EdgeAssignments = "assignments"
-	// EdgeVotes holds the string denoting the votes edge name in mutations.
-	EdgeVotes = "votes"
 	// EdgeRules holds the string denoting the rules edge name in mutations.
 	EdgeRules = "rules"
+	// EdgeAvailabilities holds the string denoting the availabilities edge name in mutations.
+	EdgeAvailabilities = "availabilities"
 	// Table holds the table name of the shop in the database.
 	Table = "shops"
 	// EmployeesTable is the table that holds the employees relation/edge.
@@ -47,13 +46,6 @@ const (
 	EmployeesInverseTable = "employees"
 	// EmployeesColumn is the table column denoting the employees relation/edge.
 	EmployeesColumn = "shop_id"
-	// AvailabilityTable is the table that holds the availability relation/edge.
-	AvailabilityTable = "availabilities"
-	// AvailabilityInverseTable is the table name for the Availability entity.
-	// It exists in this package in order to avoid circular dependency with the "availability" package.
-	AvailabilityInverseTable = "availabilities"
-	// AvailabilityColumn is the table column denoting the availability relation/edge.
-	AvailabilityColumn = "shop_id"
 	// ShiftsTable is the table that holds the shifts relation/edge.
 	ShiftsTable = "shifts"
 	// ShiftsInverseTable is the table name for the Shift entity.
@@ -68,20 +60,6 @@ const (
 	SchedulesInverseTable = "schedules"
 	// SchedulesColumn is the table column denoting the schedules relation/edge.
 	SchedulesColumn = "shop_id"
-	// AssignmentsTable is the table that holds the assignments relation/edge.
-	AssignmentsTable = "schedule_assignments"
-	// AssignmentsInverseTable is the table name for the ScheduleAssignment entity.
-	// It exists in this package in order to avoid circular dependency with the "scheduleassignment" package.
-	AssignmentsInverseTable = "schedule_assignments"
-	// AssignmentsColumn is the table column denoting the assignments relation/edge.
-	AssignmentsColumn = "shop_id"
-	// VotesTable is the table that holds the votes relation/edge.
-	VotesTable = "schedule_votes"
-	// VotesInverseTable is the table name for the ScheduleVote entity.
-	// It exists in this package in order to avoid circular dependency with the "schedulevote" package.
-	VotesInverseTable = "schedule_votes"
-	// VotesColumn is the table column denoting the votes relation/edge.
-	VotesColumn = "shop_id"
 	// RulesTable is the table that holds the rules relation/edge.
 	RulesTable = "rules"
 	// RulesInverseTable is the table name for the Rule entity.
@@ -89,6 +67,13 @@ const (
 	RulesInverseTable = "rules"
 	// RulesColumn is the table column denoting the rules relation/edge.
 	RulesColumn = "shop_id"
+	// AvailabilitiesTable is the table that holds the availabilities relation/edge.
+	AvailabilitiesTable = "availabilities"
+	// AvailabilitiesInverseTable is the table name for the Availability entity.
+	// It exists in this package in order to avoid circular dependency with the "availability" package.
+	AvailabilitiesInverseTable = "availabilities"
+	// AvailabilitiesColumn is the table column denoting the availabilities relation/edge.
+	AvailabilitiesColumn = "shop_id"
 )
 
 // Columns holds all SQL columns for shop fields.
@@ -97,7 +82,8 @@ var Columns = []string{
 	FieldName,
 	FieldTimezone,
 	FieldInviteCode,
-	FieldOwnerTelegramID,
+	FieldTelegramGroupID,
+	FieldPlan,
 	FieldCreatedAt,
 }
 
@@ -114,8 +100,12 @@ func ValidColumn(column string) bool {
 var (
 	// DefaultTimezone holds the default value on creation for the "timezone" field.
 	DefaultTimezone string
+	// DefaultPlan holds the default value on creation for the "plan" field.
+	DefaultPlan string
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
+	// DefaultID holds the default value on creation for the "id" field.
+	DefaultID func() uuid.UUID
 )
 
 // OrderOption defines the ordering options for the Shop queries.
@@ -141,9 +131,14 @@ func ByInviteCode(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldInviteCode, opts...).ToFunc()
 }
 
-// ByOwnerTelegramID orders the results by the owner_telegram_id field.
-func ByOwnerTelegramID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldOwnerTelegramID, opts...).ToFunc()
+// ByTelegramGroupID orders the results by the telegram_group_id field.
+func ByTelegramGroupID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTelegramGroupID, opts...).ToFunc()
+}
+
+// ByPlan orders the results by the plan field.
+func ByPlan(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPlan, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.
@@ -162,20 +157,6 @@ func ByEmployeesCount(opts ...sql.OrderTermOption) OrderOption {
 func ByEmployees(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newEmployeesStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
-// ByAvailabilityCount orders the results by availability count.
-func ByAvailabilityCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newAvailabilityStep(), opts...)
-	}
-}
-
-// ByAvailability orders the results by availability terms.
-func ByAvailability(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newAvailabilityStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 
@@ -207,34 +188,6 @@ func BySchedules(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
-// ByAssignmentsCount orders the results by assignments count.
-func ByAssignmentsCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newAssignmentsStep(), opts...)
-	}
-}
-
-// ByAssignments orders the results by assignments terms.
-func ByAssignments(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newAssignmentsStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
-// ByVotesCount orders the results by votes count.
-func ByVotesCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newVotesStep(), opts...)
-	}
-}
-
-// ByVotes orders the results by votes terms.
-func ByVotes(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newVotesStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
 // ByRulesCount orders the results by rules count.
 func ByRulesCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -248,18 +201,25 @@ func ByRules(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newRulesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByAvailabilitiesCount orders the results by availabilities count.
+func ByAvailabilitiesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newAvailabilitiesStep(), opts...)
+	}
+}
+
+// ByAvailabilities orders the results by availabilities terms.
+func ByAvailabilities(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newAvailabilitiesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newEmployeesStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(EmployeesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, EmployeesTable, EmployeesColumn),
-	)
-}
-func newAvailabilityStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(AvailabilityInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, AvailabilityTable, AvailabilityColumn),
 	)
 }
 func newShiftsStep() *sqlgraph.Step {
@@ -276,24 +236,17 @@ func newSchedulesStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.O2M, false, SchedulesTable, SchedulesColumn),
 	)
 }
-func newAssignmentsStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(AssignmentsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, AssignmentsTable, AssignmentsColumn),
-	)
-}
-func newVotesStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(VotesInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, VotesTable, VotesColumn),
-	)
-}
 func newRulesStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(RulesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, RulesTable, RulesColumn),
+	)
+}
+func newAvailabilitiesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(AvailabilitiesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, AvailabilitiesTable, AvailabilitiesColumn),
 	)
 }

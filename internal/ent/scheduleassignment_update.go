@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -16,6 +17,7 @@ import (
 	"github.com/betallsoph/shiftz/internal/ent/scheduleassignment"
 	"github.com/betallsoph/shiftz/internal/ent/shift"
 	"github.com/betallsoph/shiftz/internal/ent/shop"
+	"github.com/google/uuid"
 )
 
 // ScheduleAssignmentUpdate is the builder for updating ScheduleAssignment entities.
@@ -32,13 +34,13 @@ func (_u *ScheduleAssignmentUpdate) Where(ps ...predicate.ScheduleAssignment) *S
 }
 
 // SetShopID sets the "shop_id" field.
-func (_u *ScheduleAssignmentUpdate) SetShopID(v int) *ScheduleAssignmentUpdate {
+func (_u *ScheduleAssignmentUpdate) SetShopID(v uuid.UUID) *ScheduleAssignmentUpdate {
 	_u.mutation.SetShopID(v)
 	return _u
 }
 
 // SetNillableShopID sets the "shop_id" field if the given value is not nil.
-func (_u *ScheduleAssignmentUpdate) SetNillableShopID(v *int) *ScheduleAssignmentUpdate {
+func (_u *ScheduleAssignmentUpdate) SetNillableShopID(v *uuid.UUID) *ScheduleAssignmentUpdate {
 	if v != nil {
 		_u.SetShopID(*v)
 	}
@@ -46,13 +48,13 @@ func (_u *ScheduleAssignmentUpdate) SetNillableShopID(v *int) *ScheduleAssignmen
 }
 
 // SetScheduleID sets the "schedule_id" field.
-func (_u *ScheduleAssignmentUpdate) SetScheduleID(v int) *ScheduleAssignmentUpdate {
+func (_u *ScheduleAssignmentUpdate) SetScheduleID(v uuid.UUID) *ScheduleAssignmentUpdate {
 	_u.mutation.SetScheduleID(v)
 	return _u
 }
 
 // SetNillableScheduleID sets the "schedule_id" field if the given value is not nil.
-func (_u *ScheduleAssignmentUpdate) SetNillableScheduleID(v *int) *ScheduleAssignmentUpdate {
+func (_u *ScheduleAssignmentUpdate) SetNillableScheduleID(v *uuid.UUID) *ScheduleAssignmentUpdate {
 	if v != nil {
 		_u.SetScheduleID(*v)
 	}
@@ -60,13 +62,13 @@ func (_u *ScheduleAssignmentUpdate) SetNillableScheduleID(v *int) *ScheduleAssig
 }
 
 // SetShiftID sets the "shift_id" field.
-func (_u *ScheduleAssignmentUpdate) SetShiftID(v int) *ScheduleAssignmentUpdate {
+func (_u *ScheduleAssignmentUpdate) SetShiftID(v uuid.UUID) *ScheduleAssignmentUpdate {
 	_u.mutation.SetShiftID(v)
 	return _u
 }
 
 // SetNillableShiftID sets the "shift_id" field if the given value is not nil.
-func (_u *ScheduleAssignmentUpdate) SetNillableShiftID(v *int) *ScheduleAssignmentUpdate {
+func (_u *ScheduleAssignmentUpdate) SetNillableShiftID(v *uuid.UUID) *ScheduleAssignmentUpdate {
 	if v != nil {
 		_u.SetShiftID(*v)
 	}
@@ -74,15 +76,29 @@ func (_u *ScheduleAssignmentUpdate) SetNillableShiftID(v *int) *ScheduleAssignme
 }
 
 // SetEmployeeID sets the "employee_id" field.
-func (_u *ScheduleAssignmentUpdate) SetEmployeeID(v int) *ScheduleAssignmentUpdate {
+func (_u *ScheduleAssignmentUpdate) SetEmployeeID(v uuid.UUID) *ScheduleAssignmentUpdate {
 	_u.mutation.SetEmployeeID(v)
 	return _u
 }
 
 // SetNillableEmployeeID sets the "employee_id" field if the given value is not nil.
-func (_u *ScheduleAssignmentUpdate) SetNillableEmployeeID(v *int) *ScheduleAssignmentUpdate {
+func (_u *ScheduleAssignmentUpdate) SetNillableEmployeeID(v *uuid.UUID) *ScheduleAssignmentUpdate {
 	if v != nil {
 		_u.SetEmployeeID(*v)
+	}
+	return _u
+}
+
+// SetDate sets the "date" field.
+func (_u *ScheduleAssignmentUpdate) SetDate(v time.Time) *ScheduleAssignmentUpdate {
+	_u.mutation.SetDate(v)
+	return _u
+}
+
+// SetNillableDate sets the "date" field if the given value is not nil.
+func (_u *ScheduleAssignmentUpdate) SetNillableDate(v *time.Time) *ScheduleAssignmentUpdate {
+	if v != nil {
+		_u.SetDate(*v)
 	}
 	return _u
 }
@@ -184,7 +200,7 @@ func (_u *ScheduleAssignmentUpdate) sqlSave(ctx context.Context) (_node int, err
 	if err := _u.check(); err != nil {
 		return _node, err
 	}
-	_spec := sqlgraph.NewUpdateSpec(scheduleassignment.Table, scheduleassignment.Columns, sqlgraph.NewFieldSpec(scheduleassignment.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewUpdateSpec(scheduleassignment.Table, scheduleassignment.Columns, sqlgraph.NewFieldSpec(scheduleassignment.FieldID, field.TypeUUID))
 	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -192,15 +208,18 @@ func (_u *ScheduleAssignmentUpdate) sqlSave(ctx context.Context) (_node int, err
 			}
 		}
 	}
+	if value, ok := _u.mutation.Date(); ok {
+		_spec.SetField(scheduleassignment.FieldDate, field.TypeTime, value)
+	}
 	if _u.mutation.ShopCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: true,
+			Inverse: false,
 			Table:   scheduleassignment.ShopTable,
 			Columns: []string{scheduleassignment.ShopColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -208,12 +227,12 @@ func (_u *ScheduleAssignmentUpdate) sqlSave(ctx context.Context) (_node int, err
 	if nodes := _u.mutation.ShopIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: true,
+			Inverse: false,
 			Table:   scheduleassignment.ShopTable,
 			Columns: []string{scheduleassignment.ShopColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -229,7 +248,7 @@ func (_u *ScheduleAssignmentUpdate) sqlSave(ctx context.Context) (_node int, err
 			Columns: []string{scheduleassignment.ScheduleColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(schedule.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(schedule.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -242,7 +261,7 @@ func (_u *ScheduleAssignmentUpdate) sqlSave(ctx context.Context) (_node int, err
 			Columns: []string{scheduleassignment.ScheduleColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(schedule.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(schedule.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -258,7 +277,7 @@ func (_u *ScheduleAssignmentUpdate) sqlSave(ctx context.Context) (_node int, err
 			Columns: []string{scheduleassignment.ShiftColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(shift.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(shift.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -271,7 +290,7 @@ func (_u *ScheduleAssignmentUpdate) sqlSave(ctx context.Context) (_node int, err
 			Columns: []string{scheduleassignment.ShiftColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(shift.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(shift.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -287,7 +306,7 @@ func (_u *ScheduleAssignmentUpdate) sqlSave(ctx context.Context) (_node int, err
 			Columns: []string{scheduleassignment.EmployeeColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -300,7 +319,7 @@ func (_u *ScheduleAssignmentUpdate) sqlSave(ctx context.Context) (_node int, err
 			Columns: []string{scheduleassignment.EmployeeColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -329,13 +348,13 @@ type ScheduleAssignmentUpdateOne struct {
 }
 
 // SetShopID sets the "shop_id" field.
-func (_u *ScheduleAssignmentUpdateOne) SetShopID(v int) *ScheduleAssignmentUpdateOne {
+func (_u *ScheduleAssignmentUpdateOne) SetShopID(v uuid.UUID) *ScheduleAssignmentUpdateOne {
 	_u.mutation.SetShopID(v)
 	return _u
 }
 
 // SetNillableShopID sets the "shop_id" field if the given value is not nil.
-func (_u *ScheduleAssignmentUpdateOne) SetNillableShopID(v *int) *ScheduleAssignmentUpdateOne {
+func (_u *ScheduleAssignmentUpdateOne) SetNillableShopID(v *uuid.UUID) *ScheduleAssignmentUpdateOne {
 	if v != nil {
 		_u.SetShopID(*v)
 	}
@@ -343,13 +362,13 @@ func (_u *ScheduleAssignmentUpdateOne) SetNillableShopID(v *int) *ScheduleAssign
 }
 
 // SetScheduleID sets the "schedule_id" field.
-func (_u *ScheduleAssignmentUpdateOne) SetScheduleID(v int) *ScheduleAssignmentUpdateOne {
+func (_u *ScheduleAssignmentUpdateOne) SetScheduleID(v uuid.UUID) *ScheduleAssignmentUpdateOne {
 	_u.mutation.SetScheduleID(v)
 	return _u
 }
 
 // SetNillableScheduleID sets the "schedule_id" field if the given value is not nil.
-func (_u *ScheduleAssignmentUpdateOne) SetNillableScheduleID(v *int) *ScheduleAssignmentUpdateOne {
+func (_u *ScheduleAssignmentUpdateOne) SetNillableScheduleID(v *uuid.UUID) *ScheduleAssignmentUpdateOne {
 	if v != nil {
 		_u.SetScheduleID(*v)
 	}
@@ -357,13 +376,13 @@ func (_u *ScheduleAssignmentUpdateOne) SetNillableScheduleID(v *int) *ScheduleAs
 }
 
 // SetShiftID sets the "shift_id" field.
-func (_u *ScheduleAssignmentUpdateOne) SetShiftID(v int) *ScheduleAssignmentUpdateOne {
+func (_u *ScheduleAssignmentUpdateOne) SetShiftID(v uuid.UUID) *ScheduleAssignmentUpdateOne {
 	_u.mutation.SetShiftID(v)
 	return _u
 }
 
 // SetNillableShiftID sets the "shift_id" field if the given value is not nil.
-func (_u *ScheduleAssignmentUpdateOne) SetNillableShiftID(v *int) *ScheduleAssignmentUpdateOne {
+func (_u *ScheduleAssignmentUpdateOne) SetNillableShiftID(v *uuid.UUID) *ScheduleAssignmentUpdateOne {
 	if v != nil {
 		_u.SetShiftID(*v)
 	}
@@ -371,15 +390,29 @@ func (_u *ScheduleAssignmentUpdateOne) SetNillableShiftID(v *int) *ScheduleAssig
 }
 
 // SetEmployeeID sets the "employee_id" field.
-func (_u *ScheduleAssignmentUpdateOne) SetEmployeeID(v int) *ScheduleAssignmentUpdateOne {
+func (_u *ScheduleAssignmentUpdateOne) SetEmployeeID(v uuid.UUID) *ScheduleAssignmentUpdateOne {
 	_u.mutation.SetEmployeeID(v)
 	return _u
 }
 
 // SetNillableEmployeeID sets the "employee_id" field if the given value is not nil.
-func (_u *ScheduleAssignmentUpdateOne) SetNillableEmployeeID(v *int) *ScheduleAssignmentUpdateOne {
+func (_u *ScheduleAssignmentUpdateOne) SetNillableEmployeeID(v *uuid.UUID) *ScheduleAssignmentUpdateOne {
 	if v != nil {
 		_u.SetEmployeeID(*v)
+	}
+	return _u
+}
+
+// SetDate sets the "date" field.
+func (_u *ScheduleAssignmentUpdateOne) SetDate(v time.Time) *ScheduleAssignmentUpdateOne {
+	_u.mutation.SetDate(v)
+	return _u
+}
+
+// SetNillableDate sets the "date" field if the given value is not nil.
+func (_u *ScheduleAssignmentUpdateOne) SetNillableDate(v *time.Time) *ScheduleAssignmentUpdateOne {
+	if v != nil {
+		_u.SetDate(*v)
 	}
 	return _u
 }
@@ -494,7 +527,7 @@ func (_u *ScheduleAssignmentUpdateOne) sqlSave(ctx context.Context) (_node *Sche
 	if err := _u.check(); err != nil {
 		return _node, err
 	}
-	_spec := sqlgraph.NewUpdateSpec(scheduleassignment.Table, scheduleassignment.Columns, sqlgraph.NewFieldSpec(scheduleassignment.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewUpdateSpec(scheduleassignment.Table, scheduleassignment.Columns, sqlgraph.NewFieldSpec(scheduleassignment.FieldID, field.TypeUUID))
 	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "ScheduleAssignment.id" for update`)}
@@ -519,15 +552,18 @@ func (_u *ScheduleAssignmentUpdateOne) sqlSave(ctx context.Context) (_node *Sche
 			}
 		}
 	}
+	if value, ok := _u.mutation.Date(); ok {
+		_spec.SetField(scheduleassignment.FieldDate, field.TypeTime, value)
+	}
 	if _u.mutation.ShopCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: true,
+			Inverse: false,
 			Table:   scheduleassignment.ShopTable,
 			Columns: []string{scheduleassignment.ShopColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -535,12 +571,12 @@ func (_u *ScheduleAssignmentUpdateOne) sqlSave(ctx context.Context) (_node *Sche
 	if nodes := _u.mutation.ShopIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: true,
+			Inverse: false,
 			Table:   scheduleassignment.ShopTable,
 			Columns: []string{scheduleassignment.ShopColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -556,7 +592,7 @@ func (_u *ScheduleAssignmentUpdateOne) sqlSave(ctx context.Context) (_node *Sche
 			Columns: []string{scheduleassignment.ScheduleColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(schedule.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(schedule.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -569,7 +605,7 @@ func (_u *ScheduleAssignmentUpdateOne) sqlSave(ctx context.Context) (_node *Sche
 			Columns: []string{scheduleassignment.ScheduleColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(schedule.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(schedule.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -585,7 +621,7 @@ func (_u *ScheduleAssignmentUpdateOne) sqlSave(ctx context.Context) (_node *Sche
 			Columns: []string{scheduleassignment.ShiftColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(shift.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(shift.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -598,7 +634,7 @@ func (_u *ScheduleAssignmentUpdateOne) sqlSave(ctx context.Context) (_node *Sche
 			Columns: []string{scheduleassignment.ShiftColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(shift.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(shift.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -614,7 +650,7 @@ func (_u *ScheduleAssignmentUpdateOne) sqlSave(ctx context.Context) (_node *Sche
 			Columns: []string{scheduleassignment.EmployeeColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -627,7 +663,7 @@ func (_u *ScheduleAssignmentUpdateOne) sqlSave(ctx context.Context) (_node *Sche
 			Columns: []string{scheduleassignment.EmployeeColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

@@ -8,60 +8,61 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/betallsoph/shiftz/internal/ent/predicate"
+	"github.com/google/uuid"
 )
 
 // ID filters vertices based on their ID field.
-func ID(id int) predicate.Availability {
+func ID(id uuid.UUID) predicate.Availability {
 	return predicate.Availability(sql.FieldEQ(FieldID, id))
 }
 
 // IDEQ applies the EQ predicate on the ID field.
-func IDEQ(id int) predicate.Availability {
+func IDEQ(id uuid.UUID) predicate.Availability {
 	return predicate.Availability(sql.FieldEQ(FieldID, id))
 }
 
 // IDNEQ applies the NEQ predicate on the ID field.
-func IDNEQ(id int) predicate.Availability {
+func IDNEQ(id uuid.UUID) predicate.Availability {
 	return predicate.Availability(sql.FieldNEQ(FieldID, id))
 }
 
 // IDIn applies the In predicate on the ID field.
-func IDIn(ids ...int) predicate.Availability {
+func IDIn(ids ...uuid.UUID) predicate.Availability {
 	return predicate.Availability(sql.FieldIn(FieldID, ids...))
 }
 
 // IDNotIn applies the NotIn predicate on the ID field.
-func IDNotIn(ids ...int) predicate.Availability {
+func IDNotIn(ids ...uuid.UUID) predicate.Availability {
 	return predicate.Availability(sql.FieldNotIn(FieldID, ids...))
 }
 
 // IDGT applies the GT predicate on the ID field.
-func IDGT(id int) predicate.Availability {
+func IDGT(id uuid.UUID) predicate.Availability {
 	return predicate.Availability(sql.FieldGT(FieldID, id))
 }
 
 // IDGTE applies the GTE predicate on the ID field.
-func IDGTE(id int) predicate.Availability {
+func IDGTE(id uuid.UUID) predicate.Availability {
 	return predicate.Availability(sql.FieldGTE(FieldID, id))
 }
 
 // IDLT applies the LT predicate on the ID field.
-func IDLT(id int) predicate.Availability {
+func IDLT(id uuid.UUID) predicate.Availability {
 	return predicate.Availability(sql.FieldLT(FieldID, id))
 }
 
 // IDLTE applies the LTE predicate on the ID field.
-func IDLTE(id int) predicate.Availability {
+func IDLTE(id uuid.UUID) predicate.Availability {
 	return predicate.Availability(sql.FieldLTE(FieldID, id))
 }
 
 // ShopID applies equality check predicate on the "shop_id" field. It's identical to ShopIDEQ.
-func ShopID(v int) predicate.Availability {
+func ShopID(v uuid.UUID) predicate.Availability {
 	return predicate.Availability(sql.FieldEQ(FieldShopID, v))
 }
 
 // EmployeeID applies equality check predicate on the "employee_id" field. It's identical to EmployeeIDEQ.
-func EmployeeID(v int) predicate.Availability {
+func EmployeeID(v uuid.UUID) predicate.Availability {
 	return predicate.Availability(sql.FieldEQ(FieldEmployeeID, v))
 }
 
@@ -70,29 +71,9 @@ func WeekStart(v time.Time) predicate.Availability {
 	return predicate.Availability(sql.FieldEQ(FieldWeekStart, v))
 }
 
-// StartsAt applies equality check predicate on the "starts_at" field. It's identical to StartsAtEQ.
-func StartsAt(v time.Time) predicate.Availability {
-	return predicate.Availability(sql.FieldEQ(FieldStartsAt, v))
-}
-
-// EndsAt applies equality check predicate on the "ends_at" field. It's identical to EndsAtEQ.
-func EndsAt(v time.Time) predicate.Availability {
-	return predicate.Availability(sql.FieldEQ(FieldEndsAt, v))
-}
-
-// Preference applies equality check predicate on the "preference" field. It's identical to PreferenceEQ.
-func Preference(v int) predicate.Availability {
-	return predicate.Availability(sql.FieldEQ(FieldPreference, v))
-}
-
-// Note applies equality check predicate on the "note" field. It's identical to NoteEQ.
-func Note(v string) predicate.Availability {
-	return predicate.Availability(sql.FieldEQ(FieldNote, v))
-}
-
-// RawText applies equality check predicate on the "raw_text" field. It's identical to RawTextEQ.
-func RawText(v string) predicate.Availability {
-	return predicate.Availability(sql.FieldEQ(FieldRawText, v))
+// RawMessage applies equality check predicate on the "raw_message" field. It's identical to RawMessageEQ.
+func RawMessage(v string) predicate.Availability {
+	return predicate.Availability(sql.FieldEQ(FieldRawMessage, v))
 }
 
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
@@ -101,42 +82,42 @@ func CreatedAt(v time.Time) predicate.Availability {
 }
 
 // ShopIDEQ applies the EQ predicate on the "shop_id" field.
-func ShopIDEQ(v int) predicate.Availability {
+func ShopIDEQ(v uuid.UUID) predicate.Availability {
 	return predicate.Availability(sql.FieldEQ(FieldShopID, v))
 }
 
 // ShopIDNEQ applies the NEQ predicate on the "shop_id" field.
-func ShopIDNEQ(v int) predicate.Availability {
+func ShopIDNEQ(v uuid.UUID) predicate.Availability {
 	return predicate.Availability(sql.FieldNEQ(FieldShopID, v))
 }
 
 // ShopIDIn applies the In predicate on the "shop_id" field.
-func ShopIDIn(vs ...int) predicate.Availability {
+func ShopIDIn(vs ...uuid.UUID) predicate.Availability {
 	return predicate.Availability(sql.FieldIn(FieldShopID, vs...))
 }
 
 // ShopIDNotIn applies the NotIn predicate on the "shop_id" field.
-func ShopIDNotIn(vs ...int) predicate.Availability {
+func ShopIDNotIn(vs ...uuid.UUID) predicate.Availability {
 	return predicate.Availability(sql.FieldNotIn(FieldShopID, vs...))
 }
 
 // EmployeeIDEQ applies the EQ predicate on the "employee_id" field.
-func EmployeeIDEQ(v int) predicate.Availability {
+func EmployeeIDEQ(v uuid.UUID) predicate.Availability {
 	return predicate.Availability(sql.FieldEQ(FieldEmployeeID, v))
 }
 
 // EmployeeIDNEQ applies the NEQ predicate on the "employee_id" field.
-func EmployeeIDNEQ(v int) predicate.Availability {
+func EmployeeIDNEQ(v uuid.UUID) predicate.Availability {
 	return predicate.Availability(sql.FieldNEQ(FieldEmployeeID, v))
 }
 
 // EmployeeIDIn applies the In predicate on the "employee_id" field.
-func EmployeeIDIn(vs ...int) predicate.Availability {
+func EmployeeIDIn(vs ...uuid.UUID) predicate.Availability {
 	return predicate.Availability(sql.FieldIn(FieldEmployeeID, vs...))
 }
 
 // EmployeeIDNotIn applies the NotIn predicate on the "employee_id" field.
-func EmployeeIDNotIn(vs ...int) predicate.Availability {
+func EmployeeIDNotIn(vs ...uuid.UUID) predicate.Availability {
 	return predicate.Availability(sql.FieldNotIn(FieldEmployeeID, vs...))
 }
 
@@ -180,254 +161,69 @@ func WeekStartLTE(v time.Time) predicate.Availability {
 	return predicate.Availability(sql.FieldLTE(FieldWeekStart, v))
 }
 
-// StartsAtEQ applies the EQ predicate on the "starts_at" field.
-func StartsAtEQ(v time.Time) predicate.Availability {
-	return predicate.Availability(sql.FieldEQ(FieldStartsAt, v))
+// RawMessageEQ applies the EQ predicate on the "raw_message" field.
+func RawMessageEQ(v string) predicate.Availability {
+	return predicate.Availability(sql.FieldEQ(FieldRawMessage, v))
 }
 
-// StartsAtNEQ applies the NEQ predicate on the "starts_at" field.
-func StartsAtNEQ(v time.Time) predicate.Availability {
-	return predicate.Availability(sql.FieldNEQ(FieldStartsAt, v))
+// RawMessageNEQ applies the NEQ predicate on the "raw_message" field.
+func RawMessageNEQ(v string) predicate.Availability {
+	return predicate.Availability(sql.FieldNEQ(FieldRawMessage, v))
 }
 
-// StartsAtIn applies the In predicate on the "starts_at" field.
-func StartsAtIn(vs ...time.Time) predicate.Availability {
-	return predicate.Availability(sql.FieldIn(FieldStartsAt, vs...))
+// RawMessageIn applies the In predicate on the "raw_message" field.
+func RawMessageIn(vs ...string) predicate.Availability {
+	return predicate.Availability(sql.FieldIn(FieldRawMessage, vs...))
 }
 
-// StartsAtNotIn applies the NotIn predicate on the "starts_at" field.
-func StartsAtNotIn(vs ...time.Time) predicate.Availability {
-	return predicate.Availability(sql.FieldNotIn(FieldStartsAt, vs...))
+// RawMessageNotIn applies the NotIn predicate on the "raw_message" field.
+func RawMessageNotIn(vs ...string) predicate.Availability {
+	return predicate.Availability(sql.FieldNotIn(FieldRawMessage, vs...))
 }
 
-// StartsAtGT applies the GT predicate on the "starts_at" field.
-func StartsAtGT(v time.Time) predicate.Availability {
-	return predicate.Availability(sql.FieldGT(FieldStartsAt, v))
+// RawMessageGT applies the GT predicate on the "raw_message" field.
+func RawMessageGT(v string) predicate.Availability {
+	return predicate.Availability(sql.FieldGT(FieldRawMessage, v))
 }
 
-// StartsAtGTE applies the GTE predicate on the "starts_at" field.
-func StartsAtGTE(v time.Time) predicate.Availability {
-	return predicate.Availability(sql.FieldGTE(FieldStartsAt, v))
+// RawMessageGTE applies the GTE predicate on the "raw_message" field.
+func RawMessageGTE(v string) predicate.Availability {
+	return predicate.Availability(sql.FieldGTE(FieldRawMessage, v))
 }
 
-// StartsAtLT applies the LT predicate on the "starts_at" field.
-func StartsAtLT(v time.Time) predicate.Availability {
-	return predicate.Availability(sql.FieldLT(FieldStartsAt, v))
+// RawMessageLT applies the LT predicate on the "raw_message" field.
+func RawMessageLT(v string) predicate.Availability {
+	return predicate.Availability(sql.FieldLT(FieldRawMessage, v))
 }
 
-// StartsAtLTE applies the LTE predicate on the "starts_at" field.
-func StartsAtLTE(v time.Time) predicate.Availability {
-	return predicate.Availability(sql.FieldLTE(FieldStartsAt, v))
+// RawMessageLTE applies the LTE predicate on the "raw_message" field.
+func RawMessageLTE(v string) predicate.Availability {
+	return predicate.Availability(sql.FieldLTE(FieldRawMessage, v))
 }
 
-// EndsAtEQ applies the EQ predicate on the "ends_at" field.
-func EndsAtEQ(v time.Time) predicate.Availability {
-	return predicate.Availability(sql.FieldEQ(FieldEndsAt, v))
+// RawMessageContains applies the Contains predicate on the "raw_message" field.
+func RawMessageContains(v string) predicate.Availability {
+	return predicate.Availability(sql.FieldContains(FieldRawMessage, v))
 }
 
-// EndsAtNEQ applies the NEQ predicate on the "ends_at" field.
-func EndsAtNEQ(v time.Time) predicate.Availability {
-	return predicate.Availability(sql.FieldNEQ(FieldEndsAt, v))
+// RawMessageHasPrefix applies the HasPrefix predicate on the "raw_message" field.
+func RawMessageHasPrefix(v string) predicate.Availability {
+	return predicate.Availability(sql.FieldHasPrefix(FieldRawMessage, v))
 }
 
-// EndsAtIn applies the In predicate on the "ends_at" field.
-func EndsAtIn(vs ...time.Time) predicate.Availability {
-	return predicate.Availability(sql.FieldIn(FieldEndsAt, vs...))
+// RawMessageHasSuffix applies the HasSuffix predicate on the "raw_message" field.
+func RawMessageHasSuffix(v string) predicate.Availability {
+	return predicate.Availability(sql.FieldHasSuffix(FieldRawMessage, v))
 }
 
-// EndsAtNotIn applies the NotIn predicate on the "ends_at" field.
-func EndsAtNotIn(vs ...time.Time) predicate.Availability {
-	return predicate.Availability(sql.FieldNotIn(FieldEndsAt, vs...))
+// RawMessageEqualFold applies the EqualFold predicate on the "raw_message" field.
+func RawMessageEqualFold(v string) predicate.Availability {
+	return predicate.Availability(sql.FieldEqualFold(FieldRawMessage, v))
 }
 
-// EndsAtGT applies the GT predicate on the "ends_at" field.
-func EndsAtGT(v time.Time) predicate.Availability {
-	return predicate.Availability(sql.FieldGT(FieldEndsAt, v))
-}
-
-// EndsAtGTE applies the GTE predicate on the "ends_at" field.
-func EndsAtGTE(v time.Time) predicate.Availability {
-	return predicate.Availability(sql.FieldGTE(FieldEndsAt, v))
-}
-
-// EndsAtLT applies the LT predicate on the "ends_at" field.
-func EndsAtLT(v time.Time) predicate.Availability {
-	return predicate.Availability(sql.FieldLT(FieldEndsAt, v))
-}
-
-// EndsAtLTE applies the LTE predicate on the "ends_at" field.
-func EndsAtLTE(v time.Time) predicate.Availability {
-	return predicate.Availability(sql.FieldLTE(FieldEndsAt, v))
-}
-
-// PreferenceEQ applies the EQ predicate on the "preference" field.
-func PreferenceEQ(v int) predicate.Availability {
-	return predicate.Availability(sql.FieldEQ(FieldPreference, v))
-}
-
-// PreferenceNEQ applies the NEQ predicate on the "preference" field.
-func PreferenceNEQ(v int) predicate.Availability {
-	return predicate.Availability(sql.FieldNEQ(FieldPreference, v))
-}
-
-// PreferenceIn applies the In predicate on the "preference" field.
-func PreferenceIn(vs ...int) predicate.Availability {
-	return predicate.Availability(sql.FieldIn(FieldPreference, vs...))
-}
-
-// PreferenceNotIn applies the NotIn predicate on the "preference" field.
-func PreferenceNotIn(vs ...int) predicate.Availability {
-	return predicate.Availability(sql.FieldNotIn(FieldPreference, vs...))
-}
-
-// PreferenceGT applies the GT predicate on the "preference" field.
-func PreferenceGT(v int) predicate.Availability {
-	return predicate.Availability(sql.FieldGT(FieldPreference, v))
-}
-
-// PreferenceGTE applies the GTE predicate on the "preference" field.
-func PreferenceGTE(v int) predicate.Availability {
-	return predicate.Availability(sql.FieldGTE(FieldPreference, v))
-}
-
-// PreferenceLT applies the LT predicate on the "preference" field.
-func PreferenceLT(v int) predicate.Availability {
-	return predicate.Availability(sql.FieldLT(FieldPreference, v))
-}
-
-// PreferenceLTE applies the LTE predicate on the "preference" field.
-func PreferenceLTE(v int) predicate.Availability {
-	return predicate.Availability(sql.FieldLTE(FieldPreference, v))
-}
-
-// NoteEQ applies the EQ predicate on the "note" field.
-func NoteEQ(v string) predicate.Availability {
-	return predicate.Availability(sql.FieldEQ(FieldNote, v))
-}
-
-// NoteNEQ applies the NEQ predicate on the "note" field.
-func NoteNEQ(v string) predicate.Availability {
-	return predicate.Availability(sql.FieldNEQ(FieldNote, v))
-}
-
-// NoteIn applies the In predicate on the "note" field.
-func NoteIn(vs ...string) predicate.Availability {
-	return predicate.Availability(sql.FieldIn(FieldNote, vs...))
-}
-
-// NoteNotIn applies the NotIn predicate on the "note" field.
-func NoteNotIn(vs ...string) predicate.Availability {
-	return predicate.Availability(sql.FieldNotIn(FieldNote, vs...))
-}
-
-// NoteGT applies the GT predicate on the "note" field.
-func NoteGT(v string) predicate.Availability {
-	return predicate.Availability(sql.FieldGT(FieldNote, v))
-}
-
-// NoteGTE applies the GTE predicate on the "note" field.
-func NoteGTE(v string) predicate.Availability {
-	return predicate.Availability(sql.FieldGTE(FieldNote, v))
-}
-
-// NoteLT applies the LT predicate on the "note" field.
-func NoteLT(v string) predicate.Availability {
-	return predicate.Availability(sql.FieldLT(FieldNote, v))
-}
-
-// NoteLTE applies the LTE predicate on the "note" field.
-func NoteLTE(v string) predicate.Availability {
-	return predicate.Availability(sql.FieldLTE(FieldNote, v))
-}
-
-// NoteContains applies the Contains predicate on the "note" field.
-func NoteContains(v string) predicate.Availability {
-	return predicate.Availability(sql.FieldContains(FieldNote, v))
-}
-
-// NoteHasPrefix applies the HasPrefix predicate on the "note" field.
-func NoteHasPrefix(v string) predicate.Availability {
-	return predicate.Availability(sql.FieldHasPrefix(FieldNote, v))
-}
-
-// NoteHasSuffix applies the HasSuffix predicate on the "note" field.
-func NoteHasSuffix(v string) predicate.Availability {
-	return predicate.Availability(sql.FieldHasSuffix(FieldNote, v))
-}
-
-// NoteEqualFold applies the EqualFold predicate on the "note" field.
-func NoteEqualFold(v string) predicate.Availability {
-	return predicate.Availability(sql.FieldEqualFold(FieldNote, v))
-}
-
-// NoteContainsFold applies the ContainsFold predicate on the "note" field.
-func NoteContainsFold(v string) predicate.Availability {
-	return predicate.Availability(sql.FieldContainsFold(FieldNote, v))
-}
-
-// RawTextEQ applies the EQ predicate on the "raw_text" field.
-func RawTextEQ(v string) predicate.Availability {
-	return predicate.Availability(sql.FieldEQ(FieldRawText, v))
-}
-
-// RawTextNEQ applies the NEQ predicate on the "raw_text" field.
-func RawTextNEQ(v string) predicate.Availability {
-	return predicate.Availability(sql.FieldNEQ(FieldRawText, v))
-}
-
-// RawTextIn applies the In predicate on the "raw_text" field.
-func RawTextIn(vs ...string) predicate.Availability {
-	return predicate.Availability(sql.FieldIn(FieldRawText, vs...))
-}
-
-// RawTextNotIn applies the NotIn predicate on the "raw_text" field.
-func RawTextNotIn(vs ...string) predicate.Availability {
-	return predicate.Availability(sql.FieldNotIn(FieldRawText, vs...))
-}
-
-// RawTextGT applies the GT predicate on the "raw_text" field.
-func RawTextGT(v string) predicate.Availability {
-	return predicate.Availability(sql.FieldGT(FieldRawText, v))
-}
-
-// RawTextGTE applies the GTE predicate on the "raw_text" field.
-func RawTextGTE(v string) predicate.Availability {
-	return predicate.Availability(sql.FieldGTE(FieldRawText, v))
-}
-
-// RawTextLT applies the LT predicate on the "raw_text" field.
-func RawTextLT(v string) predicate.Availability {
-	return predicate.Availability(sql.FieldLT(FieldRawText, v))
-}
-
-// RawTextLTE applies the LTE predicate on the "raw_text" field.
-func RawTextLTE(v string) predicate.Availability {
-	return predicate.Availability(sql.FieldLTE(FieldRawText, v))
-}
-
-// RawTextContains applies the Contains predicate on the "raw_text" field.
-func RawTextContains(v string) predicate.Availability {
-	return predicate.Availability(sql.FieldContains(FieldRawText, v))
-}
-
-// RawTextHasPrefix applies the HasPrefix predicate on the "raw_text" field.
-func RawTextHasPrefix(v string) predicate.Availability {
-	return predicate.Availability(sql.FieldHasPrefix(FieldRawText, v))
-}
-
-// RawTextHasSuffix applies the HasSuffix predicate on the "raw_text" field.
-func RawTextHasSuffix(v string) predicate.Availability {
-	return predicate.Availability(sql.FieldHasSuffix(FieldRawText, v))
-}
-
-// RawTextEqualFold applies the EqualFold predicate on the "raw_text" field.
-func RawTextEqualFold(v string) predicate.Availability {
-	return predicate.Availability(sql.FieldEqualFold(FieldRawText, v))
-}
-
-// RawTextContainsFold applies the ContainsFold predicate on the "raw_text" field.
-func RawTextContainsFold(v string) predicate.Availability {
-	return predicate.Availability(sql.FieldContainsFold(FieldRawText, v))
+// RawMessageContainsFold applies the ContainsFold predicate on the "raw_message" field.
+func RawMessageContainsFold(v string) predicate.Availability {
+	return predicate.Availability(sql.FieldContainsFold(FieldRawMessage, v))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.

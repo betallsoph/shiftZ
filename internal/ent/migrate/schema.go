@@ -10,16 +10,13 @@ import (
 var (
 	// AvailabilitiesColumns holds the columns for the "availabilities" table.
 	AvailabilitiesColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "id", Type: field.TypeUUID},
 		{Name: "week_start", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "date"}},
-		{Name: "starts_at", Type: field.TypeTime},
-		{Name: "ends_at", Type: field.TypeTime},
-		{Name: "preference", Type: field.TypeInt, Default: 1},
-		{Name: "note", Type: field.TypeString, Default: ""},
-		{Name: "raw_text", Type: field.TypeString, Size: 2147483647, Default: ""},
+		{Name: "slots", Type: field.TypeJSON},
+		{Name: "raw_message", Type: field.TypeString, Size: 2147483647, Default: ""},
 		{Name: "created_at", Type: field.TypeTime},
-		{Name: "employee_id", Type: field.TypeInt},
-		{Name: "shop_id", Type: field.TypeInt},
+		{Name: "employee_id", Type: field.TypeUUID},
+		{Name: "shop_id", Type: field.TypeUUID},
 	}
 	// AvailabilitiesTable holds the schema information for the "availabilities" table.
 	AvailabilitiesTable = &schema.Table{
@@ -28,40 +25,41 @@ var (
 		PrimaryKey: []*schema.Column{AvailabilitiesColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "availabilities_employees_availability",
-				Columns:    []*schema.Column{AvailabilitiesColumns[8]},
+				Symbol:     "availabilities_employees_availabilities",
+				Columns:    []*schema.Column{AvailabilitiesColumns[5]},
 				RefColumns: []*schema.Column{EmployeesColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:     "availabilities_shops_availability",
-				Columns:    []*schema.Column{AvailabilitiesColumns[9]},
+				Symbol:     "availabilities_shops_availabilities",
+				Columns:    []*schema.Column{AvailabilitiesColumns[6]},
 				RefColumns: []*schema.Column{ShopsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 		},
 		Indexes: []*schema.Index{
 			{
-				Name:    "availability_shop_id_week_start",
-				Unique:  false,
-				Columns: []*schema.Column{AvailabilitiesColumns[9], AvailabilitiesColumns[1]},
+				Name:    "availability_shop_id_employee_id_week_start",
+				Unique:  true,
+				Columns: []*schema.Column{AvailabilitiesColumns[6], AvailabilitiesColumns[5], AvailabilitiesColumns[1]},
 			},
 			{
-				Name:    "availability_employee_id_week_start",
+				Name:    "availability_shop_id_week_start",
 				Unique:  false,
-				Columns: []*schema.Column{AvailabilitiesColumns[8], AvailabilitiesColumns[1]},
+				Columns: []*schema.Column{AvailabilitiesColumns[6], AvailabilitiesColumns[1]},
 			},
 		},
 	}
 	// EmployeesColumns holds the columns for the "employees" table.
 	EmployeesColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "id", Type: field.TypeUUID},
 		{Name: "telegram_user_id", Type: field.TypeInt64},
 		{Name: "display_name", Type: field.TypeString},
+		{Name: "role", Type: field.TypeString, Default: ""},
 		{Name: "max_hours_per_week", Type: field.TypeFloat64, Default: 40},
-		{Name: "active", Type: field.TypeBool, Default: true},
+		{Name: "is_active", Type: field.TypeBool, Default: true},
 		{Name: "created_at", Type: field.TypeTime},
-		{Name: "shop_id", Type: field.TypeInt},
+		{Name: "shop_id", Type: field.TypeUUID},
 	}
 	// EmployeesTable holds the schema information for the "employees" table.
 	EmployeesTable = &schema.Table{
@@ -71,7 +69,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "employees_shops_employees",
-				Columns:    []*schema.Column{EmployeesColumns[6]},
+				Columns:    []*schema.Column{EmployeesColumns[7]},
 				RefColumns: []*schema.Column{ShopsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
@@ -80,7 +78,12 @@ var (
 			{
 				Name:    "employee_shop_id_telegram_user_id",
 				Unique:  true,
-				Columns: []*schema.Column{EmployeesColumns[6], EmployeesColumns[1]},
+				Columns: []*schema.Column{EmployeesColumns[7], EmployeesColumns[1]},
+			},
+			{
+				Name:    "employee_shop_id_is_active",
+				Unique:  false,
+				Columns: []*schema.Column{EmployeesColumns[7], EmployeesColumns[5]},
 			},
 			{
 				Name:    "employee_telegram_user_id",
@@ -91,14 +94,13 @@ var (
 	}
 	// RulesColumns holds the columns for the "rules" table.
 	RulesColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "kind", Type: field.TypeString},
-		{Name: "params", Type: field.TypeJSON, Nullable: true},
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "description", Type: field.TypeString, Size: 2147483647, Default: ""},
+		{Name: "rule_json", Type: field.TypeJSON, Nullable: true},
 		{Name: "weight", Type: field.TypeFloat64, Default: 1},
-		{Name: "source_text", Type: field.TypeString, Size: 2147483647, Default: ""},
-		{Name: "active", Type: field.TypeBool, Default: true},
+		{Name: "is_active", Type: field.TypeBool, Default: true},
 		{Name: "created_at", Type: field.TypeTime},
-		{Name: "shop_id", Type: field.TypeInt},
+		{Name: "shop_id", Type: field.TypeUUID},
 	}
 	// RulesTable holds the schema information for the "rules" table.
 	RulesTable = &schema.Table{
@@ -108,28 +110,28 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "rules_shops_rules",
-				Columns:    []*schema.Column{RulesColumns[7]},
+				Columns:    []*schema.Column{RulesColumns[6]},
 				RefColumns: []*schema.Column{ShopsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 		},
 		Indexes: []*schema.Index{
 			{
-				Name:    "rule_shop_id_active",
+				Name:    "rule_shop_id_is_active",
 				Unique:  false,
-				Columns: []*schema.Column{RulesColumns[7], RulesColumns[5]},
+				Columns: []*schema.Column{RulesColumns[6], RulesColumns[4]},
 			},
 		},
 	}
 	// SchedulesColumns holds the columns for the "schedules" table.
 	SchedulesColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "id", Type: field.TypeUUID},
 		{Name: "week_start", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "date"}},
-		{Name: "label", Type: field.TypeString, Default: ""},
-		{Name: "status", Type: field.TypeEnum, Enums: []string{"draft", "voting", "final", "vetoed"}, Default: "draft"},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"draft", "voting", "approved", "published"}, Default: "draft"},
+		{Name: "variant_label", Type: field.TypeString, Default: ""},
 		{Name: "score", Type: field.TypeFloat64, Default: 0},
 		{Name: "created_at", Type: field.TypeTime},
-		{Name: "shop_id", Type: field.TypeInt},
+		{Name: "shop_id", Type: field.TypeUUID},
 	}
 	// SchedulesTable holds the schema information for the "schedules" table.
 	SchedulesTable = &schema.Table{
@@ -154,11 +156,12 @@ var (
 	}
 	// ScheduleAssignmentsColumns holds the columns for the "schedule_assignments" table.
 	ScheduleAssignmentsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "employee_id", Type: field.TypeInt},
-		{Name: "schedule_id", Type: field.TypeInt},
-		{Name: "shift_id", Type: field.TypeInt},
-		{Name: "shop_id", Type: field.TypeInt},
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "date", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "date"}},
+		{Name: "employee_id", Type: field.TypeUUID},
+		{Name: "schedule_id", Type: field.TypeUUID},
+		{Name: "shop_id", Type: field.TypeUUID},
+		{Name: "shift_id", Type: field.TypeUUID},
 	}
 	// ScheduleAssignmentsTable holds the schema information for the "schedule_assignments" table.
 	ScheduleAssignmentsTable = &schema.Table{
@@ -168,49 +171,50 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "schedule_assignments_employees_assignments",
-				Columns:    []*schema.Column{ScheduleAssignmentsColumns[1]},
+				Columns:    []*schema.Column{ScheduleAssignmentsColumns[2]},
 				RefColumns: []*schema.Column{EmployeesColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "schedule_assignments_schedules_assignments",
-				Columns:    []*schema.Column{ScheduleAssignmentsColumns[2]},
+				Columns:    []*schema.Column{ScheduleAssignmentsColumns[3]},
 				RefColumns: []*schema.Column{SchedulesColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:     "schedule_assignments_shifts_assignments",
-				Columns:    []*schema.Column{ScheduleAssignmentsColumns[3]},
-				RefColumns: []*schema.Column{ShiftsColumns[0]},
+				Symbol:     "schedule_assignments_shops_shop",
+				Columns:    []*schema.Column{ScheduleAssignmentsColumns[4]},
+				RefColumns: []*schema.Column{ShopsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:     "schedule_assignments_shops_assignments",
-				Columns:    []*schema.Column{ScheduleAssignmentsColumns[4]},
-				RefColumns: []*schema.Column{ShopsColumns[0]},
+				Symbol:     "schedule_assignments_shifts_assignments",
+				Columns:    []*schema.Column{ScheduleAssignmentsColumns[5]},
+				RefColumns: []*schema.Column{ShiftsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 		},
 		Indexes: []*schema.Index{
 			{
-				Name:    "scheduleassignment_schedule_id_shift_id_employee_id",
-				Unique:  true,
-				Columns: []*schema.Column{ScheduleAssignmentsColumns[2], ScheduleAssignmentsColumns[3], ScheduleAssignmentsColumns[1]},
+				Name:    "scheduleassignment_shop_id_schedule_id",
+				Unique:  false,
+				Columns: []*schema.Column{ScheduleAssignmentsColumns[4], ScheduleAssignmentsColumns[3]},
 			},
 			{
-				Name:    "scheduleassignment_schedule_id",
+				Name:    "scheduleassignment_shop_id_employee_id_date",
 				Unique:  false,
-				Columns: []*schema.Column{ScheduleAssignmentsColumns[2]},
+				Columns: []*schema.Column{ScheduleAssignmentsColumns[4], ScheduleAssignmentsColumns[2], ScheduleAssignmentsColumns[1]},
 			},
 		},
 	}
 	// ScheduleVotesColumns holds the columns for the "schedule_votes" table.
 	ScheduleVotesColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "week_start", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "date"}},
 		{Name: "created_at", Type: field.TypeTime},
-		{Name: "employee_id", Type: field.TypeInt},
-		{Name: "schedule_id", Type: field.TypeInt},
-		{Name: "shop_id", Type: field.TypeInt},
+		{Name: "employee_id", Type: field.TypeUUID},
+		{Name: "schedule_id", Type: field.TypeUUID},
+		{Name: "shop_id", Type: field.TypeUUID},
 	}
 	// ScheduleVotesTable holds the schema information for the "schedule_votes" table.
 	ScheduleVotesTable = &schema.Table{
@@ -220,46 +224,46 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "schedule_votes_employees_votes",
-				Columns:    []*schema.Column{ScheduleVotesColumns[2]},
+				Columns:    []*schema.Column{ScheduleVotesColumns[3]},
 				RefColumns: []*schema.Column{EmployeesColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "schedule_votes_schedules_votes",
-				Columns:    []*schema.Column{ScheduleVotesColumns[3]},
+				Columns:    []*schema.Column{ScheduleVotesColumns[4]},
 				RefColumns: []*schema.Column{SchedulesColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:     "schedule_votes_shops_votes",
-				Columns:    []*schema.Column{ScheduleVotesColumns[4]},
+				Symbol:     "schedule_votes_shops_shop",
+				Columns:    []*schema.Column{ScheduleVotesColumns[5]},
 				RefColumns: []*schema.Column{ShopsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 		},
 		Indexes: []*schema.Index{
 			{
-				Name:    "schedulevote_schedule_id_employee_id",
+				Name:    "schedulevote_shop_id_employee_id_week_start",
 				Unique:  true,
-				Columns: []*schema.Column{ScheduleVotesColumns[3], ScheduleVotesColumns[2]},
+				Columns: []*schema.Column{ScheduleVotesColumns[5], ScheduleVotesColumns[3], ScheduleVotesColumns[1]},
 			},
 			{
-				Name:    "schedulevote_shop_id",
+				Name:    "schedulevote_shop_id_schedule_id",
 				Unique:  false,
-				Columns: []*schema.Column{ScheduleVotesColumns[4]},
+				Columns: []*schema.Column{ScheduleVotesColumns[5], ScheduleVotesColumns[4]},
 			},
 		},
 	}
 	// ShiftsColumns holds the columns for the "shifts" table.
 	ShiftsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "role", Type: field.TypeString, Default: ""},
-		{Name: "starts_at", Type: field.TypeTime},
-		{Name: "ends_at", Type: field.TypeTime},
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "name", Type: field.TypeString},
+		{Name: "weekday", Type: field.TypeInt},
+		{Name: "start_time", Type: field.TypeString},
+		{Name: "end_time", Type: field.TypeString},
 		{Name: "min_staff", Type: field.TypeInt, Default: 1},
 		{Name: "max_staff", Type: field.TypeInt, Default: 1},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "shop_id", Type: field.TypeInt},
+		{Name: "shop_id", Type: field.TypeUUID},
 	}
 	// ShiftsTable holds the schema information for the "shifts" table.
 	ShiftsTable = &schema.Table{
@@ -274,21 +278,15 @@ var (
 				OnDelete:   schema.Cascade,
 			},
 		},
-		Indexes: []*schema.Index{
-			{
-				Name:    "shift_shop_id_starts_at",
-				Unique:  false,
-				Columns: []*schema.Column{ShiftsColumns[7], ShiftsColumns[2]},
-			},
-		},
 	}
 	// ShopsColumns holds the columns for the "shops" table.
 	ShopsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "id", Type: field.TypeUUID},
 		{Name: "name", Type: field.TypeString},
 		{Name: "timezone", Type: field.TypeString, Default: "UTC"},
 		{Name: "invite_code", Type: field.TypeString, Unique: true},
-		{Name: "owner_telegram_id", Type: field.TypeInt64},
+		{Name: "telegram_group_id", Type: field.TypeInt64},
+		{Name: "plan", Type: field.TypeString, Default: "free"},
 		{Name: "created_at", Type: field.TypeTime},
 	}
 	// ShopsTable holds the schema information for the "shops" table.
@@ -318,8 +316,8 @@ func init() {
 	SchedulesTable.ForeignKeys[0].RefTable = ShopsTable
 	ScheduleAssignmentsTable.ForeignKeys[0].RefTable = EmployeesTable
 	ScheduleAssignmentsTable.ForeignKeys[1].RefTable = SchedulesTable
-	ScheduleAssignmentsTable.ForeignKeys[2].RefTable = ShiftsTable
-	ScheduleAssignmentsTable.ForeignKeys[3].RefTable = ShopsTable
+	ScheduleAssignmentsTable.ForeignKeys[2].RefTable = ShopsTable
+	ScheduleAssignmentsTable.ForeignKeys[3].RefTable = ShiftsTable
 	ScheduleVotesTable.ForeignKeys[0].RefTable = EmployeesTable
 	ScheduleVotesTable.ForeignKeys[1].RefTable = SchedulesTable
 	ScheduleVotesTable.ForeignKeys[2].RefTable = ShopsTable

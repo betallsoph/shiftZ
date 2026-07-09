@@ -16,6 +16,7 @@ import (
 	"github.com/betallsoph/shiftz/internal/ent/scheduleassignment"
 	"github.com/betallsoph/shiftz/internal/ent/schedulevote"
 	"github.com/betallsoph/shiftz/internal/ent/shop"
+	"github.com/google/uuid"
 )
 
 // EmployeeUpdate is the builder for updating Employee entities.
@@ -32,13 +33,13 @@ func (_u *EmployeeUpdate) Where(ps ...predicate.Employee) *EmployeeUpdate {
 }
 
 // SetShopID sets the "shop_id" field.
-func (_u *EmployeeUpdate) SetShopID(v int) *EmployeeUpdate {
+func (_u *EmployeeUpdate) SetShopID(v uuid.UUID) *EmployeeUpdate {
 	_u.mutation.SetShopID(v)
 	return _u
 }
 
 // SetNillableShopID sets the "shop_id" field if the given value is not nil.
-func (_u *EmployeeUpdate) SetNillableShopID(v *int) *EmployeeUpdate {
+func (_u *EmployeeUpdate) SetNillableShopID(v *uuid.UUID) *EmployeeUpdate {
 	if v != nil {
 		_u.SetShopID(*v)
 	}
@@ -80,6 +81,20 @@ func (_u *EmployeeUpdate) SetNillableDisplayName(v *string) *EmployeeUpdate {
 	return _u
 }
 
+// SetRole sets the "role" field.
+func (_u *EmployeeUpdate) SetRole(v string) *EmployeeUpdate {
+	_u.mutation.SetRole(v)
+	return _u
+}
+
+// SetNillableRole sets the "role" field if the given value is not nil.
+func (_u *EmployeeUpdate) SetNillableRole(v *string) *EmployeeUpdate {
+	if v != nil {
+		_u.SetRole(*v)
+	}
+	return _u
+}
+
 // SetMaxHoursPerWeek sets the "max_hours_per_week" field.
 func (_u *EmployeeUpdate) SetMaxHoursPerWeek(v float64) *EmployeeUpdate {
 	_u.mutation.ResetMaxHoursPerWeek()
@@ -101,16 +116,16 @@ func (_u *EmployeeUpdate) AddMaxHoursPerWeek(v float64) *EmployeeUpdate {
 	return _u
 }
 
-// SetActive sets the "active" field.
-func (_u *EmployeeUpdate) SetActive(v bool) *EmployeeUpdate {
-	_u.mutation.SetActive(v)
+// SetIsActive sets the "is_active" field.
+func (_u *EmployeeUpdate) SetIsActive(v bool) *EmployeeUpdate {
+	_u.mutation.SetIsActive(v)
 	return _u
 }
 
-// SetNillableActive sets the "active" field if the given value is not nil.
-func (_u *EmployeeUpdate) SetNillableActive(v *bool) *EmployeeUpdate {
+// SetNillableIsActive sets the "is_active" field if the given value is not nil.
+func (_u *EmployeeUpdate) SetNillableIsActive(v *bool) *EmployeeUpdate {
 	if v != nil {
-		_u.SetActive(*v)
+		_u.SetIsActive(*v)
 	}
 	return _u
 }
@@ -120,15 +135,15 @@ func (_u *EmployeeUpdate) SetShop(v *Shop) *EmployeeUpdate {
 	return _u.SetShopID(v.ID)
 }
 
-// AddAvailabilityIDs adds the "availability" edge to the Availability entity by IDs.
-func (_u *EmployeeUpdate) AddAvailabilityIDs(ids ...int) *EmployeeUpdate {
+// AddAvailabilityIDs adds the "availabilities" edge to the Availability entity by IDs.
+func (_u *EmployeeUpdate) AddAvailabilityIDs(ids ...uuid.UUID) *EmployeeUpdate {
 	_u.mutation.AddAvailabilityIDs(ids...)
 	return _u
 }
 
-// AddAvailability adds the "availability" edges to the Availability entity.
-func (_u *EmployeeUpdate) AddAvailability(v ...*Availability) *EmployeeUpdate {
-	ids := make([]int, len(v))
+// AddAvailabilities adds the "availabilities" edges to the Availability entity.
+func (_u *EmployeeUpdate) AddAvailabilities(v ...*Availability) *EmployeeUpdate {
+	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
@@ -136,14 +151,14 @@ func (_u *EmployeeUpdate) AddAvailability(v ...*Availability) *EmployeeUpdate {
 }
 
 // AddAssignmentIDs adds the "assignments" edge to the ScheduleAssignment entity by IDs.
-func (_u *EmployeeUpdate) AddAssignmentIDs(ids ...int) *EmployeeUpdate {
+func (_u *EmployeeUpdate) AddAssignmentIDs(ids ...uuid.UUID) *EmployeeUpdate {
 	_u.mutation.AddAssignmentIDs(ids...)
 	return _u
 }
 
 // AddAssignments adds the "assignments" edges to the ScheduleAssignment entity.
 func (_u *EmployeeUpdate) AddAssignments(v ...*ScheduleAssignment) *EmployeeUpdate {
-	ids := make([]int, len(v))
+	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
@@ -151,14 +166,14 @@ func (_u *EmployeeUpdate) AddAssignments(v ...*ScheduleAssignment) *EmployeeUpda
 }
 
 // AddVoteIDs adds the "votes" edge to the ScheduleVote entity by IDs.
-func (_u *EmployeeUpdate) AddVoteIDs(ids ...int) *EmployeeUpdate {
+func (_u *EmployeeUpdate) AddVoteIDs(ids ...uuid.UUID) *EmployeeUpdate {
 	_u.mutation.AddVoteIDs(ids...)
 	return _u
 }
 
 // AddVotes adds the "votes" edges to the ScheduleVote entity.
 func (_u *EmployeeUpdate) AddVotes(v ...*ScheduleVote) *EmployeeUpdate {
-	ids := make([]int, len(v))
+	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
@@ -176,21 +191,21 @@ func (_u *EmployeeUpdate) ClearShop() *EmployeeUpdate {
 	return _u
 }
 
-// ClearAvailability clears all "availability" edges to the Availability entity.
-func (_u *EmployeeUpdate) ClearAvailability() *EmployeeUpdate {
-	_u.mutation.ClearAvailability()
+// ClearAvailabilities clears all "availabilities" edges to the Availability entity.
+func (_u *EmployeeUpdate) ClearAvailabilities() *EmployeeUpdate {
+	_u.mutation.ClearAvailabilities()
 	return _u
 }
 
-// RemoveAvailabilityIDs removes the "availability" edge to Availability entities by IDs.
-func (_u *EmployeeUpdate) RemoveAvailabilityIDs(ids ...int) *EmployeeUpdate {
+// RemoveAvailabilityIDs removes the "availabilities" edge to Availability entities by IDs.
+func (_u *EmployeeUpdate) RemoveAvailabilityIDs(ids ...uuid.UUID) *EmployeeUpdate {
 	_u.mutation.RemoveAvailabilityIDs(ids...)
 	return _u
 }
 
-// RemoveAvailability removes "availability" edges to Availability entities.
-func (_u *EmployeeUpdate) RemoveAvailability(v ...*Availability) *EmployeeUpdate {
-	ids := make([]int, len(v))
+// RemoveAvailabilities removes "availabilities" edges to Availability entities.
+func (_u *EmployeeUpdate) RemoveAvailabilities(v ...*Availability) *EmployeeUpdate {
+	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
@@ -204,14 +219,14 @@ func (_u *EmployeeUpdate) ClearAssignments() *EmployeeUpdate {
 }
 
 // RemoveAssignmentIDs removes the "assignments" edge to ScheduleAssignment entities by IDs.
-func (_u *EmployeeUpdate) RemoveAssignmentIDs(ids ...int) *EmployeeUpdate {
+func (_u *EmployeeUpdate) RemoveAssignmentIDs(ids ...uuid.UUID) *EmployeeUpdate {
 	_u.mutation.RemoveAssignmentIDs(ids...)
 	return _u
 }
 
 // RemoveAssignments removes "assignments" edges to ScheduleAssignment entities.
 func (_u *EmployeeUpdate) RemoveAssignments(v ...*ScheduleAssignment) *EmployeeUpdate {
-	ids := make([]int, len(v))
+	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
@@ -225,14 +240,14 @@ func (_u *EmployeeUpdate) ClearVotes() *EmployeeUpdate {
 }
 
 // RemoveVoteIDs removes the "votes" edge to ScheduleVote entities by IDs.
-func (_u *EmployeeUpdate) RemoveVoteIDs(ids ...int) *EmployeeUpdate {
+func (_u *EmployeeUpdate) RemoveVoteIDs(ids ...uuid.UUID) *EmployeeUpdate {
 	_u.mutation.RemoveVoteIDs(ids...)
 	return _u
 }
 
 // RemoveVotes removes "votes" edges to ScheduleVote entities.
 func (_u *EmployeeUpdate) RemoveVotes(v ...*ScheduleVote) *EmployeeUpdate {
-	ids := make([]int, len(v))
+	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
@@ -278,7 +293,7 @@ func (_u *EmployeeUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
 	}
-	_spec := sqlgraph.NewUpdateSpec(employee.Table, employee.Columns, sqlgraph.NewFieldSpec(employee.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewUpdateSpec(employee.Table, employee.Columns, sqlgraph.NewFieldSpec(employee.FieldID, field.TypeUUID))
 	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -295,14 +310,17 @@ func (_u *EmployeeUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if value, ok := _u.mutation.DisplayName(); ok {
 		_spec.SetField(employee.FieldDisplayName, field.TypeString, value)
 	}
+	if value, ok := _u.mutation.Role(); ok {
+		_spec.SetField(employee.FieldRole, field.TypeString, value)
+	}
 	if value, ok := _u.mutation.MaxHoursPerWeek(); ok {
 		_spec.SetField(employee.FieldMaxHoursPerWeek, field.TypeFloat64, value)
 	}
 	if value, ok := _u.mutation.AddedMaxHoursPerWeek(); ok {
 		_spec.AddField(employee.FieldMaxHoursPerWeek, field.TypeFloat64, value)
 	}
-	if value, ok := _u.mutation.Active(); ok {
-		_spec.SetField(employee.FieldActive, field.TypeBool, value)
+	if value, ok := _u.mutation.IsActive(); ok {
+		_spec.SetField(employee.FieldIsActive, field.TypeBool, value)
 	}
 	if _u.mutation.ShopCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -312,7 +330,7 @@ func (_u *EmployeeUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Columns: []string{employee.ShopColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -325,7 +343,7 @@ func (_u *EmployeeUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Columns: []string{employee.ShopColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -333,28 +351,28 @@ func (_u *EmployeeUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.AvailabilityCleared() {
+	if _u.mutation.AvailabilitiesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   employee.AvailabilityTable,
-			Columns: []string{employee.AvailabilityColumn},
+			Table:   employee.AvailabilitiesTable,
+			Columns: []string{employee.AvailabilitiesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(availability.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(availability.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.RemovedAvailabilityIDs(); len(nodes) > 0 && !_u.mutation.AvailabilityCleared() {
+	if nodes := _u.mutation.RemovedAvailabilitiesIDs(); len(nodes) > 0 && !_u.mutation.AvailabilitiesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   employee.AvailabilityTable,
-			Columns: []string{employee.AvailabilityColumn},
+			Table:   employee.AvailabilitiesTable,
+			Columns: []string{employee.AvailabilitiesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(availability.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(availability.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -362,15 +380,15 @@ func (_u *EmployeeUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.AvailabilityIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.AvailabilitiesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   employee.AvailabilityTable,
-			Columns: []string{employee.AvailabilityColumn},
+			Table:   employee.AvailabilitiesTable,
+			Columns: []string{employee.AvailabilitiesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(availability.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(availability.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -386,7 +404,7 @@ func (_u *EmployeeUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Columns: []string{employee.AssignmentsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scheduleassignment.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scheduleassignment.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -399,7 +417,7 @@ func (_u *EmployeeUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Columns: []string{employee.AssignmentsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scheduleassignment.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scheduleassignment.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -415,7 +433,7 @@ func (_u *EmployeeUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Columns: []string{employee.AssignmentsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scheduleassignment.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scheduleassignment.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -431,7 +449,7 @@ func (_u *EmployeeUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Columns: []string{employee.VotesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(schedulevote.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(schedulevote.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -444,7 +462,7 @@ func (_u *EmployeeUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Columns: []string{employee.VotesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(schedulevote.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(schedulevote.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -460,7 +478,7 @@ func (_u *EmployeeUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Columns: []string{employee.VotesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(schedulevote.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(schedulevote.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -489,13 +507,13 @@ type EmployeeUpdateOne struct {
 }
 
 // SetShopID sets the "shop_id" field.
-func (_u *EmployeeUpdateOne) SetShopID(v int) *EmployeeUpdateOne {
+func (_u *EmployeeUpdateOne) SetShopID(v uuid.UUID) *EmployeeUpdateOne {
 	_u.mutation.SetShopID(v)
 	return _u
 }
 
 // SetNillableShopID sets the "shop_id" field if the given value is not nil.
-func (_u *EmployeeUpdateOne) SetNillableShopID(v *int) *EmployeeUpdateOne {
+func (_u *EmployeeUpdateOne) SetNillableShopID(v *uuid.UUID) *EmployeeUpdateOne {
 	if v != nil {
 		_u.SetShopID(*v)
 	}
@@ -537,6 +555,20 @@ func (_u *EmployeeUpdateOne) SetNillableDisplayName(v *string) *EmployeeUpdateOn
 	return _u
 }
 
+// SetRole sets the "role" field.
+func (_u *EmployeeUpdateOne) SetRole(v string) *EmployeeUpdateOne {
+	_u.mutation.SetRole(v)
+	return _u
+}
+
+// SetNillableRole sets the "role" field if the given value is not nil.
+func (_u *EmployeeUpdateOne) SetNillableRole(v *string) *EmployeeUpdateOne {
+	if v != nil {
+		_u.SetRole(*v)
+	}
+	return _u
+}
+
 // SetMaxHoursPerWeek sets the "max_hours_per_week" field.
 func (_u *EmployeeUpdateOne) SetMaxHoursPerWeek(v float64) *EmployeeUpdateOne {
 	_u.mutation.ResetMaxHoursPerWeek()
@@ -558,16 +590,16 @@ func (_u *EmployeeUpdateOne) AddMaxHoursPerWeek(v float64) *EmployeeUpdateOne {
 	return _u
 }
 
-// SetActive sets the "active" field.
-func (_u *EmployeeUpdateOne) SetActive(v bool) *EmployeeUpdateOne {
-	_u.mutation.SetActive(v)
+// SetIsActive sets the "is_active" field.
+func (_u *EmployeeUpdateOne) SetIsActive(v bool) *EmployeeUpdateOne {
+	_u.mutation.SetIsActive(v)
 	return _u
 }
 
-// SetNillableActive sets the "active" field if the given value is not nil.
-func (_u *EmployeeUpdateOne) SetNillableActive(v *bool) *EmployeeUpdateOne {
+// SetNillableIsActive sets the "is_active" field if the given value is not nil.
+func (_u *EmployeeUpdateOne) SetNillableIsActive(v *bool) *EmployeeUpdateOne {
 	if v != nil {
-		_u.SetActive(*v)
+		_u.SetIsActive(*v)
 	}
 	return _u
 }
@@ -577,15 +609,15 @@ func (_u *EmployeeUpdateOne) SetShop(v *Shop) *EmployeeUpdateOne {
 	return _u.SetShopID(v.ID)
 }
 
-// AddAvailabilityIDs adds the "availability" edge to the Availability entity by IDs.
-func (_u *EmployeeUpdateOne) AddAvailabilityIDs(ids ...int) *EmployeeUpdateOne {
+// AddAvailabilityIDs adds the "availabilities" edge to the Availability entity by IDs.
+func (_u *EmployeeUpdateOne) AddAvailabilityIDs(ids ...uuid.UUID) *EmployeeUpdateOne {
 	_u.mutation.AddAvailabilityIDs(ids...)
 	return _u
 }
 
-// AddAvailability adds the "availability" edges to the Availability entity.
-func (_u *EmployeeUpdateOne) AddAvailability(v ...*Availability) *EmployeeUpdateOne {
-	ids := make([]int, len(v))
+// AddAvailabilities adds the "availabilities" edges to the Availability entity.
+func (_u *EmployeeUpdateOne) AddAvailabilities(v ...*Availability) *EmployeeUpdateOne {
+	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
@@ -593,14 +625,14 @@ func (_u *EmployeeUpdateOne) AddAvailability(v ...*Availability) *EmployeeUpdate
 }
 
 // AddAssignmentIDs adds the "assignments" edge to the ScheduleAssignment entity by IDs.
-func (_u *EmployeeUpdateOne) AddAssignmentIDs(ids ...int) *EmployeeUpdateOne {
+func (_u *EmployeeUpdateOne) AddAssignmentIDs(ids ...uuid.UUID) *EmployeeUpdateOne {
 	_u.mutation.AddAssignmentIDs(ids...)
 	return _u
 }
 
 // AddAssignments adds the "assignments" edges to the ScheduleAssignment entity.
 func (_u *EmployeeUpdateOne) AddAssignments(v ...*ScheduleAssignment) *EmployeeUpdateOne {
-	ids := make([]int, len(v))
+	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
@@ -608,14 +640,14 @@ func (_u *EmployeeUpdateOne) AddAssignments(v ...*ScheduleAssignment) *EmployeeU
 }
 
 // AddVoteIDs adds the "votes" edge to the ScheduleVote entity by IDs.
-func (_u *EmployeeUpdateOne) AddVoteIDs(ids ...int) *EmployeeUpdateOne {
+func (_u *EmployeeUpdateOne) AddVoteIDs(ids ...uuid.UUID) *EmployeeUpdateOne {
 	_u.mutation.AddVoteIDs(ids...)
 	return _u
 }
 
 // AddVotes adds the "votes" edges to the ScheduleVote entity.
 func (_u *EmployeeUpdateOne) AddVotes(v ...*ScheduleVote) *EmployeeUpdateOne {
-	ids := make([]int, len(v))
+	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
@@ -633,21 +665,21 @@ func (_u *EmployeeUpdateOne) ClearShop() *EmployeeUpdateOne {
 	return _u
 }
 
-// ClearAvailability clears all "availability" edges to the Availability entity.
-func (_u *EmployeeUpdateOne) ClearAvailability() *EmployeeUpdateOne {
-	_u.mutation.ClearAvailability()
+// ClearAvailabilities clears all "availabilities" edges to the Availability entity.
+func (_u *EmployeeUpdateOne) ClearAvailabilities() *EmployeeUpdateOne {
+	_u.mutation.ClearAvailabilities()
 	return _u
 }
 
-// RemoveAvailabilityIDs removes the "availability" edge to Availability entities by IDs.
-func (_u *EmployeeUpdateOne) RemoveAvailabilityIDs(ids ...int) *EmployeeUpdateOne {
+// RemoveAvailabilityIDs removes the "availabilities" edge to Availability entities by IDs.
+func (_u *EmployeeUpdateOne) RemoveAvailabilityIDs(ids ...uuid.UUID) *EmployeeUpdateOne {
 	_u.mutation.RemoveAvailabilityIDs(ids...)
 	return _u
 }
 
-// RemoveAvailability removes "availability" edges to Availability entities.
-func (_u *EmployeeUpdateOne) RemoveAvailability(v ...*Availability) *EmployeeUpdateOne {
-	ids := make([]int, len(v))
+// RemoveAvailabilities removes "availabilities" edges to Availability entities.
+func (_u *EmployeeUpdateOne) RemoveAvailabilities(v ...*Availability) *EmployeeUpdateOne {
+	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
@@ -661,14 +693,14 @@ func (_u *EmployeeUpdateOne) ClearAssignments() *EmployeeUpdateOne {
 }
 
 // RemoveAssignmentIDs removes the "assignments" edge to ScheduleAssignment entities by IDs.
-func (_u *EmployeeUpdateOne) RemoveAssignmentIDs(ids ...int) *EmployeeUpdateOne {
+func (_u *EmployeeUpdateOne) RemoveAssignmentIDs(ids ...uuid.UUID) *EmployeeUpdateOne {
 	_u.mutation.RemoveAssignmentIDs(ids...)
 	return _u
 }
 
 // RemoveAssignments removes "assignments" edges to ScheduleAssignment entities.
 func (_u *EmployeeUpdateOne) RemoveAssignments(v ...*ScheduleAssignment) *EmployeeUpdateOne {
-	ids := make([]int, len(v))
+	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
@@ -682,14 +714,14 @@ func (_u *EmployeeUpdateOne) ClearVotes() *EmployeeUpdateOne {
 }
 
 // RemoveVoteIDs removes the "votes" edge to ScheduleVote entities by IDs.
-func (_u *EmployeeUpdateOne) RemoveVoteIDs(ids ...int) *EmployeeUpdateOne {
+func (_u *EmployeeUpdateOne) RemoveVoteIDs(ids ...uuid.UUID) *EmployeeUpdateOne {
 	_u.mutation.RemoveVoteIDs(ids...)
 	return _u
 }
 
 // RemoveVotes removes "votes" edges to ScheduleVote entities.
 func (_u *EmployeeUpdateOne) RemoveVotes(v ...*ScheduleVote) *EmployeeUpdateOne {
-	ids := make([]int, len(v))
+	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
@@ -748,7 +780,7 @@ func (_u *EmployeeUpdateOne) sqlSave(ctx context.Context) (_node *Employee, err 
 	if err := _u.check(); err != nil {
 		return _node, err
 	}
-	_spec := sqlgraph.NewUpdateSpec(employee.Table, employee.Columns, sqlgraph.NewFieldSpec(employee.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewUpdateSpec(employee.Table, employee.Columns, sqlgraph.NewFieldSpec(employee.FieldID, field.TypeUUID))
 	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Employee.id" for update`)}
@@ -782,14 +814,17 @@ func (_u *EmployeeUpdateOne) sqlSave(ctx context.Context) (_node *Employee, err 
 	if value, ok := _u.mutation.DisplayName(); ok {
 		_spec.SetField(employee.FieldDisplayName, field.TypeString, value)
 	}
+	if value, ok := _u.mutation.Role(); ok {
+		_spec.SetField(employee.FieldRole, field.TypeString, value)
+	}
 	if value, ok := _u.mutation.MaxHoursPerWeek(); ok {
 		_spec.SetField(employee.FieldMaxHoursPerWeek, field.TypeFloat64, value)
 	}
 	if value, ok := _u.mutation.AddedMaxHoursPerWeek(); ok {
 		_spec.AddField(employee.FieldMaxHoursPerWeek, field.TypeFloat64, value)
 	}
-	if value, ok := _u.mutation.Active(); ok {
-		_spec.SetField(employee.FieldActive, field.TypeBool, value)
+	if value, ok := _u.mutation.IsActive(); ok {
+		_spec.SetField(employee.FieldIsActive, field.TypeBool, value)
 	}
 	if _u.mutation.ShopCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -799,7 +834,7 @@ func (_u *EmployeeUpdateOne) sqlSave(ctx context.Context) (_node *Employee, err 
 			Columns: []string{employee.ShopColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -812,7 +847,7 @@ func (_u *EmployeeUpdateOne) sqlSave(ctx context.Context) (_node *Employee, err 
 			Columns: []string{employee.ShopColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -820,28 +855,28 @@ func (_u *EmployeeUpdateOne) sqlSave(ctx context.Context) (_node *Employee, err 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.AvailabilityCleared() {
+	if _u.mutation.AvailabilitiesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   employee.AvailabilityTable,
-			Columns: []string{employee.AvailabilityColumn},
+			Table:   employee.AvailabilitiesTable,
+			Columns: []string{employee.AvailabilitiesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(availability.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(availability.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.RemovedAvailabilityIDs(); len(nodes) > 0 && !_u.mutation.AvailabilityCleared() {
+	if nodes := _u.mutation.RemovedAvailabilitiesIDs(); len(nodes) > 0 && !_u.mutation.AvailabilitiesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   employee.AvailabilityTable,
-			Columns: []string{employee.AvailabilityColumn},
+			Table:   employee.AvailabilitiesTable,
+			Columns: []string{employee.AvailabilitiesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(availability.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(availability.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -849,15 +884,15 @@ func (_u *EmployeeUpdateOne) sqlSave(ctx context.Context) (_node *Employee, err 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.AvailabilityIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.AvailabilitiesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   employee.AvailabilityTable,
-			Columns: []string{employee.AvailabilityColumn},
+			Table:   employee.AvailabilitiesTable,
+			Columns: []string{employee.AvailabilitiesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(availability.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(availability.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -873,7 +908,7 @@ func (_u *EmployeeUpdateOne) sqlSave(ctx context.Context) (_node *Employee, err 
 			Columns: []string{employee.AssignmentsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scheduleassignment.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scheduleassignment.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -886,7 +921,7 @@ func (_u *EmployeeUpdateOne) sqlSave(ctx context.Context) (_node *Employee, err 
 			Columns: []string{employee.AssignmentsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scheduleassignment.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scheduleassignment.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -902,7 +937,7 @@ func (_u *EmployeeUpdateOne) sqlSave(ctx context.Context) (_node *Employee, err 
 			Columns: []string{employee.AssignmentsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scheduleassignment.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scheduleassignment.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -918,7 +953,7 @@ func (_u *EmployeeUpdateOne) sqlSave(ctx context.Context) (_node *Employee, err 
 			Columns: []string{employee.VotesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(schedulevote.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(schedulevote.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -931,7 +966,7 @@ func (_u *EmployeeUpdateOne) sqlSave(ctx context.Context) (_node *Employee, err 
 			Columns: []string{employee.VotesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(schedulevote.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(schedulevote.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -947,7 +982,7 @@ func (_u *EmployeeUpdateOne) sqlSave(ctx context.Context) (_node *Employee, err 
 			Columns: []string{employee.VotesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(schedulevote.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(schedulevote.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

@@ -10,6 +10,7 @@ import (
 	"reflect"
 
 	"github.com/betallsoph/shiftz/internal/ent/migrate"
+	"github.com/google/uuid"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
@@ -324,7 +325,7 @@ func (c *AvailabilityClient) UpdateOne(_m *Availability) *AvailabilityUpdateOne 
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *AvailabilityClient) UpdateOneID(id int) *AvailabilityUpdateOne {
+func (c *AvailabilityClient) UpdateOneID(id uuid.UUID) *AvailabilityUpdateOne {
 	mutation := newAvailabilityMutation(c.config, OpUpdateOne, withAvailabilityID(id))
 	return &AvailabilityUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -341,7 +342,7 @@ func (c *AvailabilityClient) DeleteOne(_m *Availability) *AvailabilityDeleteOne 
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *AvailabilityClient) DeleteOneID(id int) *AvailabilityDeleteOne {
+func (c *AvailabilityClient) DeleteOneID(id uuid.UUID) *AvailabilityDeleteOne {
 	builder := c.Delete().Where(availability.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -358,12 +359,12 @@ func (c *AvailabilityClient) Query() *AvailabilityQuery {
 }
 
 // Get returns a Availability entity by its id.
-func (c *AvailabilityClient) Get(ctx context.Context, id int) (*Availability, error) {
+func (c *AvailabilityClient) Get(ctx context.Context, id uuid.UUID) (*Availability, error) {
 	return c.Query().Where(availability.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *AvailabilityClient) GetX(ctx context.Context, id int) *Availability {
+func (c *AvailabilityClient) GetX(ctx context.Context, id uuid.UUID) *Availability {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -489,7 +490,7 @@ func (c *EmployeeClient) UpdateOne(_m *Employee) *EmployeeUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *EmployeeClient) UpdateOneID(id int) *EmployeeUpdateOne {
+func (c *EmployeeClient) UpdateOneID(id uuid.UUID) *EmployeeUpdateOne {
 	mutation := newEmployeeMutation(c.config, OpUpdateOne, withEmployeeID(id))
 	return &EmployeeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -506,7 +507,7 @@ func (c *EmployeeClient) DeleteOne(_m *Employee) *EmployeeDeleteOne {
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *EmployeeClient) DeleteOneID(id int) *EmployeeDeleteOne {
+func (c *EmployeeClient) DeleteOneID(id uuid.UUID) *EmployeeDeleteOne {
 	builder := c.Delete().Where(employee.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -523,12 +524,12 @@ func (c *EmployeeClient) Query() *EmployeeQuery {
 }
 
 // Get returns a Employee entity by its id.
-func (c *EmployeeClient) Get(ctx context.Context, id int) (*Employee, error) {
+func (c *EmployeeClient) Get(ctx context.Context, id uuid.UUID) (*Employee, error) {
 	return c.Query().Where(employee.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *EmployeeClient) GetX(ctx context.Context, id int) *Employee {
+func (c *EmployeeClient) GetX(ctx context.Context, id uuid.UUID) *Employee {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -552,15 +553,15 @@ func (c *EmployeeClient) QueryShop(_m *Employee) *ShopQuery {
 	return query
 }
 
-// QueryAvailability queries the availability edge of a Employee.
-func (c *EmployeeClient) QueryAvailability(_m *Employee) *AvailabilityQuery {
+// QueryAvailabilities queries the availabilities edge of a Employee.
+func (c *EmployeeClient) QueryAvailabilities(_m *Employee) *AvailabilityQuery {
 	query := (&AvailabilityClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(employee.Table, employee.FieldID, id),
 			sqlgraph.To(availability.Table, availability.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, employee.AvailabilityTable, employee.AvailabilityColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, employee.AvailabilitiesTable, employee.AvailabilitiesColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -686,7 +687,7 @@ func (c *RuleClient) UpdateOne(_m *Rule) *RuleUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *RuleClient) UpdateOneID(id int) *RuleUpdateOne {
+func (c *RuleClient) UpdateOneID(id uuid.UUID) *RuleUpdateOne {
 	mutation := newRuleMutation(c.config, OpUpdateOne, withRuleID(id))
 	return &RuleUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -703,7 +704,7 @@ func (c *RuleClient) DeleteOne(_m *Rule) *RuleDeleteOne {
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *RuleClient) DeleteOneID(id int) *RuleDeleteOne {
+func (c *RuleClient) DeleteOneID(id uuid.UUID) *RuleDeleteOne {
 	builder := c.Delete().Where(rule.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -720,12 +721,12 @@ func (c *RuleClient) Query() *RuleQuery {
 }
 
 // Get returns a Rule entity by its id.
-func (c *RuleClient) Get(ctx context.Context, id int) (*Rule, error) {
+func (c *RuleClient) Get(ctx context.Context, id uuid.UUID) (*Rule, error) {
 	return c.Query().Where(rule.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *RuleClient) GetX(ctx context.Context, id int) *Rule {
+func (c *RuleClient) GetX(ctx context.Context, id uuid.UUID) *Rule {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -835,7 +836,7 @@ func (c *ScheduleClient) UpdateOne(_m *Schedule) *ScheduleUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *ScheduleClient) UpdateOneID(id int) *ScheduleUpdateOne {
+func (c *ScheduleClient) UpdateOneID(id uuid.UUID) *ScheduleUpdateOne {
 	mutation := newScheduleMutation(c.config, OpUpdateOne, withScheduleID(id))
 	return &ScheduleUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -852,7 +853,7 @@ func (c *ScheduleClient) DeleteOne(_m *Schedule) *ScheduleDeleteOne {
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *ScheduleClient) DeleteOneID(id int) *ScheduleDeleteOne {
+func (c *ScheduleClient) DeleteOneID(id uuid.UUID) *ScheduleDeleteOne {
 	builder := c.Delete().Where(schedule.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -869,12 +870,12 @@ func (c *ScheduleClient) Query() *ScheduleQuery {
 }
 
 // Get returns a Schedule entity by its id.
-func (c *ScheduleClient) Get(ctx context.Context, id int) (*Schedule, error) {
+func (c *ScheduleClient) Get(ctx context.Context, id uuid.UUID) (*Schedule, error) {
 	return c.Query().Where(schedule.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *ScheduleClient) GetX(ctx context.Context, id int) *Schedule {
+func (c *ScheduleClient) GetX(ctx context.Context, id uuid.UUID) *Schedule {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -1016,7 +1017,7 @@ func (c *ScheduleAssignmentClient) UpdateOne(_m *ScheduleAssignment) *ScheduleAs
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *ScheduleAssignmentClient) UpdateOneID(id int) *ScheduleAssignmentUpdateOne {
+func (c *ScheduleAssignmentClient) UpdateOneID(id uuid.UUID) *ScheduleAssignmentUpdateOne {
 	mutation := newScheduleAssignmentMutation(c.config, OpUpdateOne, withScheduleAssignmentID(id))
 	return &ScheduleAssignmentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -1033,7 +1034,7 @@ func (c *ScheduleAssignmentClient) DeleteOne(_m *ScheduleAssignment) *ScheduleAs
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *ScheduleAssignmentClient) DeleteOneID(id int) *ScheduleAssignmentDeleteOne {
+func (c *ScheduleAssignmentClient) DeleteOneID(id uuid.UUID) *ScheduleAssignmentDeleteOne {
 	builder := c.Delete().Where(scheduleassignment.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -1050,12 +1051,12 @@ func (c *ScheduleAssignmentClient) Query() *ScheduleAssignmentQuery {
 }
 
 // Get returns a ScheduleAssignment entity by its id.
-func (c *ScheduleAssignmentClient) Get(ctx context.Context, id int) (*ScheduleAssignment, error) {
+func (c *ScheduleAssignmentClient) Get(ctx context.Context, id uuid.UUID) (*ScheduleAssignment, error) {
 	return c.Query().Where(scheduleassignment.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *ScheduleAssignmentClient) GetX(ctx context.Context, id int) *ScheduleAssignment {
+func (c *ScheduleAssignmentClient) GetX(ctx context.Context, id uuid.UUID) *ScheduleAssignment {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -1071,7 +1072,7 @@ func (c *ScheduleAssignmentClient) QueryShop(_m *ScheduleAssignment) *ShopQuery 
 		step := sqlgraph.NewStep(
 			sqlgraph.From(scheduleassignment.Table, scheduleassignment.FieldID, id),
 			sqlgraph.To(shop.Table, shop.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, scheduleassignment.ShopTable, scheduleassignment.ShopColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, scheduleassignment.ShopTable, scheduleassignment.ShopColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -1213,7 +1214,7 @@ func (c *ScheduleVoteClient) UpdateOne(_m *ScheduleVote) *ScheduleVoteUpdateOne 
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *ScheduleVoteClient) UpdateOneID(id int) *ScheduleVoteUpdateOne {
+func (c *ScheduleVoteClient) UpdateOneID(id uuid.UUID) *ScheduleVoteUpdateOne {
 	mutation := newScheduleVoteMutation(c.config, OpUpdateOne, withScheduleVoteID(id))
 	return &ScheduleVoteUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -1230,7 +1231,7 @@ func (c *ScheduleVoteClient) DeleteOne(_m *ScheduleVote) *ScheduleVoteDeleteOne 
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *ScheduleVoteClient) DeleteOneID(id int) *ScheduleVoteDeleteOne {
+func (c *ScheduleVoteClient) DeleteOneID(id uuid.UUID) *ScheduleVoteDeleteOne {
 	builder := c.Delete().Where(schedulevote.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -1247,12 +1248,12 @@ func (c *ScheduleVoteClient) Query() *ScheduleVoteQuery {
 }
 
 // Get returns a ScheduleVote entity by its id.
-func (c *ScheduleVoteClient) Get(ctx context.Context, id int) (*ScheduleVote, error) {
+func (c *ScheduleVoteClient) Get(ctx context.Context, id uuid.UUID) (*ScheduleVote, error) {
 	return c.Query().Where(schedulevote.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *ScheduleVoteClient) GetX(ctx context.Context, id int) *ScheduleVote {
+func (c *ScheduleVoteClient) GetX(ctx context.Context, id uuid.UUID) *ScheduleVote {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -1268,7 +1269,7 @@ func (c *ScheduleVoteClient) QueryShop(_m *ScheduleVote) *ShopQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(schedulevote.Table, schedulevote.FieldID, id),
 			sqlgraph.To(shop.Table, shop.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, schedulevote.ShopTable, schedulevote.ShopColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, schedulevote.ShopTable, schedulevote.ShopColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -1394,7 +1395,7 @@ func (c *ShiftClient) UpdateOne(_m *Shift) *ShiftUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *ShiftClient) UpdateOneID(id int) *ShiftUpdateOne {
+func (c *ShiftClient) UpdateOneID(id uuid.UUID) *ShiftUpdateOne {
 	mutation := newShiftMutation(c.config, OpUpdateOne, withShiftID(id))
 	return &ShiftUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -1411,7 +1412,7 @@ func (c *ShiftClient) DeleteOne(_m *Shift) *ShiftDeleteOne {
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *ShiftClient) DeleteOneID(id int) *ShiftDeleteOne {
+func (c *ShiftClient) DeleteOneID(id uuid.UUID) *ShiftDeleteOne {
 	builder := c.Delete().Where(shift.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -1428,12 +1429,12 @@ func (c *ShiftClient) Query() *ShiftQuery {
 }
 
 // Get returns a Shift entity by its id.
-func (c *ShiftClient) Get(ctx context.Context, id int) (*Shift, error) {
+func (c *ShiftClient) Get(ctx context.Context, id uuid.UUID) (*Shift, error) {
 	return c.Query().Where(shift.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *ShiftClient) GetX(ctx context.Context, id int) *Shift {
+func (c *ShiftClient) GetX(ctx context.Context, id uuid.UUID) *Shift {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -1475,7 +1476,8 @@ func (c *ShiftClient) QueryAssignments(_m *Shift) *ScheduleAssignmentQuery {
 
 // Hooks returns the client hooks.
 func (c *ShiftClient) Hooks() []Hook {
-	return c.hooks.Shift
+	hooks := c.hooks.Shift
+	return append(hooks[:len(hooks):len(hooks)], shift.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -1559,7 +1561,7 @@ func (c *ShopClient) UpdateOne(_m *Shop) *ShopUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *ShopClient) UpdateOneID(id int) *ShopUpdateOne {
+func (c *ShopClient) UpdateOneID(id uuid.UUID) *ShopUpdateOne {
 	mutation := newShopMutation(c.config, OpUpdateOne, withShopID(id))
 	return &ShopUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -1576,7 +1578,7 @@ func (c *ShopClient) DeleteOne(_m *Shop) *ShopDeleteOne {
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *ShopClient) DeleteOneID(id int) *ShopDeleteOne {
+func (c *ShopClient) DeleteOneID(id uuid.UUID) *ShopDeleteOne {
 	builder := c.Delete().Where(shop.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -1593,12 +1595,12 @@ func (c *ShopClient) Query() *ShopQuery {
 }
 
 // Get returns a Shop entity by its id.
-func (c *ShopClient) Get(ctx context.Context, id int) (*Shop, error) {
+func (c *ShopClient) Get(ctx context.Context, id uuid.UUID) (*Shop, error) {
 	return c.Query().Where(shop.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *ShopClient) GetX(ctx context.Context, id int) *Shop {
+func (c *ShopClient) GetX(ctx context.Context, id uuid.UUID) *Shop {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -1615,22 +1617,6 @@ func (c *ShopClient) QueryEmployees(_m *Shop) *EmployeeQuery {
 			sqlgraph.From(shop.Table, shop.FieldID, id),
 			sqlgraph.To(employee.Table, employee.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, shop.EmployeesTable, shop.EmployeesColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryAvailability queries the availability edge of a Shop.
-func (c *ShopClient) QueryAvailability(_m *Shop) *AvailabilityQuery {
-	query := (&AvailabilityClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(shop.Table, shop.FieldID, id),
-			sqlgraph.To(availability.Table, availability.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, shop.AvailabilityTable, shop.AvailabilityColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -1670,38 +1656,6 @@ func (c *ShopClient) QuerySchedules(_m *Shop) *ScheduleQuery {
 	return query
 }
 
-// QueryAssignments queries the assignments edge of a Shop.
-func (c *ShopClient) QueryAssignments(_m *Shop) *ScheduleAssignmentQuery {
-	query := (&ScheduleAssignmentClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(shop.Table, shop.FieldID, id),
-			sqlgraph.To(scheduleassignment.Table, scheduleassignment.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, shop.AssignmentsTable, shop.AssignmentsColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryVotes queries the votes edge of a Shop.
-func (c *ShopClient) QueryVotes(_m *Shop) *ScheduleVoteQuery {
-	query := (&ScheduleVoteClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(shop.Table, shop.FieldID, id),
-			sqlgraph.To(schedulevote.Table, schedulevote.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, shop.VotesTable, shop.VotesColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryRules queries the rules edge of a Shop.
 func (c *ShopClient) QueryRules(_m *Shop) *RuleQuery {
 	query := (&RuleClient{config: c.config}).Query()
@@ -1711,6 +1665,22 @@ func (c *ShopClient) QueryRules(_m *Shop) *RuleQuery {
 			sqlgraph.From(shop.Table, shop.FieldID, id),
 			sqlgraph.To(rule.Table, rule.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, shop.RulesTable, shop.RulesColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAvailabilities queries the availabilities edge of a Shop.
+func (c *ShopClient) QueryAvailabilities(_m *Shop) *AvailabilityQuery {
+	query := (&AvailabilityClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(shop.Table, shop.FieldID, id),
+			sqlgraph.To(availability.Table, availability.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, shop.AvailabilitiesTable, shop.AvailabilitiesColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil

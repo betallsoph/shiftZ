@@ -8,61 +8,67 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/betallsoph/shiftz/internal/ent/predicate"
+	"github.com/google/uuid"
 )
 
 // ID filters vertices based on their ID field.
-func ID(id int) predicate.Schedule {
+func ID(id uuid.UUID) predicate.Schedule {
 	return predicate.Schedule(sql.FieldEQ(FieldID, id))
 }
 
 // IDEQ applies the EQ predicate on the ID field.
-func IDEQ(id int) predicate.Schedule {
+func IDEQ(id uuid.UUID) predicate.Schedule {
 	return predicate.Schedule(sql.FieldEQ(FieldID, id))
 }
 
 // IDNEQ applies the NEQ predicate on the ID field.
-func IDNEQ(id int) predicate.Schedule {
+func IDNEQ(id uuid.UUID) predicate.Schedule {
 	return predicate.Schedule(sql.FieldNEQ(FieldID, id))
 }
 
 // IDIn applies the In predicate on the ID field.
-func IDIn(ids ...int) predicate.Schedule {
+func IDIn(ids ...uuid.UUID) predicate.Schedule {
 	return predicate.Schedule(sql.FieldIn(FieldID, ids...))
 }
 
 // IDNotIn applies the NotIn predicate on the ID field.
-func IDNotIn(ids ...int) predicate.Schedule {
+func IDNotIn(ids ...uuid.UUID) predicate.Schedule {
 	return predicate.Schedule(sql.FieldNotIn(FieldID, ids...))
 }
 
 // IDGT applies the GT predicate on the ID field.
-func IDGT(id int) predicate.Schedule {
+func IDGT(id uuid.UUID) predicate.Schedule {
 	return predicate.Schedule(sql.FieldGT(FieldID, id))
 }
 
 // IDGTE applies the GTE predicate on the ID field.
-func IDGTE(id int) predicate.Schedule {
+func IDGTE(id uuid.UUID) predicate.Schedule {
 	return predicate.Schedule(sql.FieldGTE(FieldID, id))
 }
 
 // IDLT applies the LT predicate on the ID field.
-func IDLT(id int) predicate.Schedule {
+func IDLT(id uuid.UUID) predicate.Schedule {
 	return predicate.Schedule(sql.FieldLT(FieldID, id))
 }
 
 // IDLTE applies the LTE predicate on the ID field.
-func IDLTE(id int) predicate.Schedule {
+func IDLTE(id uuid.UUID) predicate.Schedule {
 	return predicate.Schedule(sql.FieldLTE(FieldID, id))
 }
 
 // ShopID applies equality check predicate on the "shop_id" field. It's identical to ShopIDEQ.
-func ShopID(v int) predicate.Schedule {
+func ShopID(v uuid.UUID) predicate.Schedule {
 	return predicate.Schedule(sql.FieldEQ(FieldShopID, v))
 }
 
 // WeekStart applies equality check predicate on the "week_start" field. It's identical to WeekStartEQ.
 func WeekStart(v time.Time) predicate.Schedule {
 	return predicate.Schedule(sql.FieldEQ(FieldWeekStart, v))
+}
+
+// VariantLabel applies equality check predicate on the "variant_label" field. It's identical to VariantLabelEQ.
+func VariantLabel(v string) predicate.Schedule {
+	return predicate.Schedule(sql.FieldEQ(FieldVariantLabel, v))
 }
 
 // Score applies equality check predicate on the "score" field. It's identical to ScoreEQ.
@@ -76,22 +82,22 @@ func CreatedAt(v time.Time) predicate.Schedule {
 }
 
 // ShopIDEQ applies the EQ predicate on the "shop_id" field.
-func ShopIDEQ(v int) predicate.Schedule {
+func ShopIDEQ(v uuid.UUID) predicate.Schedule {
 	return predicate.Schedule(sql.FieldEQ(FieldShopID, v))
 }
 
 // ShopIDNEQ applies the NEQ predicate on the "shop_id" field.
-func ShopIDNEQ(v int) predicate.Schedule {
+func ShopIDNEQ(v uuid.UUID) predicate.Schedule {
 	return predicate.Schedule(sql.FieldNEQ(FieldShopID, v))
 }
 
 // ShopIDIn applies the In predicate on the "shop_id" field.
-func ShopIDIn(vs ...int) predicate.Schedule {
+func ShopIDIn(vs ...uuid.UUID) predicate.Schedule {
 	return predicate.Schedule(sql.FieldIn(FieldShopID, vs...))
 }
 
 // ShopIDNotIn applies the NotIn predicate on the "shop_id" field.
-func ShopIDNotIn(vs ...int) predicate.Schedule {
+func ShopIDNotIn(vs ...uuid.UUID) predicate.Schedule {
 	return predicate.Schedule(sql.FieldNotIn(FieldShopID, vs...))
 }
 
@@ -135,71 +141,6 @@ func WeekStartLTE(v time.Time) predicate.Schedule {
 	return predicate.Schedule(sql.FieldLTE(FieldWeekStart, v))
 }
 
-// LabelEQ applies the EQ predicate on the "label" field.
-func LabelEQ(v string) predicate.Schedule {
-	return predicate.Schedule(sql.FieldEQ(FieldLabel, v))
-}
-
-// LabelNEQ applies the NEQ predicate on the "label" field.
-func LabelNEQ(v string) predicate.Schedule {
-	return predicate.Schedule(sql.FieldNEQ(FieldLabel, v))
-}
-
-// LabelIn applies the In predicate on the "label" field.
-func LabelIn(vs ...string) predicate.Schedule {
-	return predicate.Schedule(sql.FieldIn(FieldLabel, vs...))
-}
-
-// LabelNotIn applies the NotIn predicate on the "label" field.
-func LabelNotIn(vs ...string) predicate.Schedule {
-	return predicate.Schedule(sql.FieldNotIn(FieldLabel, vs...))
-}
-
-// LabelGT applies the GT predicate on the "label" field.
-func LabelGT(v string) predicate.Schedule {
-	return predicate.Schedule(sql.FieldGT(FieldLabel, v))
-}
-
-// LabelGTE applies the GTE predicate on the "label" field.
-func LabelGTE(v string) predicate.Schedule {
-	return predicate.Schedule(sql.FieldGTE(FieldLabel, v))
-}
-
-// LabelLT applies the LT predicate on the "label" field.
-func LabelLT(v string) predicate.Schedule {
-	return predicate.Schedule(sql.FieldLT(FieldLabel, v))
-}
-
-// LabelLTE applies the LTE predicate on the "label" field.
-func LabelLTE(v string) predicate.Schedule {
-	return predicate.Schedule(sql.FieldLTE(FieldLabel, v))
-}
-
-// LabelContains applies the Contains predicate on the "label" field.
-func LabelContains(v string) predicate.Schedule {
-	return predicate.Schedule(sql.FieldContains(FieldLabel, v))
-}
-
-// LabelHasPrefix applies the HasPrefix predicate on the "label" field.
-func LabelHasPrefix(v string) predicate.Schedule {
-	return predicate.Schedule(sql.FieldHasPrefix(FieldLabel, v))
-}
-
-// LabelHasSuffix applies the HasSuffix predicate on the "label" field.
-func LabelHasSuffix(v string) predicate.Schedule {
-	return predicate.Schedule(sql.FieldHasSuffix(FieldLabel, v))
-}
-
-// LabelEqualFold applies the EqualFold predicate on the "label" field.
-func LabelEqualFold(v string) predicate.Schedule {
-	return predicate.Schedule(sql.FieldEqualFold(FieldLabel, v))
-}
-
-// LabelContainsFold applies the ContainsFold predicate on the "label" field.
-func LabelContainsFold(v string) predicate.Schedule {
-	return predicate.Schedule(sql.FieldContainsFold(FieldLabel, v))
-}
-
 // StatusEQ applies the EQ predicate on the "status" field.
 func StatusEQ(v Status) predicate.Schedule {
 	return predicate.Schedule(sql.FieldEQ(FieldStatus, v))
@@ -218,6 +159,71 @@ func StatusIn(vs ...Status) predicate.Schedule {
 // StatusNotIn applies the NotIn predicate on the "status" field.
 func StatusNotIn(vs ...Status) predicate.Schedule {
 	return predicate.Schedule(sql.FieldNotIn(FieldStatus, vs...))
+}
+
+// VariantLabelEQ applies the EQ predicate on the "variant_label" field.
+func VariantLabelEQ(v string) predicate.Schedule {
+	return predicate.Schedule(sql.FieldEQ(FieldVariantLabel, v))
+}
+
+// VariantLabelNEQ applies the NEQ predicate on the "variant_label" field.
+func VariantLabelNEQ(v string) predicate.Schedule {
+	return predicate.Schedule(sql.FieldNEQ(FieldVariantLabel, v))
+}
+
+// VariantLabelIn applies the In predicate on the "variant_label" field.
+func VariantLabelIn(vs ...string) predicate.Schedule {
+	return predicate.Schedule(sql.FieldIn(FieldVariantLabel, vs...))
+}
+
+// VariantLabelNotIn applies the NotIn predicate on the "variant_label" field.
+func VariantLabelNotIn(vs ...string) predicate.Schedule {
+	return predicate.Schedule(sql.FieldNotIn(FieldVariantLabel, vs...))
+}
+
+// VariantLabelGT applies the GT predicate on the "variant_label" field.
+func VariantLabelGT(v string) predicate.Schedule {
+	return predicate.Schedule(sql.FieldGT(FieldVariantLabel, v))
+}
+
+// VariantLabelGTE applies the GTE predicate on the "variant_label" field.
+func VariantLabelGTE(v string) predicate.Schedule {
+	return predicate.Schedule(sql.FieldGTE(FieldVariantLabel, v))
+}
+
+// VariantLabelLT applies the LT predicate on the "variant_label" field.
+func VariantLabelLT(v string) predicate.Schedule {
+	return predicate.Schedule(sql.FieldLT(FieldVariantLabel, v))
+}
+
+// VariantLabelLTE applies the LTE predicate on the "variant_label" field.
+func VariantLabelLTE(v string) predicate.Schedule {
+	return predicate.Schedule(sql.FieldLTE(FieldVariantLabel, v))
+}
+
+// VariantLabelContains applies the Contains predicate on the "variant_label" field.
+func VariantLabelContains(v string) predicate.Schedule {
+	return predicate.Schedule(sql.FieldContains(FieldVariantLabel, v))
+}
+
+// VariantLabelHasPrefix applies the HasPrefix predicate on the "variant_label" field.
+func VariantLabelHasPrefix(v string) predicate.Schedule {
+	return predicate.Schedule(sql.FieldHasPrefix(FieldVariantLabel, v))
+}
+
+// VariantLabelHasSuffix applies the HasSuffix predicate on the "variant_label" field.
+func VariantLabelHasSuffix(v string) predicate.Schedule {
+	return predicate.Schedule(sql.FieldHasSuffix(FieldVariantLabel, v))
+}
+
+// VariantLabelEqualFold applies the EqualFold predicate on the "variant_label" field.
+func VariantLabelEqualFold(v string) predicate.Schedule {
+	return predicate.Schedule(sql.FieldEqualFold(FieldVariantLabel, v))
+}
+
+// VariantLabelContainsFold applies the ContainsFold predicate on the "variant_label" field.
+func VariantLabelContainsFold(v string) predicate.Schedule {
+	return predicate.Schedule(sql.FieldContainsFold(FieldVariantLabel, v))
 }
 
 // ScoreEQ applies the EQ predicate on the "score" field.

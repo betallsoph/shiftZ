@@ -8,12 +8,15 @@ import (
 	"fmt"
 	"time"
 
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/betallsoph/shiftz/internal/ent/availability"
 	"github.com/betallsoph/shiftz/internal/ent/employee"
+	"github.com/betallsoph/shiftz/internal/ent/schema"
 	"github.com/betallsoph/shiftz/internal/ent/shop"
+	"github.com/google/uuid"
 )
 
 // AvailabilityCreate is the builder for creating a Availability entity.
@@ -25,13 +28,13 @@ type AvailabilityCreate struct {
 }
 
 // SetShopID sets the "shop_id" field.
-func (_c *AvailabilityCreate) SetShopID(v int) *AvailabilityCreate {
+func (_c *AvailabilityCreate) SetShopID(v uuid.UUID) *AvailabilityCreate {
 	_c.mutation.SetShopID(v)
 	return _c
 }
 
 // SetEmployeeID sets the "employee_id" field.
-func (_c *AvailabilityCreate) SetEmployeeID(v int) *AvailabilityCreate {
+func (_c *AvailabilityCreate) SetEmployeeID(v uuid.UUID) *AvailabilityCreate {
 	_c.mutation.SetEmployeeID(v)
 	return _c
 }
@@ -42,56 +45,22 @@ func (_c *AvailabilityCreate) SetWeekStart(v time.Time) *AvailabilityCreate {
 	return _c
 }
 
-// SetStartsAt sets the "starts_at" field.
-func (_c *AvailabilityCreate) SetStartsAt(v time.Time) *AvailabilityCreate {
-	_c.mutation.SetStartsAt(v)
+// SetSlots sets the "slots" field.
+func (_c *AvailabilityCreate) SetSlots(v []schema.AvailabilitySlot) *AvailabilityCreate {
+	_c.mutation.SetSlots(v)
 	return _c
 }
 
-// SetEndsAt sets the "ends_at" field.
-func (_c *AvailabilityCreate) SetEndsAt(v time.Time) *AvailabilityCreate {
-	_c.mutation.SetEndsAt(v)
+// SetRawMessage sets the "raw_message" field.
+func (_c *AvailabilityCreate) SetRawMessage(v string) *AvailabilityCreate {
+	_c.mutation.SetRawMessage(v)
 	return _c
 }
 
-// SetPreference sets the "preference" field.
-func (_c *AvailabilityCreate) SetPreference(v int) *AvailabilityCreate {
-	_c.mutation.SetPreference(v)
-	return _c
-}
-
-// SetNillablePreference sets the "preference" field if the given value is not nil.
-func (_c *AvailabilityCreate) SetNillablePreference(v *int) *AvailabilityCreate {
+// SetNillableRawMessage sets the "raw_message" field if the given value is not nil.
+func (_c *AvailabilityCreate) SetNillableRawMessage(v *string) *AvailabilityCreate {
 	if v != nil {
-		_c.SetPreference(*v)
-	}
-	return _c
-}
-
-// SetNote sets the "note" field.
-func (_c *AvailabilityCreate) SetNote(v string) *AvailabilityCreate {
-	_c.mutation.SetNote(v)
-	return _c
-}
-
-// SetNillableNote sets the "note" field if the given value is not nil.
-func (_c *AvailabilityCreate) SetNillableNote(v *string) *AvailabilityCreate {
-	if v != nil {
-		_c.SetNote(*v)
-	}
-	return _c
-}
-
-// SetRawText sets the "raw_text" field.
-func (_c *AvailabilityCreate) SetRawText(v string) *AvailabilityCreate {
-	_c.mutation.SetRawText(v)
-	return _c
-}
-
-// SetNillableRawText sets the "raw_text" field if the given value is not nil.
-func (_c *AvailabilityCreate) SetNillableRawText(v *string) *AvailabilityCreate {
-	if v != nil {
-		_c.SetRawText(*v)
+		_c.SetRawMessage(*v)
 	}
 	return _c
 }
@@ -106,6 +75,20 @@ func (_c *AvailabilityCreate) SetCreatedAt(v time.Time) *AvailabilityCreate {
 func (_c *AvailabilityCreate) SetNillableCreatedAt(v *time.Time) *AvailabilityCreate {
 	if v != nil {
 		_c.SetCreatedAt(*v)
+	}
+	return _c
+}
+
+// SetID sets the "id" field.
+func (_c *AvailabilityCreate) SetID(v uuid.UUID) *AvailabilityCreate {
+	_c.mutation.SetID(v)
+	return _c
+}
+
+// SetNillableID sets the "id" field if the given value is not nil.
+func (_c *AvailabilityCreate) SetNillableID(v *uuid.UUID) *AvailabilityCreate {
+	if v != nil {
+		_c.SetID(*v)
 	}
 	return _c
 }
@@ -155,21 +138,17 @@ func (_c *AvailabilityCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (_c *AvailabilityCreate) defaults() {
-	if _, ok := _c.mutation.Preference(); !ok {
-		v := availability.DefaultPreference
-		_c.mutation.SetPreference(v)
-	}
-	if _, ok := _c.mutation.Note(); !ok {
-		v := availability.DefaultNote
-		_c.mutation.SetNote(v)
-	}
-	if _, ok := _c.mutation.RawText(); !ok {
-		v := availability.DefaultRawText
-		_c.mutation.SetRawText(v)
+	if _, ok := _c.mutation.RawMessage(); !ok {
+		v := availability.DefaultRawMessage
+		_c.mutation.SetRawMessage(v)
 	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		v := availability.DefaultCreatedAt()
 		_c.mutation.SetCreatedAt(v)
+	}
+	if _, ok := _c.mutation.ID(); !ok {
+		v := availability.DefaultID()
+		_c.mutation.SetID(v)
 	}
 }
 
@@ -184,20 +163,11 @@ func (_c *AvailabilityCreate) check() error {
 	if _, ok := _c.mutation.WeekStart(); !ok {
 		return &ValidationError{Name: "week_start", err: errors.New(`ent: missing required field "Availability.week_start"`)}
 	}
-	if _, ok := _c.mutation.StartsAt(); !ok {
-		return &ValidationError{Name: "starts_at", err: errors.New(`ent: missing required field "Availability.starts_at"`)}
+	if _, ok := _c.mutation.Slots(); !ok {
+		return &ValidationError{Name: "slots", err: errors.New(`ent: missing required field "Availability.slots"`)}
 	}
-	if _, ok := _c.mutation.EndsAt(); !ok {
-		return &ValidationError{Name: "ends_at", err: errors.New(`ent: missing required field "Availability.ends_at"`)}
-	}
-	if _, ok := _c.mutation.Preference(); !ok {
-		return &ValidationError{Name: "preference", err: errors.New(`ent: missing required field "Availability.preference"`)}
-	}
-	if _, ok := _c.mutation.Note(); !ok {
-		return &ValidationError{Name: "note", err: errors.New(`ent: missing required field "Availability.note"`)}
-	}
-	if _, ok := _c.mutation.RawText(); !ok {
-		return &ValidationError{Name: "raw_text", err: errors.New(`ent: missing required field "Availability.raw_text"`)}
+	if _, ok := _c.mutation.RawMessage(); !ok {
+		return &ValidationError{Name: "raw_message", err: errors.New(`ent: missing required field "Availability.raw_message"`)}
 	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Availability.created_at"`)}
@@ -222,8 +192,13 @@ func (_c *AvailabilityCreate) sqlSave(ctx context.Context) (*Availability, error
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
+	if _spec.ID.Value != nil {
+		if id, ok := _spec.ID.Value.(*uuid.UUID); ok {
+			_node.ID = *id
+		} else if err := _node.ID.Scan(_spec.ID.Value); err != nil {
+			return nil, err
+		}
+	}
 	_c.mutation.id = &_node.ID
 	_c.mutation.done = true
 	return _node, nil
@@ -232,32 +207,24 @@ func (_c *AvailabilityCreate) sqlSave(ctx context.Context) (*Availability, error
 func (_c *AvailabilityCreate) createSpec() (*Availability, *sqlgraph.CreateSpec) {
 	var (
 		_node = &Availability{config: _c.config}
-		_spec = sqlgraph.NewCreateSpec(availability.Table, sqlgraph.NewFieldSpec(availability.FieldID, field.TypeInt))
+		_spec = sqlgraph.NewCreateSpec(availability.Table, sqlgraph.NewFieldSpec(availability.FieldID, field.TypeUUID))
 	)
 	_spec.OnConflict = _c.conflict
+	if id, ok := _c.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = &id
+	}
 	if value, ok := _c.mutation.WeekStart(); ok {
 		_spec.SetField(availability.FieldWeekStart, field.TypeTime, value)
 		_node.WeekStart = value
 	}
-	if value, ok := _c.mutation.StartsAt(); ok {
-		_spec.SetField(availability.FieldStartsAt, field.TypeTime, value)
-		_node.StartsAt = value
+	if value, ok := _c.mutation.Slots(); ok {
+		_spec.SetField(availability.FieldSlots, field.TypeJSON, value)
+		_node.Slots = value
 	}
-	if value, ok := _c.mutation.EndsAt(); ok {
-		_spec.SetField(availability.FieldEndsAt, field.TypeTime, value)
-		_node.EndsAt = value
-	}
-	if value, ok := _c.mutation.Preference(); ok {
-		_spec.SetField(availability.FieldPreference, field.TypeInt, value)
-		_node.Preference = value
-	}
-	if value, ok := _c.mutation.Note(); ok {
-		_spec.SetField(availability.FieldNote, field.TypeString, value)
-		_node.Note = value
-	}
-	if value, ok := _c.mutation.RawText(); ok {
-		_spec.SetField(availability.FieldRawText, field.TypeString, value)
-		_node.RawText = value
+	if value, ok := _c.mutation.RawMessage(); ok {
+		_spec.SetField(availability.FieldRawMessage, field.TypeString, value)
+		_node.RawMessage = value
 	}
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(availability.FieldCreatedAt, field.TypeTime, value)
@@ -271,7 +238,7 @@ func (_c *AvailabilityCreate) createSpec() (*Availability, *sqlgraph.CreateSpec)
 			Columns: []string{availability.ShopColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -288,7 +255,7 @@ func (_c *AvailabilityCreate) createSpec() (*Availability, *sqlgraph.CreateSpec)
 			Columns: []string{availability.EmployeeColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -350,7 +317,7 @@ type (
 )
 
 // SetShopID sets the "shop_id" field.
-func (u *AvailabilityUpsert) SetShopID(v int) *AvailabilityUpsert {
+func (u *AvailabilityUpsert) SetShopID(v uuid.UUID) *AvailabilityUpsert {
 	u.Set(availability.FieldShopID, v)
 	return u
 }
@@ -362,7 +329,7 @@ func (u *AvailabilityUpsert) UpdateShopID() *AvailabilityUpsert {
 }
 
 // SetEmployeeID sets the "employee_id" field.
-func (u *AvailabilityUpsert) SetEmployeeID(v int) *AvailabilityUpsert {
+func (u *AvailabilityUpsert) SetEmployeeID(v uuid.UUID) *AvailabilityUpsert {
 	u.Set(availability.FieldEmployeeID, v)
 	return u
 }
@@ -385,83 +352,47 @@ func (u *AvailabilityUpsert) UpdateWeekStart() *AvailabilityUpsert {
 	return u
 }
 
-// SetStartsAt sets the "starts_at" field.
-func (u *AvailabilityUpsert) SetStartsAt(v time.Time) *AvailabilityUpsert {
-	u.Set(availability.FieldStartsAt, v)
+// SetSlots sets the "slots" field.
+func (u *AvailabilityUpsert) SetSlots(v []schema.AvailabilitySlot) *AvailabilityUpsert {
+	u.Set(availability.FieldSlots, v)
 	return u
 }
 
-// UpdateStartsAt sets the "starts_at" field to the value that was provided on create.
-func (u *AvailabilityUpsert) UpdateStartsAt() *AvailabilityUpsert {
-	u.SetExcluded(availability.FieldStartsAt)
+// UpdateSlots sets the "slots" field to the value that was provided on create.
+func (u *AvailabilityUpsert) UpdateSlots() *AvailabilityUpsert {
+	u.SetExcluded(availability.FieldSlots)
 	return u
 }
 
-// SetEndsAt sets the "ends_at" field.
-func (u *AvailabilityUpsert) SetEndsAt(v time.Time) *AvailabilityUpsert {
-	u.Set(availability.FieldEndsAt, v)
+// SetRawMessage sets the "raw_message" field.
+func (u *AvailabilityUpsert) SetRawMessage(v string) *AvailabilityUpsert {
+	u.Set(availability.FieldRawMessage, v)
 	return u
 }
 
-// UpdateEndsAt sets the "ends_at" field to the value that was provided on create.
-func (u *AvailabilityUpsert) UpdateEndsAt() *AvailabilityUpsert {
-	u.SetExcluded(availability.FieldEndsAt)
+// UpdateRawMessage sets the "raw_message" field to the value that was provided on create.
+func (u *AvailabilityUpsert) UpdateRawMessage() *AvailabilityUpsert {
+	u.SetExcluded(availability.FieldRawMessage)
 	return u
 }
 
-// SetPreference sets the "preference" field.
-func (u *AvailabilityUpsert) SetPreference(v int) *AvailabilityUpsert {
-	u.Set(availability.FieldPreference, v)
-	return u
-}
-
-// UpdatePreference sets the "preference" field to the value that was provided on create.
-func (u *AvailabilityUpsert) UpdatePreference() *AvailabilityUpsert {
-	u.SetExcluded(availability.FieldPreference)
-	return u
-}
-
-// AddPreference adds v to the "preference" field.
-func (u *AvailabilityUpsert) AddPreference(v int) *AvailabilityUpsert {
-	u.Add(availability.FieldPreference, v)
-	return u
-}
-
-// SetNote sets the "note" field.
-func (u *AvailabilityUpsert) SetNote(v string) *AvailabilityUpsert {
-	u.Set(availability.FieldNote, v)
-	return u
-}
-
-// UpdateNote sets the "note" field to the value that was provided on create.
-func (u *AvailabilityUpsert) UpdateNote() *AvailabilityUpsert {
-	u.SetExcluded(availability.FieldNote)
-	return u
-}
-
-// SetRawText sets the "raw_text" field.
-func (u *AvailabilityUpsert) SetRawText(v string) *AvailabilityUpsert {
-	u.Set(availability.FieldRawText, v)
-	return u
-}
-
-// UpdateRawText sets the "raw_text" field to the value that was provided on create.
-func (u *AvailabilityUpsert) UpdateRawText() *AvailabilityUpsert {
-	u.SetExcluded(availability.FieldRawText)
-	return u
-}
-
-// UpdateNewValues updates the mutable fields using the new values that were set on create.
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
 //	client.Availability.Create().
 //		OnConflict(
 //			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(availability.FieldID)
+//			}),
 //		).
 //		Exec(ctx)
 func (u *AvailabilityUpsertOne) UpdateNewValues() *AvailabilityUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(availability.FieldID)
+		}
 		if _, exists := u.create.mutation.CreatedAt(); exists {
 			s.SetIgnore(availability.FieldCreatedAt)
 		}
@@ -497,7 +428,7 @@ func (u *AvailabilityUpsertOne) Update(set func(*AvailabilityUpsert)) *Availabil
 }
 
 // SetShopID sets the "shop_id" field.
-func (u *AvailabilityUpsertOne) SetShopID(v int) *AvailabilityUpsertOne {
+func (u *AvailabilityUpsertOne) SetShopID(v uuid.UUID) *AvailabilityUpsertOne {
 	return u.Update(func(s *AvailabilityUpsert) {
 		s.SetShopID(v)
 	})
@@ -511,7 +442,7 @@ func (u *AvailabilityUpsertOne) UpdateShopID() *AvailabilityUpsertOne {
 }
 
 // SetEmployeeID sets the "employee_id" field.
-func (u *AvailabilityUpsertOne) SetEmployeeID(v int) *AvailabilityUpsertOne {
+func (u *AvailabilityUpsertOne) SetEmployeeID(v uuid.UUID) *AvailabilityUpsertOne {
 	return u.Update(func(s *AvailabilityUpsert) {
 		s.SetEmployeeID(v)
 	})
@@ -538,80 +469,31 @@ func (u *AvailabilityUpsertOne) UpdateWeekStart() *AvailabilityUpsertOne {
 	})
 }
 
-// SetStartsAt sets the "starts_at" field.
-func (u *AvailabilityUpsertOne) SetStartsAt(v time.Time) *AvailabilityUpsertOne {
+// SetSlots sets the "slots" field.
+func (u *AvailabilityUpsertOne) SetSlots(v []schema.AvailabilitySlot) *AvailabilityUpsertOne {
 	return u.Update(func(s *AvailabilityUpsert) {
-		s.SetStartsAt(v)
+		s.SetSlots(v)
 	})
 }
 
-// UpdateStartsAt sets the "starts_at" field to the value that was provided on create.
-func (u *AvailabilityUpsertOne) UpdateStartsAt() *AvailabilityUpsertOne {
+// UpdateSlots sets the "slots" field to the value that was provided on create.
+func (u *AvailabilityUpsertOne) UpdateSlots() *AvailabilityUpsertOne {
 	return u.Update(func(s *AvailabilityUpsert) {
-		s.UpdateStartsAt()
+		s.UpdateSlots()
 	})
 }
 
-// SetEndsAt sets the "ends_at" field.
-func (u *AvailabilityUpsertOne) SetEndsAt(v time.Time) *AvailabilityUpsertOne {
+// SetRawMessage sets the "raw_message" field.
+func (u *AvailabilityUpsertOne) SetRawMessage(v string) *AvailabilityUpsertOne {
 	return u.Update(func(s *AvailabilityUpsert) {
-		s.SetEndsAt(v)
+		s.SetRawMessage(v)
 	})
 }
 
-// UpdateEndsAt sets the "ends_at" field to the value that was provided on create.
-func (u *AvailabilityUpsertOne) UpdateEndsAt() *AvailabilityUpsertOne {
+// UpdateRawMessage sets the "raw_message" field to the value that was provided on create.
+func (u *AvailabilityUpsertOne) UpdateRawMessage() *AvailabilityUpsertOne {
 	return u.Update(func(s *AvailabilityUpsert) {
-		s.UpdateEndsAt()
-	})
-}
-
-// SetPreference sets the "preference" field.
-func (u *AvailabilityUpsertOne) SetPreference(v int) *AvailabilityUpsertOne {
-	return u.Update(func(s *AvailabilityUpsert) {
-		s.SetPreference(v)
-	})
-}
-
-// AddPreference adds v to the "preference" field.
-func (u *AvailabilityUpsertOne) AddPreference(v int) *AvailabilityUpsertOne {
-	return u.Update(func(s *AvailabilityUpsert) {
-		s.AddPreference(v)
-	})
-}
-
-// UpdatePreference sets the "preference" field to the value that was provided on create.
-func (u *AvailabilityUpsertOne) UpdatePreference() *AvailabilityUpsertOne {
-	return u.Update(func(s *AvailabilityUpsert) {
-		s.UpdatePreference()
-	})
-}
-
-// SetNote sets the "note" field.
-func (u *AvailabilityUpsertOne) SetNote(v string) *AvailabilityUpsertOne {
-	return u.Update(func(s *AvailabilityUpsert) {
-		s.SetNote(v)
-	})
-}
-
-// UpdateNote sets the "note" field to the value that was provided on create.
-func (u *AvailabilityUpsertOne) UpdateNote() *AvailabilityUpsertOne {
-	return u.Update(func(s *AvailabilityUpsert) {
-		s.UpdateNote()
-	})
-}
-
-// SetRawText sets the "raw_text" field.
-func (u *AvailabilityUpsertOne) SetRawText(v string) *AvailabilityUpsertOne {
-	return u.Update(func(s *AvailabilityUpsert) {
-		s.SetRawText(v)
-	})
-}
-
-// UpdateRawText sets the "raw_text" field to the value that was provided on create.
-func (u *AvailabilityUpsertOne) UpdateRawText() *AvailabilityUpsertOne {
-	return u.Update(func(s *AvailabilityUpsert) {
-		s.UpdateRawText()
+		s.UpdateRawMessage()
 	})
 }
 
@@ -631,7 +513,12 @@ func (u *AvailabilityUpsertOne) ExecX(ctx context.Context) {
 }
 
 // Exec executes the UPSERT query and returns the inserted/updated ID.
-func (u *AvailabilityUpsertOne) ID(ctx context.Context) (id int, err error) {
+func (u *AvailabilityUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
+	if u.create.driver.Dialect() == dialect.MySQL {
+		// In case of "ON CONFLICT", there is no way to get back non-numeric ID
+		// fields from the database since MySQL does not support the RETURNING clause.
+		return id, errors.New("ent: AvailabilityUpsertOne.ID is not supported by MySQL driver. Use AvailabilityUpsertOne.Exec instead")
+	}
 	node, err := u.create.Save(ctx)
 	if err != nil {
 		return id, err
@@ -640,7 +527,7 @@ func (u *AvailabilityUpsertOne) ID(ctx context.Context) (id int, err error) {
 }
 
 // IDX is like ID, but panics if an error occurs.
-func (u *AvailabilityUpsertOne) IDX(ctx context.Context) int {
+func (u *AvailabilityUpsertOne) IDX(ctx context.Context) uuid.UUID {
 	id, err := u.ID(ctx)
 	if err != nil {
 		panic(err)
@@ -695,10 +582,6 @@ func (_c *AvailabilityCreateBulk) Save(ctx context.Context) ([]*Availability, er
 					return nil, err
 				}
 				mutation.id = &nodes[i].ID
-				if specs[i].ID.Value != nil {
-					id := specs[i].ID.Value.(int64)
-					nodes[i].ID = int(id)
-				}
 				mutation.done = true
 				return nodes[i], nil
 			})
@@ -785,12 +668,18 @@ type AvailabilityUpsertBulk struct {
 //	client.Availability.Create().
 //		OnConflict(
 //			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(availability.FieldID)
+//			}),
 //		).
 //		Exec(ctx)
 func (u *AvailabilityUpsertBulk) UpdateNewValues() *AvailabilityUpsertBulk {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(availability.FieldID)
+			}
 			if _, exists := b.mutation.CreatedAt(); exists {
 				s.SetIgnore(availability.FieldCreatedAt)
 			}
@@ -827,7 +716,7 @@ func (u *AvailabilityUpsertBulk) Update(set func(*AvailabilityUpsert)) *Availabi
 }
 
 // SetShopID sets the "shop_id" field.
-func (u *AvailabilityUpsertBulk) SetShopID(v int) *AvailabilityUpsertBulk {
+func (u *AvailabilityUpsertBulk) SetShopID(v uuid.UUID) *AvailabilityUpsertBulk {
 	return u.Update(func(s *AvailabilityUpsert) {
 		s.SetShopID(v)
 	})
@@ -841,7 +730,7 @@ func (u *AvailabilityUpsertBulk) UpdateShopID() *AvailabilityUpsertBulk {
 }
 
 // SetEmployeeID sets the "employee_id" field.
-func (u *AvailabilityUpsertBulk) SetEmployeeID(v int) *AvailabilityUpsertBulk {
+func (u *AvailabilityUpsertBulk) SetEmployeeID(v uuid.UUID) *AvailabilityUpsertBulk {
 	return u.Update(func(s *AvailabilityUpsert) {
 		s.SetEmployeeID(v)
 	})
@@ -868,80 +757,31 @@ func (u *AvailabilityUpsertBulk) UpdateWeekStart() *AvailabilityUpsertBulk {
 	})
 }
 
-// SetStartsAt sets the "starts_at" field.
-func (u *AvailabilityUpsertBulk) SetStartsAt(v time.Time) *AvailabilityUpsertBulk {
+// SetSlots sets the "slots" field.
+func (u *AvailabilityUpsertBulk) SetSlots(v []schema.AvailabilitySlot) *AvailabilityUpsertBulk {
 	return u.Update(func(s *AvailabilityUpsert) {
-		s.SetStartsAt(v)
+		s.SetSlots(v)
 	})
 }
 
-// UpdateStartsAt sets the "starts_at" field to the value that was provided on create.
-func (u *AvailabilityUpsertBulk) UpdateStartsAt() *AvailabilityUpsertBulk {
+// UpdateSlots sets the "slots" field to the value that was provided on create.
+func (u *AvailabilityUpsertBulk) UpdateSlots() *AvailabilityUpsertBulk {
 	return u.Update(func(s *AvailabilityUpsert) {
-		s.UpdateStartsAt()
+		s.UpdateSlots()
 	})
 }
 
-// SetEndsAt sets the "ends_at" field.
-func (u *AvailabilityUpsertBulk) SetEndsAt(v time.Time) *AvailabilityUpsertBulk {
+// SetRawMessage sets the "raw_message" field.
+func (u *AvailabilityUpsertBulk) SetRawMessage(v string) *AvailabilityUpsertBulk {
 	return u.Update(func(s *AvailabilityUpsert) {
-		s.SetEndsAt(v)
+		s.SetRawMessage(v)
 	})
 }
 
-// UpdateEndsAt sets the "ends_at" field to the value that was provided on create.
-func (u *AvailabilityUpsertBulk) UpdateEndsAt() *AvailabilityUpsertBulk {
+// UpdateRawMessage sets the "raw_message" field to the value that was provided on create.
+func (u *AvailabilityUpsertBulk) UpdateRawMessage() *AvailabilityUpsertBulk {
 	return u.Update(func(s *AvailabilityUpsert) {
-		s.UpdateEndsAt()
-	})
-}
-
-// SetPreference sets the "preference" field.
-func (u *AvailabilityUpsertBulk) SetPreference(v int) *AvailabilityUpsertBulk {
-	return u.Update(func(s *AvailabilityUpsert) {
-		s.SetPreference(v)
-	})
-}
-
-// AddPreference adds v to the "preference" field.
-func (u *AvailabilityUpsertBulk) AddPreference(v int) *AvailabilityUpsertBulk {
-	return u.Update(func(s *AvailabilityUpsert) {
-		s.AddPreference(v)
-	})
-}
-
-// UpdatePreference sets the "preference" field to the value that was provided on create.
-func (u *AvailabilityUpsertBulk) UpdatePreference() *AvailabilityUpsertBulk {
-	return u.Update(func(s *AvailabilityUpsert) {
-		s.UpdatePreference()
-	})
-}
-
-// SetNote sets the "note" field.
-func (u *AvailabilityUpsertBulk) SetNote(v string) *AvailabilityUpsertBulk {
-	return u.Update(func(s *AvailabilityUpsert) {
-		s.SetNote(v)
-	})
-}
-
-// UpdateNote sets the "note" field to the value that was provided on create.
-func (u *AvailabilityUpsertBulk) UpdateNote() *AvailabilityUpsertBulk {
-	return u.Update(func(s *AvailabilityUpsert) {
-		s.UpdateNote()
-	})
-}
-
-// SetRawText sets the "raw_text" field.
-func (u *AvailabilityUpsertBulk) SetRawText(v string) *AvailabilityUpsertBulk {
-	return u.Update(func(s *AvailabilityUpsert) {
-		s.SetRawText(v)
-	})
-}
-
-// UpdateRawText sets the "raw_text" field to the value that was provided on create.
-func (u *AvailabilityUpsertBulk) UpdateRawText() *AvailabilityUpsertBulk {
-	return u.Update(func(s *AvailabilityUpsert) {
-		s.UpdateRawText()
+		s.UpdateRawMessage()
 	})
 }
 

@@ -12,25 +12,24 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/betallsoph/shiftz/internal/ent/rule"
 	"github.com/betallsoph/shiftz/internal/ent/shop"
+	"github.com/google/uuid"
 )
 
 // Rule is the model entity for the Rule schema.
 type Rule struct {
 	config `json:"-"`
 	// ID of the ent.
-	ID int `json:"id,omitempty"`
+	ID uuid.UUID `json:"id,omitempty"`
 	// ShopID holds the value of the "shop_id" field.
-	ShopID int `json:"shop_id,omitempty"`
-	// Kind holds the value of the "kind" field.
-	Kind string `json:"kind,omitempty"`
-	// Params holds the value of the "params" field.
-	Params map[string]interface{} `json:"params,omitempty"`
+	ShopID uuid.UUID `json:"shop_id,omitempty"`
+	// Description holds the value of the "description" field.
+	Description string `json:"description,omitempty"`
+	// RuleJSON holds the value of the "rule_json" field.
+	RuleJSON map[string]interface{} `json:"rule_json,omitempty"`
 	// Weight holds the value of the "weight" field.
 	Weight float64 `json:"weight,omitempty"`
-	// SourceText holds the value of the "source_text" field.
-	SourceText string `json:"source_text,omitempty"`
-	// Active holds the value of the "active" field.
-	Active bool `json:"active,omitempty"`
+	// IsActive holds the value of the "is_active" field.
+	IsActive bool `json:"is_active,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -64,18 +63,18 @@ func (*Rule) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case rule.FieldParams:
+		case rule.FieldRuleJSON:
 			values[i] = new([]byte)
-		case rule.FieldActive:
+		case rule.FieldIsActive:
 			values[i] = new(sql.NullBool)
 		case rule.FieldWeight:
 			values[i] = new(sql.NullFloat64)
-		case rule.FieldID, rule.FieldShopID:
-			values[i] = new(sql.NullInt64)
-		case rule.FieldKind, rule.FieldSourceText:
+		case rule.FieldDescription:
 			values[i] = new(sql.NullString)
 		case rule.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
+		case rule.FieldID, rule.FieldShopID:
+			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -92,29 +91,29 @@ func (_m *Rule) assignValues(columns []string, values []any) error {
 	for i := range columns {
 		switch columns[i] {
 		case rule.FieldID:
-			value, ok := values[i].(*sql.NullInt64)
-			if !ok {
-				return fmt.Errorf("unexpected type %T for field id", value)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field id", values[i])
+			} else if value != nil {
+				_m.ID = *value
 			}
-			_m.ID = int(value.Int64)
 		case rule.FieldShopID:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
+			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field shop_id", values[i])
-			} else if value.Valid {
-				_m.ShopID = int(value.Int64)
+			} else if value != nil {
+				_m.ShopID = *value
 			}
-		case rule.FieldKind:
+		case rule.FieldDescription:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field kind", values[i])
+				return fmt.Errorf("unexpected type %T for field description", values[i])
 			} else if value.Valid {
-				_m.Kind = value.String
+				_m.Description = value.String
 			}
-		case rule.FieldParams:
+		case rule.FieldRuleJSON:
 			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field params", values[i])
+				return fmt.Errorf("unexpected type %T for field rule_json", values[i])
 			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &_m.Params); err != nil {
-					return fmt.Errorf("unmarshal field params: %w", err)
+				if err := json.Unmarshal(*value, &_m.RuleJSON); err != nil {
+					return fmt.Errorf("unmarshal field rule_json: %w", err)
 				}
 			}
 		case rule.FieldWeight:
@@ -123,17 +122,11 @@ func (_m *Rule) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.Weight = value.Float64
 			}
-		case rule.FieldSourceText:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field source_text", values[i])
-			} else if value.Valid {
-				_m.SourceText = value.String
-			}
-		case rule.FieldActive:
+		case rule.FieldIsActive:
 			if value, ok := values[i].(*sql.NullBool); !ok {
-				return fmt.Errorf("unexpected type %T for field active", values[i])
+				return fmt.Errorf("unexpected type %T for field is_active", values[i])
 			} else if value.Valid {
-				_m.Active = value.Bool
+				_m.IsActive = value.Bool
 			}
 		case rule.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -185,20 +178,17 @@ func (_m *Rule) String() string {
 	builder.WriteString("shop_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.ShopID))
 	builder.WriteString(", ")
-	builder.WriteString("kind=")
-	builder.WriteString(_m.Kind)
+	builder.WriteString("description=")
+	builder.WriteString(_m.Description)
 	builder.WriteString(", ")
-	builder.WriteString("params=")
-	builder.WriteString(fmt.Sprintf("%v", _m.Params))
+	builder.WriteString("rule_json=")
+	builder.WriteString(fmt.Sprintf("%v", _m.RuleJSON))
 	builder.WriteString(", ")
 	builder.WriteString("weight=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Weight))
 	builder.WriteString(", ")
-	builder.WriteString("source_text=")
-	builder.WriteString(_m.SourceText)
-	builder.WriteString(", ")
-	builder.WriteString("active=")
-	builder.WriteString(fmt.Sprintf("%v", _m.Active))
+	builder.WriteString("is_active=")
+	builder.WriteString(fmt.Sprintf("%v", _m.IsActive))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))

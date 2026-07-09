@@ -39,7 +39,7 @@ func run(log *slog.Logger) error {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
-	st, err := store.New(ctx, cfg.DatabaseURL)
+	st, err := store.New(ctx, cfg.DatabaseURL, cfg.EntDebug)
 	if err != nil {
 		return err
 	}

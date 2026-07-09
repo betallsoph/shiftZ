@@ -15,6 +15,7 @@ import (
 	"github.com/betallsoph/shiftz/internal/ent/employee"
 	"github.com/betallsoph/shiftz/internal/ent/predicate"
 	"github.com/betallsoph/shiftz/internal/ent/shop"
+	"github.com/google/uuid"
 )
 
 // AvailabilityQuery is the builder for querying Availability entities.
@@ -130,8 +131,8 @@ func (_q *AvailabilityQuery) FirstX(ctx context.Context) *Availability {
 
 // FirstID returns the first Availability ID from the query.
 // Returns a *NotFoundError when no Availability ID was found.
-func (_q *AvailabilityQuery) FirstID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (_q *AvailabilityQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
@@ -143,7 +144,7 @@ func (_q *AvailabilityQuery) FirstID(ctx context.Context) (id int, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (_q *AvailabilityQuery) FirstIDX(ctx context.Context) int {
+func (_q *AvailabilityQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -181,8 +182,8 @@ func (_q *AvailabilityQuery) OnlyX(ctx context.Context) *Availability {
 // OnlyID is like Only, but returns the only Availability ID in the query.
 // Returns a *NotSingularError when more than one Availability ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (_q *AvailabilityQuery) OnlyID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (_q *AvailabilityQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
@@ -198,7 +199,7 @@ func (_q *AvailabilityQuery) OnlyID(ctx context.Context) (id int, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (_q *AvailabilityQuery) OnlyIDX(ctx context.Context) int {
+func (_q *AvailabilityQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -226,7 +227,7 @@ func (_q *AvailabilityQuery) AllX(ctx context.Context) []*Availability {
 }
 
 // IDs executes the query and returns a list of Availability IDs.
-func (_q *AvailabilityQuery) IDs(ctx context.Context) (ids []int, err error) {
+func (_q *AvailabilityQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
 	if _q.ctx.Unique == nil && _q.path != nil {
 		_q.Unique(true)
 	}
@@ -238,7 +239,7 @@ func (_q *AvailabilityQuery) IDs(ctx context.Context) (ids []int, err error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (_q *AvailabilityQuery) IDsX(ctx context.Context) []int {
+func (_q *AvailabilityQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -334,7 +335,7 @@ func (_q *AvailabilityQuery) WithEmployee(opts ...func(*EmployeeQuery)) *Availab
 // Example:
 //
 //	var v []struct {
-//		ShopID int `json:"shop_id,omitempty"`
+//		ShopID uuid.UUID `json:"shop_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
@@ -357,7 +358,7 @@ func (_q *AvailabilityQuery) GroupBy(field string, fields ...string) *Availabili
 // Example:
 //
 //	var v []struct {
-//		ShopID int `json:"shop_id,omitempty"`
+//		ShopID uuid.UUID `json:"shop_id,omitempty"`
 //	}
 //
 //	client.Availability.Query().
@@ -445,8 +446,8 @@ func (_q *AvailabilityQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 }
 
 func (_q *AvailabilityQuery) loadShop(ctx context.Context, query *ShopQuery, nodes []*Availability, init func(*Availability), assign func(*Availability, *Shop)) error {
-	ids := make([]int, 0, len(nodes))
-	nodeids := make(map[int][]*Availability)
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Availability)
 	for i := range nodes {
 		fk := nodes[i].ShopID
 		if _, ok := nodeids[fk]; !ok {
@@ -474,8 +475,8 @@ func (_q *AvailabilityQuery) loadShop(ctx context.Context, query *ShopQuery, nod
 	return nil
 }
 func (_q *AvailabilityQuery) loadEmployee(ctx context.Context, query *EmployeeQuery, nodes []*Availability, init func(*Availability), assign func(*Availability, *Employee)) error {
-	ids := make([]int, 0, len(nodes))
-	nodeids := make(map[int][]*Availability)
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Availability)
 	for i := range nodes {
 		fk := nodes[i].EmployeeID
 		if _, ok := nodeids[fk]; !ok {
@@ -513,7 +514,7 @@ func (_q *AvailabilityQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (_q *AvailabilityQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := sqlgraph.NewQuerySpec(availability.Table, availability.Columns, sqlgraph.NewFieldSpec(availability.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewQuerySpec(availability.Table, availability.Columns, sqlgraph.NewFieldSpec(availability.FieldID, field.TypeUUID))
 	_spec.From = _q.sql
 	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique

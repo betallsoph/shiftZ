@@ -7,6 +7,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/google/uuid"
 )
 
 const (
@@ -20,16 +21,18 @@ const (
 	FieldTelegramUserID = "telegram_user_id"
 	// FieldDisplayName holds the string denoting the display_name field in the database.
 	FieldDisplayName = "display_name"
+	// FieldRole holds the string denoting the role field in the database.
+	FieldRole = "role"
 	// FieldMaxHoursPerWeek holds the string denoting the max_hours_per_week field in the database.
 	FieldMaxHoursPerWeek = "max_hours_per_week"
-	// FieldActive holds the string denoting the active field in the database.
-	FieldActive = "active"
+	// FieldIsActive holds the string denoting the is_active field in the database.
+	FieldIsActive = "is_active"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// EdgeShop holds the string denoting the shop edge name in mutations.
 	EdgeShop = "shop"
-	// EdgeAvailability holds the string denoting the availability edge name in mutations.
-	EdgeAvailability = "availability"
+	// EdgeAvailabilities holds the string denoting the availabilities edge name in mutations.
+	EdgeAvailabilities = "availabilities"
 	// EdgeAssignments holds the string denoting the assignments edge name in mutations.
 	EdgeAssignments = "assignments"
 	// EdgeVotes holds the string denoting the votes edge name in mutations.
@@ -43,13 +46,13 @@ const (
 	ShopInverseTable = "shops"
 	// ShopColumn is the table column denoting the shop relation/edge.
 	ShopColumn = "shop_id"
-	// AvailabilityTable is the table that holds the availability relation/edge.
-	AvailabilityTable = "availabilities"
-	// AvailabilityInverseTable is the table name for the Availability entity.
+	// AvailabilitiesTable is the table that holds the availabilities relation/edge.
+	AvailabilitiesTable = "availabilities"
+	// AvailabilitiesInverseTable is the table name for the Availability entity.
 	// It exists in this package in order to avoid circular dependency with the "availability" package.
-	AvailabilityInverseTable = "availabilities"
-	// AvailabilityColumn is the table column denoting the availability relation/edge.
-	AvailabilityColumn = "employee_id"
+	AvailabilitiesInverseTable = "availabilities"
+	// AvailabilitiesColumn is the table column denoting the availabilities relation/edge.
+	AvailabilitiesColumn = "employee_id"
 	// AssignmentsTable is the table that holds the assignments relation/edge.
 	AssignmentsTable = "schedule_assignments"
 	// AssignmentsInverseTable is the table name for the ScheduleAssignment entity.
@@ -72,8 +75,9 @@ var Columns = []string{
 	FieldShopID,
 	FieldTelegramUserID,
 	FieldDisplayName,
+	FieldRole,
 	FieldMaxHoursPerWeek,
-	FieldActive,
+	FieldIsActive,
 	FieldCreatedAt,
 }
 
@@ -88,12 +92,16 @@ func ValidColumn(column string) bool {
 }
 
 var (
+	// DefaultRole holds the default value on creation for the "role" field.
+	DefaultRole string
 	// DefaultMaxHoursPerWeek holds the default value on creation for the "max_hours_per_week" field.
 	DefaultMaxHoursPerWeek float64
-	// DefaultActive holds the default value on creation for the "active" field.
-	DefaultActive bool
+	// DefaultIsActive holds the default value on creation for the "is_active" field.
+	DefaultIsActive bool
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
+	// DefaultID holds the default value on creation for the "id" field.
+	DefaultID func() uuid.UUID
 )
 
 // OrderOption defines the ordering options for the Employee queries.
@@ -119,14 +127,19 @@ func ByDisplayName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDisplayName, opts...).ToFunc()
 }
 
+// ByRole orders the results by the role field.
+func ByRole(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldRole, opts...).ToFunc()
+}
+
 // ByMaxHoursPerWeek orders the results by the max_hours_per_week field.
 func ByMaxHoursPerWeek(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldMaxHoursPerWeek, opts...).ToFunc()
 }
 
-// ByActive orders the results by the active field.
-func ByActive(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldActive, opts...).ToFunc()
+// ByIsActive orders the results by the is_active field.
+func ByIsActive(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldIsActive, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.
@@ -141,17 +154,17 @@ func ByShopField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
-// ByAvailabilityCount orders the results by availability count.
-func ByAvailabilityCount(opts ...sql.OrderTermOption) OrderOption {
+// ByAvailabilitiesCount orders the results by availabilities count.
+func ByAvailabilitiesCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newAvailabilityStep(), opts...)
+		sqlgraph.OrderByNeighborsCount(s, newAvailabilitiesStep(), opts...)
 	}
 }
 
-// ByAvailability orders the results by availability terms.
-func ByAvailability(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// ByAvailabilities orders the results by availabilities terms.
+func ByAvailabilities(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newAvailabilityStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newAvailabilitiesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 
@@ -189,11 +202,11 @@ func newShopStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, true, ShopTable, ShopColumn),
 	)
 }
-func newAvailabilityStep() *sqlgraph.Step {
+func newAvailabilitiesStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(AvailabilityInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, AvailabilityTable, AvailabilityColumn),
+		sqlgraph.To(AvailabilitiesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, AvailabilitiesTable, AvailabilitiesColumn),
 	)
 }
 func newAssignmentsStep() *sqlgraph.Step {

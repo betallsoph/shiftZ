@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"time"
 
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -15,6 +16,7 @@ import (
 	"github.com/betallsoph/shiftz/internal/ent/schedule"
 	"github.com/betallsoph/shiftz/internal/ent/schedulevote"
 	"github.com/betallsoph/shiftz/internal/ent/shop"
+	"github.com/google/uuid"
 )
 
 // ScheduleVoteCreate is the builder for creating a ScheduleVote entity.
@@ -26,20 +28,26 @@ type ScheduleVoteCreate struct {
 }
 
 // SetShopID sets the "shop_id" field.
-func (_c *ScheduleVoteCreate) SetShopID(v int) *ScheduleVoteCreate {
+func (_c *ScheduleVoteCreate) SetShopID(v uuid.UUID) *ScheduleVoteCreate {
 	_c.mutation.SetShopID(v)
 	return _c
 }
 
 // SetScheduleID sets the "schedule_id" field.
-func (_c *ScheduleVoteCreate) SetScheduleID(v int) *ScheduleVoteCreate {
+func (_c *ScheduleVoteCreate) SetScheduleID(v uuid.UUID) *ScheduleVoteCreate {
 	_c.mutation.SetScheduleID(v)
 	return _c
 }
 
 // SetEmployeeID sets the "employee_id" field.
-func (_c *ScheduleVoteCreate) SetEmployeeID(v int) *ScheduleVoteCreate {
+func (_c *ScheduleVoteCreate) SetEmployeeID(v uuid.UUID) *ScheduleVoteCreate {
 	_c.mutation.SetEmployeeID(v)
+	return _c
+}
+
+// SetWeekStart sets the "week_start" field.
+func (_c *ScheduleVoteCreate) SetWeekStart(v time.Time) *ScheduleVoteCreate {
+	_c.mutation.SetWeekStart(v)
 	return _c
 }
 
@@ -53,6 +61,20 @@ func (_c *ScheduleVoteCreate) SetCreatedAt(v time.Time) *ScheduleVoteCreate {
 func (_c *ScheduleVoteCreate) SetNillableCreatedAt(v *time.Time) *ScheduleVoteCreate {
 	if v != nil {
 		_c.SetCreatedAt(*v)
+	}
+	return _c
+}
+
+// SetID sets the "id" field.
+func (_c *ScheduleVoteCreate) SetID(v uuid.UUID) *ScheduleVoteCreate {
+	_c.mutation.SetID(v)
+	return _c
+}
+
+// SetNillableID sets the "id" field if the given value is not nil.
+func (_c *ScheduleVoteCreate) SetNillableID(v *uuid.UUID) *ScheduleVoteCreate {
+	if v != nil {
+		_c.SetID(*v)
 	}
 	return _c
 }
@@ -111,6 +133,10 @@ func (_c *ScheduleVoteCreate) defaults() {
 		v := schedulevote.DefaultCreatedAt()
 		_c.mutation.SetCreatedAt(v)
 	}
+	if _, ok := _c.mutation.ID(); !ok {
+		v := schedulevote.DefaultID()
+		_c.mutation.SetID(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -123,6 +149,9 @@ func (_c *ScheduleVoteCreate) check() error {
 	}
 	if _, ok := _c.mutation.EmployeeID(); !ok {
 		return &ValidationError{Name: "employee_id", err: errors.New(`ent: missing required field "ScheduleVote.employee_id"`)}
+	}
+	if _, ok := _c.mutation.WeekStart(); !ok {
+		return &ValidationError{Name: "week_start", err: errors.New(`ent: missing required field "ScheduleVote.week_start"`)}
 	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "ScheduleVote.created_at"`)}
@@ -150,8 +179,13 @@ func (_c *ScheduleVoteCreate) sqlSave(ctx context.Context) (*ScheduleVote, error
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
+	if _spec.ID.Value != nil {
+		if id, ok := _spec.ID.Value.(*uuid.UUID); ok {
+			_node.ID = *id
+		} else if err := _node.ID.Scan(_spec.ID.Value); err != nil {
+			return nil, err
+		}
+	}
 	_c.mutation.id = &_node.ID
 	_c.mutation.done = true
 	return _node, nil
@@ -160,9 +194,17 @@ func (_c *ScheduleVoteCreate) sqlSave(ctx context.Context) (*ScheduleVote, error
 func (_c *ScheduleVoteCreate) createSpec() (*ScheduleVote, *sqlgraph.CreateSpec) {
 	var (
 		_node = &ScheduleVote{config: _c.config}
-		_spec = sqlgraph.NewCreateSpec(schedulevote.Table, sqlgraph.NewFieldSpec(schedulevote.FieldID, field.TypeInt))
+		_spec = sqlgraph.NewCreateSpec(schedulevote.Table, sqlgraph.NewFieldSpec(schedulevote.FieldID, field.TypeUUID))
 	)
 	_spec.OnConflict = _c.conflict
+	if id, ok := _c.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = &id
+	}
+	if value, ok := _c.mutation.WeekStart(); ok {
+		_spec.SetField(schedulevote.FieldWeekStart, field.TypeTime, value)
+		_node.WeekStart = value
+	}
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(schedulevote.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
@@ -170,12 +212,12 @@ func (_c *ScheduleVoteCreate) createSpec() (*ScheduleVote, *sqlgraph.CreateSpec)
 	if nodes := _c.mutation.ShopIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: true,
+			Inverse: false,
 			Table:   schedulevote.ShopTable,
 			Columns: []string{schedulevote.ShopColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -192,7 +234,7 @@ func (_c *ScheduleVoteCreate) createSpec() (*ScheduleVote, *sqlgraph.CreateSpec)
 			Columns: []string{schedulevote.ScheduleColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(schedule.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(schedule.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -209,7 +251,7 @@ func (_c *ScheduleVoteCreate) createSpec() (*ScheduleVote, *sqlgraph.CreateSpec)
 			Columns: []string{schedulevote.EmployeeColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -271,7 +313,7 @@ type (
 )
 
 // SetShopID sets the "shop_id" field.
-func (u *ScheduleVoteUpsert) SetShopID(v int) *ScheduleVoteUpsert {
+func (u *ScheduleVoteUpsert) SetShopID(v uuid.UUID) *ScheduleVoteUpsert {
 	u.Set(schedulevote.FieldShopID, v)
 	return u
 }
@@ -283,7 +325,7 @@ func (u *ScheduleVoteUpsert) UpdateShopID() *ScheduleVoteUpsert {
 }
 
 // SetScheduleID sets the "schedule_id" field.
-func (u *ScheduleVoteUpsert) SetScheduleID(v int) *ScheduleVoteUpsert {
+func (u *ScheduleVoteUpsert) SetScheduleID(v uuid.UUID) *ScheduleVoteUpsert {
 	u.Set(schedulevote.FieldScheduleID, v)
 	return u
 }
@@ -295,7 +337,7 @@ func (u *ScheduleVoteUpsert) UpdateScheduleID() *ScheduleVoteUpsert {
 }
 
 // SetEmployeeID sets the "employee_id" field.
-func (u *ScheduleVoteUpsert) SetEmployeeID(v int) *ScheduleVoteUpsert {
+func (u *ScheduleVoteUpsert) SetEmployeeID(v uuid.UUID) *ScheduleVoteUpsert {
 	u.Set(schedulevote.FieldEmployeeID, v)
 	return u
 }
@@ -306,17 +348,35 @@ func (u *ScheduleVoteUpsert) UpdateEmployeeID() *ScheduleVoteUpsert {
 	return u
 }
 
-// UpdateNewValues updates the mutable fields using the new values that were set on create.
+// SetWeekStart sets the "week_start" field.
+func (u *ScheduleVoteUpsert) SetWeekStart(v time.Time) *ScheduleVoteUpsert {
+	u.Set(schedulevote.FieldWeekStart, v)
+	return u
+}
+
+// UpdateWeekStart sets the "week_start" field to the value that was provided on create.
+func (u *ScheduleVoteUpsert) UpdateWeekStart() *ScheduleVoteUpsert {
+	u.SetExcluded(schedulevote.FieldWeekStart)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
 //	client.ScheduleVote.Create().
 //		OnConflict(
 //			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(schedulevote.FieldID)
+//			}),
 //		).
 //		Exec(ctx)
 func (u *ScheduleVoteUpsertOne) UpdateNewValues() *ScheduleVoteUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(schedulevote.FieldID)
+		}
 		if _, exists := u.create.mutation.CreatedAt(); exists {
 			s.SetIgnore(schedulevote.FieldCreatedAt)
 		}
@@ -352,7 +412,7 @@ func (u *ScheduleVoteUpsertOne) Update(set func(*ScheduleVoteUpsert)) *ScheduleV
 }
 
 // SetShopID sets the "shop_id" field.
-func (u *ScheduleVoteUpsertOne) SetShopID(v int) *ScheduleVoteUpsertOne {
+func (u *ScheduleVoteUpsertOne) SetShopID(v uuid.UUID) *ScheduleVoteUpsertOne {
 	return u.Update(func(s *ScheduleVoteUpsert) {
 		s.SetShopID(v)
 	})
@@ -366,7 +426,7 @@ func (u *ScheduleVoteUpsertOne) UpdateShopID() *ScheduleVoteUpsertOne {
 }
 
 // SetScheduleID sets the "schedule_id" field.
-func (u *ScheduleVoteUpsertOne) SetScheduleID(v int) *ScheduleVoteUpsertOne {
+func (u *ScheduleVoteUpsertOne) SetScheduleID(v uuid.UUID) *ScheduleVoteUpsertOne {
 	return u.Update(func(s *ScheduleVoteUpsert) {
 		s.SetScheduleID(v)
 	})
@@ -380,7 +440,7 @@ func (u *ScheduleVoteUpsertOne) UpdateScheduleID() *ScheduleVoteUpsertOne {
 }
 
 // SetEmployeeID sets the "employee_id" field.
-func (u *ScheduleVoteUpsertOne) SetEmployeeID(v int) *ScheduleVoteUpsertOne {
+func (u *ScheduleVoteUpsertOne) SetEmployeeID(v uuid.UUID) *ScheduleVoteUpsertOne {
 	return u.Update(func(s *ScheduleVoteUpsert) {
 		s.SetEmployeeID(v)
 	})
@@ -390,6 +450,20 @@ func (u *ScheduleVoteUpsertOne) SetEmployeeID(v int) *ScheduleVoteUpsertOne {
 func (u *ScheduleVoteUpsertOne) UpdateEmployeeID() *ScheduleVoteUpsertOne {
 	return u.Update(func(s *ScheduleVoteUpsert) {
 		s.UpdateEmployeeID()
+	})
+}
+
+// SetWeekStart sets the "week_start" field.
+func (u *ScheduleVoteUpsertOne) SetWeekStart(v time.Time) *ScheduleVoteUpsertOne {
+	return u.Update(func(s *ScheduleVoteUpsert) {
+		s.SetWeekStart(v)
+	})
+}
+
+// UpdateWeekStart sets the "week_start" field to the value that was provided on create.
+func (u *ScheduleVoteUpsertOne) UpdateWeekStart() *ScheduleVoteUpsertOne {
+	return u.Update(func(s *ScheduleVoteUpsert) {
+		s.UpdateWeekStart()
 	})
 }
 
@@ -409,7 +483,12 @@ func (u *ScheduleVoteUpsertOne) ExecX(ctx context.Context) {
 }
 
 // Exec executes the UPSERT query and returns the inserted/updated ID.
-func (u *ScheduleVoteUpsertOne) ID(ctx context.Context) (id int, err error) {
+func (u *ScheduleVoteUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
+	if u.create.driver.Dialect() == dialect.MySQL {
+		// In case of "ON CONFLICT", there is no way to get back non-numeric ID
+		// fields from the database since MySQL does not support the RETURNING clause.
+		return id, errors.New("ent: ScheduleVoteUpsertOne.ID is not supported by MySQL driver. Use ScheduleVoteUpsertOne.Exec instead")
+	}
 	node, err := u.create.Save(ctx)
 	if err != nil {
 		return id, err
@@ -418,7 +497,7 @@ func (u *ScheduleVoteUpsertOne) ID(ctx context.Context) (id int, err error) {
 }
 
 // IDX is like ID, but panics if an error occurs.
-func (u *ScheduleVoteUpsertOne) IDX(ctx context.Context) int {
+func (u *ScheduleVoteUpsertOne) IDX(ctx context.Context) uuid.UUID {
 	id, err := u.ID(ctx)
 	if err != nil {
 		panic(err)
@@ -473,10 +552,6 @@ func (_c *ScheduleVoteCreateBulk) Save(ctx context.Context) ([]*ScheduleVote, er
 					return nil, err
 				}
 				mutation.id = &nodes[i].ID
-				if specs[i].ID.Value != nil {
-					id := specs[i].ID.Value.(int64)
-					nodes[i].ID = int(id)
-				}
 				mutation.done = true
 				return nodes[i], nil
 			})
@@ -563,12 +638,18 @@ type ScheduleVoteUpsertBulk struct {
 //	client.ScheduleVote.Create().
 //		OnConflict(
 //			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(schedulevote.FieldID)
+//			}),
 //		).
 //		Exec(ctx)
 func (u *ScheduleVoteUpsertBulk) UpdateNewValues() *ScheduleVoteUpsertBulk {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(schedulevote.FieldID)
+			}
 			if _, exists := b.mutation.CreatedAt(); exists {
 				s.SetIgnore(schedulevote.FieldCreatedAt)
 			}
@@ -605,7 +686,7 @@ func (u *ScheduleVoteUpsertBulk) Update(set func(*ScheduleVoteUpsert)) *Schedule
 }
 
 // SetShopID sets the "shop_id" field.
-func (u *ScheduleVoteUpsertBulk) SetShopID(v int) *ScheduleVoteUpsertBulk {
+func (u *ScheduleVoteUpsertBulk) SetShopID(v uuid.UUID) *ScheduleVoteUpsertBulk {
 	return u.Update(func(s *ScheduleVoteUpsert) {
 		s.SetShopID(v)
 	})
@@ -619,7 +700,7 @@ func (u *ScheduleVoteUpsertBulk) UpdateShopID() *ScheduleVoteUpsertBulk {
 }
 
 // SetScheduleID sets the "schedule_id" field.
-func (u *ScheduleVoteUpsertBulk) SetScheduleID(v int) *ScheduleVoteUpsertBulk {
+func (u *ScheduleVoteUpsertBulk) SetScheduleID(v uuid.UUID) *ScheduleVoteUpsertBulk {
 	return u.Update(func(s *ScheduleVoteUpsert) {
 		s.SetScheduleID(v)
 	})
@@ -633,7 +714,7 @@ func (u *ScheduleVoteUpsertBulk) UpdateScheduleID() *ScheduleVoteUpsertBulk {
 }
 
 // SetEmployeeID sets the "employee_id" field.
-func (u *ScheduleVoteUpsertBulk) SetEmployeeID(v int) *ScheduleVoteUpsertBulk {
+func (u *ScheduleVoteUpsertBulk) SetEmployeeID(v uuid.UUID) *ScheduleVoteUpsertBulk {
 	return u.Update(func(s *ScheduleVoteUpsert) {
 		s.SetEmployeeID(v)
 	})
@@ -643,6 +724,20 @@ func (u *ScheduleVoteUpsertBulk) SetEmployeeID(v int) *ScheduleVoteUpsertBulk {
 func (u *ScheduleVoteUpsertBulk) UpdateEmployeeID() *ScheduleVoteUpsertBulk {
 	return u.Update(func(s *ScheduleVoteUpsert) {
 		s.UpdateEmployeeID()
+	})
+}
+
+// SetWeekStart sets the "week_start" field.
+func (u *ScheduleVoteUpsertBulk) SetWeekStart(v time.Time) *ScheduleVoteUpsertBulk {
+	return u.Update(func(s *ScheduleVoteUpsert) {
+		s.SetWeekStart(v)
+	})
+}
+
+// UpdateWeekStart sets the "week_start" field to the value that was provided on create.
+func (u *ScheduleVoteUpsertBulk) UpdateWeekStart() *ScheduleVoteUpsertBulk {
+	return u.Update(func(s *ScheduleVoteUpsert) {
+		s.UpdateWeekStart()
 	})
 }
 

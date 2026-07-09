@@ -11,21 +11,22 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/betallsoph/shiftz/internal/ent/schedule"
 	"github.com/betallsoph/shiftz/internal/ent/shop"
+	"github.com/google/uuid"
 )
 
 // Schedule is the model entity for the Schedule schema.
 type Schedule struct {
 	config `json:"-"`
 	// ID of the ent.
-	ID int `json:"id,omitempty"`
+	ID uuid.UUID `json:"id,omitempty"`
 	// ShopID holds the value of the "shop_id" field.
-	ShopID int `json:"shop_id,omitempty"`
+	ShopID uuid.UUID `json:"shop_id,omitempty"`
 	// WeekStart holds the value of the "week_start" field.
 	WeekStart time.Time `json:"week_start,omitempty"`
-	// Label holds the value of the "label" field.
-	Label string `json:"label,omitempty"`
 	// Status holds the value of the "status" field.
 	Status schedule.Status `json:"status,omitempty"`
+	// VariantLabel holds the value of the "variant_label" field.
+	VariantLabel string `json:"variant_label,omitempty"`
 	// Score holds the value of the "score" field.
 	Score float64 `json:"score,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
@@ -85,12 +86,12 @@ func (*Schedule) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case schedule.FieldScore:
 			values[i] = new(sql.NullFloat64)
-		case schedule.FieldID, schedule.FieldShopID:
-			values[i] = new(sql.NullInt64)
-		case schedule.FieldLabel, schedule.FieldStatus:
+		case schedule.FieldStatus, schedule.FieldVariantLabel:
 			values[i] = new(sql.NullString)
 		case schedule.FieldWeekStart, schedule.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
+		case schedule.FieldID, schedule.FieldShopID:
+			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -107,16 +108,16 @@ func (_m *Schedule) assignValues(columns []string, values []any) error {
 	for i := range columns {
 		switch columns[i] {
 		case schedule.FieldID:
-			value, ok := values[i].(*sql.NullInt64)
-			if !ok {
-				return fmt.Errorf("unexpected type %T for field id", value)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field id", values[i])
+			} else if value != nil {
+				_m.ID = *value
 			}
-			_m.ID = int(value.Int64)
 		case schedule.FieldShopID:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
+			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field shop_id", values[i])
-			} else if value.Valid {
-				_m.ShopID = int(value.Int64)
+			} else if value != nil {
+				_m.ShopID = *value
 			}
 		case schedule.FieldWeekStart:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -124,17 +125,17 @@ func (_m *Schedule) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.WeekStart = value.Time
 			}
-		case schedule.FieldLabel:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field label", values[i])
-			} else if value.Valid {
-				_m.Label = value.String
-			}
 		case schedule.FieldStatus:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field status", values[i])
 			} else if value.Valid {
 				_m.Status = schedule.Status(value.String)
+			}
+		case schedule.FieldVariantLabel:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field variant_label", values[i])
+			} else if value.Valid {
+				_m.VariantLabel = value.String
 			}
 		case schedule.FieldScore:
 			if value, ok := values[i].(*sql.NullFloat64); !ok {
@@ -205,11 +206,11 @@ func (_m *Schedule) String() string {
 	builder.WriteString("week_start=")
 	builder.WriteString(_m.WeekStart.Format(time.ANSIC))
 	builder.WriteString(", ")
-	builder.WriteString("label=")
-	builder.WriteString(_m.Label)
-	builder.WriteString(", ")
 	builder.WriteString("status=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Status))
+	builder.WriteString(", ")
+	builder.WriteString("variant_label=")
+	builder.WriteString(_m.VariantLabel)
 	builder.WriteString(", ")
 	builder.WriteString("score=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Score))

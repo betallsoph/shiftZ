@@ -8,6 +8,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/google/uuid"
 )
 
 const (
@@ -19,10 +20,10 @@ const (
 	FieldShopID = "shop_id"
 	// FieldWeekStart holds the string denoting the week_start field in the database.
 	FieldWeekStart = "week_start"
-	// FieldLabel holds the string denoting the label field in the database.
-	FieldLabel = "label"
 	// FieldStatus holds the string denoting the status field in the database.
 	FieldStatus = "status"
+	// FieldVariantLabel holds the string denoting the variant_label field in the database.
+	FieldVariantLabel = "variant_label"
 	// FieldScore holds the string denoting the score field in the database.
 	FieldScore = "score"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
@@ -63,8 +64,8 @@ var Columns = []string{
 	FieldID,
 	FieldShopID,
 	FieldWeekStart,
-	FieldLabel,
 	FieldStatus,
+	FieldVariantLabel,
 	FieldScore,
 	FieldCreatedAt,
 }
@@ -80,12 +81,14 @@ func ValidColumn(column string) bool {
 }
 
 var (
-	// DefaultLabel holds the default value on creation for the "label" field.
-	DefaultLabel string
+	// DefaultVariantLabel holds the default value on creation for the "variant_label" field.
+	DefaultVariantLabel string
 	// DefaultScore holds the default value on creation for the "score" field.
 	DefaultScore float64
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
+	// DefaultID holds the default value on creation for the "id" field.
+	DefaultID func() uuid.UUID
 )
 
 // Status defines the type for the "status" enum field.
@@ -96,10 +99,10 @@ const DefaultStatus = StatusDraft
 
 // Status values.
 const (
-	StatusDraft  Status = "draft"
-	StatusVoting Status = "voting"
-	StatusFinal  Status = "final"
-	StatusVetoed Status = "vetoed"
+	StatusDraft     Status = "draft"
+	StatusVoting    Status = "voting"
+	StatusApproved  Status = "approved"
+	StatusPublished Status = "published"
 )
 
 func (s Status) String() string {
@@ -109,7 +112,7 @@ func (s Status) String() string {
 // StatusValidator is a validator for the "status" field enum values. It is called by the builders before save.
 func StatusValidator(s Status) error {
 	switch s {
-	case StatusDraft, StatusVoting, StatusFinal, StatusVetoed:
+	case StatusDraft, StatusVoting, StatusApproved, StatusPublished:
 		return nil
 	default:
 		return fmt.Errorf("schedule: invalid enum value for status field: %q", s)
@@ -134,14 +137,14 @@ func ByWeekStart(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldWeekStart, opts...).ToFunc()
 }
 
-// ByLabel orders the results by the label field.
-func ByLabel(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldLabel, opts...).ToFunc()
-}
-
 // ByStatus orders the results by the status field.
 func ByStatus(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldStatus, opts...).ToFunc()
+}
+
+// ByVariantLabel orders the results by the variant_label field.
+func ByVariantLabel(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldVariantLabel, opts...).ToFunc()
 }
 
 // ByScore orders the results by the score field.

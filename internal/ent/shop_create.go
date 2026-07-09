@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"time"
 
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -15,10 +16,9 @@ import (
 	"github.com/betallsoph/shiftz/internal/ent/employee"
 	"github.com/betallsoph/shiftz/internal/ent/rule"
 	"github.com/betallsoph/shiftz/internal/ent/schedule"
-	"github.com/betallsoph/shiftz/internal/ent/scheduleassignment"
-	"github.com/betallsoph/shiftz/internal/ent/schedulevote"
 	"github.com/betallsoph/shiftz/internal/ent/shift"
 	"github.com/betallsoph/shiftz/internal/ent/shop"
+	"github.com/google/uuid"
 )
 
 // ShopCreate is the builder for creating a Shop entity.
@@ -55,9 +55,23 @@ func (_c *ShopCreate) SetInviteCode(v string) *ShopCreate {
 	return _c
 }
 
-// SetOwnerTelegramID sets the "owner_telegram_id" field.
-func (_c *ShopCreate) SetOwnerTelegramID(v int64) *ShopCreate {
-	_c.mutation.SetOwnerTelegramID(v)
+// SetTelegramGroupID sets the "telegram_group_id" field.
+func (_c *ShopCreate) SetTelegramGroupID(v int64) *ShopCreate {
+	_c.mutation.SetTelegramGroupID(v)
+	return _c
+}
+
+// SetPlan sets the "plan" field.
+func (_c *ShopCreate) SetPlan(v string) *ShopCreate {
+	_c.mutation.SetPlan(v)
+	return _c
+}
+
+// SetNillablePlan sets the "plan" field if the given value is not nil.
+func (_c *ShopCreate) SetNillablePlan(v *string) *ShopCreate {
+	if v != nil {
+		_c.SetPlan(*v)
+	}
 	return _c
 }
 
@@ -75,45 +89,44 @@ func (_c *ShopCreate) SetNillableCreatedAt(v *time.Time) *ShopCreate {
 	return _c
 }
 
+// SetID sets the "id" field.
+func (_c *ShopCreate) SetID(v uuid.UUID) *ShopCreate {
+	_c.mutation.SetID(v)
+	return _c
+}
+
+// SetNillableID sets the "id" field if the given value is not nil.
+func (_c *ShopCreate) SetNillableID(v *uuid.UUID) *ShopCreate {
+	if v != nil {
+		_c.SetID(*v)
+	}
+	return _c
+}
+
 // AddEmployeeIDs adds the "employees" edge to the Employee entity by IDs.
-func (_c *ShopCreate) AddEmployeeIDs(ids ...int) *ShopCreate {
+func (_c *ShopCreate) AddEmployeeIDs(ids ...uuid.UUID) *ShopCreate {
 	_c.mutation.AddEmployeeIDs(ids...)
 	return _c
 }
 
 // AddEmployees adds the "employees" edges to the Employee entity.
 func (_c *ShopCreate) AddEmployees(v ...*Employee) *ShopCreate {
-	ids := make([]int, len(v))
+	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
 	return _c.AddEmployeeIDs(ids...)
 }
 
-// AddAvailabilityIDs adds the "availability" edge to the Availability entity by IDs.
-func (_c *ShopCreate) AddAvailabilityIDs(ids ...int) *ShopCreate {
-	_c.mutation.AddAvailabilityIDs(ids...)
-	return _c
-}
-
-// AddAvailability adds the "availability" edges to the Availability entity.
-func (_c *ShopCreate) AddAvailability(v ...*Availability) *ShopCreate {
-	ids := make([]int, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddAvailabilityIDs(ids...)
-}
-
 // AddShiftIDs adds the "shifts" edge to the Shift entity by IDs.
-func (_c *ShopCreate) AddShiftIDs(ids ...int) *ShopCreate {
+func (_c *ShopCreate) AddShiftIDs(ids ...uuid.UUID) *ShopCreate {
 	_c.mutation.AddShiftIDs(ids...)
 	return _c
 }
 
 // AddShifts adds the "shifts" edges to the Shift entity.
 func (_c *ShopCreate) AddShifts(v ...*Shift) *ShopCreate {
-	ids := make([]int, len(v))
+	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
@@ -121,63 +134,48 @@ func (_c *ShopCreate) AddShifts(v ...*Shift) *ShopCreate {
 }
 
 // AddScheduleIDs adds the "schedules" edge to the Schedule entity by IDs.
-func (_c *ShopCreate) AddScheduleIDs(ids ...int) *ShopCreate {
+func (_c *ShopCreate) AddScheduleIDs(ids ...uuid.UUID) *ShopCreate {
 	_c.mutation.AddScheduleIDs(ids...)
 	return _c
 }
 
 // AddSchedules adds the "schedules" edges to the Schedule entity.
 func (_c *ShopCreate) AddSchedules(v ...*Schedule) *ShopCreate {
-	ids := make([]int, len(v))
+	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
 	return _c.AddScheduleIDs(ids...)
 }
 
-// AddAssignmentIDs adds the "assignments" edge to the ScheduleAssignment entity by IDs.
-func (_c *ShopCreate) AddAssignmentIDs(ids ...int) *ShopCreate {
-	_c.mutation.AddAssignmentIDs(ids...)
-	return _c
-}
-
-// AddAssignments adds the "assignments" edges to the ScheduleAssignment entity.
-func (_c *ShopCreate) AddAssignments(v ...*ScheduleAssignment) *ShopCreate {
-	ids := make([]int, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddAssignmentIDs(ids...)
-}
-
-// AddVoteIDs adds the "votes" edge to the ScheduleVote entity by IDs.
-func (_c *ShopCreate) AddVoteIDs(ids ...int) *ShopCreate {
-	_c.mutation.AddVoteIDs(ids...)
-	return _c
-}
-
-// AddVotes adds the "votes" edges to the ScheduleVote entity.
-func (_c *ShopCreate) AddVotes(v ...*ScheduleVote) *ShopCreate {
-	ids := make([]int, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddVoteIDs(ids...)
-}
-
 // AddRuleIDs adds the "rules" edge to the Rule entity by IDs.
-func (_c *ShopCreate) AddRuleIDs(ids ...int) *ShopCreate {
+func (_c *ShopCreate) AddRuleIDs(ids ...uuid.UUID) *ShopCreate {
 	_c.mutation.AddRuleIDs(ids...)
 	return _c
 }
 
 // AddRules adds the "rules" edges to the Rule entity.
 func (_c *ShopCreate) AddRules(v ...*Rule) *ShopCreate {
-	ids := make([]int, len(v))
+	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
 	return _c.AddRuleIDs(ids...)
+}
+
+// AddAvailabilityIDs adds the "availabilities" edge to the Availability entity by IDs.
+func (_c *ShopCreate) AddAvailabilityIDs(ids ...uuid.UUID) *ShopCreate {
+	_c.mutation.AddAvailabilityIDs(ids...)
+	return _c
+}
+
+// AddAvailabilities adds the "availabilities" edges to the Availability entity.
+func (_c *ShopCreate) AddAvailabilities(v ...*Availability) *ShopCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddAvailabilityIDs(ids...)
 }
 
 // Mutation returns the ShopMutation object of the builder.
@@ -219,9 +217,17 @@ func (_c *ShopCreate) defaults() {
 		v := shop.DefaultTimezone
 		_c.mutation.SetTimezone(v)
 	}
+	if _, ok := _c.mutation.Plan(); !ok {
+		v := shop.DefaultPlan
+		_c.mutation.SetPlan(v)
+	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		v := shop.DefaultCreatedAt()
 		_c.mutation.SetCreatedAt(v)
+	}
+	if _, ok := _c.mutation.ID(); !ok {
+		v := shop.DefaultID()
+		_c.mutation.SetID(v)
 	}
 }
 
@@ -236,8 +242,11 @@ func (_c *ShopCreate) check() error {
 	if _, ok := _c.mutation.InviteCode(); !ok {
 		return &ValidationError{Name: "invite_code", err: errors.New(`ent: missing required field "Shop.invite_code"`)}
 	}
-	if _, ok := _c.mutation.OwnerTelegramID(); !ok {
-		return &ValidationError{Name: "owner_telegram_id", err: errors.New(`ent: missing required field "Shop.owner_telegram_id"`)}
+	if _, ok := _c.mutation.TelegramGroupID(); !ok {
+		return &ValidationError{Name: "telegram_group_id", err: errors.New(`ent: missing required field "Shop.telegram_group_id"`)}
+	}
+	if _, ok := _c.mutation.Plan(); !ok {
+		return &ValidationError{Name: "plan", err: errors.New(`ent: missing required field "Shop.plan"`)}
 	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Shop.created_at"`)}
@@ -256,8 +265,13 @@ func (_c *ShopCreate) sqlSave(ctx context.Context) (*Shop, error) {
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
+	if _spec.ID.Value != nil {
+		if id, ok := _spec.ID.Value.(*uuid.UUID); ok {
+			_node.ID = *id
+		} else if err := _node.ID.Scan(_spec.ID.Value); err != nil {
+			return nil, err
+		}
+	}
 	_c.mutation.id = &_node.ID
 	_c.mutation.done = true
 	return _node, nil
@@ -266,9 +280,13 @@ func (_c *ShopCreate) sqlSave(ctx context.Context) (*Shop, error) {
 func (_c *ShopCreate) createSpec() (*Shop, *sqlgraph.CreateSpec) {
 	var (
 		_node = &Shop{config: _c.config}
-		_spec = sqlgraph.NewCreateSpec(shop.Table, sqlgraph.NewFieldSpec(shop.FieldID, field.TypeInt))
+		_spec = sqlgraph.NewCreateSpec(shop.Table, sqlgraph.NewFieldSpec(shop.FieldID, field.TypeUUID))
 	)
 	_spec.OnConflict = _c.conflict
+	if id, ok := _c.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = &id
+	}
 	if value, ok := _c.mutation.Name(); ok {
 		_spec.SetField(shop.FieldName, field.TypeString, value)
 		_node.Name = value
@@ -281,9 +299,13 @@ func (_c *ShopCreate) createSpec() (*Shop, *sqlgraph.CreateSpec) {
 		_spec.SetField(shop.FieldInviteCode, field.TypeString, value)
 		_node.InviteCode = value
 	}
-	if value, ok := _c.mutation.OwnerTelegramID(); ok {
-		_spec.SetField(shop.FieldOwnerTelegramID, field.TypeInt64, value)
-		_node.OwnerTelegramID = value
+	if value, ok := _c.mutation.TelegramGroupID(); ok {
+		_spec.SetField(shop.FieldTelegramGroupID, field.TypeInt64, value)
+		_node.TelegramGroupID = value
+	}
+	if value, ok := _c.mutation.Plan(); ok {
+		_spec.SetField(shop.FieldPlan, field.TypeString, value)
+		_node.Plan = value
 	}
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(shop.FieldCreatedAt, field.TypeTime, value)
@@ -297,23 +319,7 @@ func (_c *ShopCreate) createSpec() (*Shop, *sqlgraph.CreateSpec) {
 			Columns: []string{shop.EmployeesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.AvailabilityIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   shop.AvailabilityTable,
-			Columns: []string{shop.AvailabilityColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(availability.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -329,7 +335,7 @@ func (_c *ShopCreate) createSpec() (*Shop, *sqlgraph.CreateSpec) {
 			Columns: []string{shop.ShiftsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(shift.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(shift.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -345,39 +351,7 @@ func (_c *ShopCreate) createSpec() (*Shop, *sqlgraph.CreateSpec) {
 			Columns: []string{shop.SchedulesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(schedule.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.AssignmentsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   shop.AssignmentsTable,
-			Columns: []string{shop.AssignmentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scheduleassignment.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.VotesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   shop.VotesTable,
-			Columns: []string{shop.VotesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(schedulevote.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(schedule.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -393,7 +367,23 @@ func (_c *ShopCreate) createSpec() (*Shop, *sqlgraph.CreateSpec) {
 			Columns: []string{shop.RulesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(rule.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(rule.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.AvailabilitiesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   shop.AvailabilitiesTable,
+			Columns: []string{shop.AvailabilitiesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(availability.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -489,35 +479,53 @@ func (u *ShopUpsert) UpdateInviteCode() *ShopUpsert {
 	return u
 }
 
-// SetOwnerTelegramID sets the "owner_telegram_id" field.
-func (u *ShopUpsert) SetOwnerTelegramID(v int64) *ShopUpsert {
-	u.Set(shop.FieldOwnerTelegramID, v)
+// SetTelegramGroupID sets the "telegram_group_id" field.
+func (u *ShopUpsert) SetTelegramGroupID(v int64) *ShopUpsert {
+	u.Set(shop.FieldTelegramGroupID, v)
 	return u
 }
 
-// UpdateOwnerTelegramID sets the "owner_telegram_id" field to the value that was provided on create.
-func (u *ShopUpsert) UpdateOwnerTelegramID() *ShopUpsert {
-	u.SetExcluded(shop.FieldOwnerTelegramID)
+// UpdateTelegramGroupID sets the "telegram_group_id" field to the value that was provided on create.
+func (u *ShopUpsert) UpdateTelegramGroupID() *ShopUpsert {
+	u.SetExcluded(shop.FieldTelegramGroupID)
 	return u
 }
 
-// AddOwnerTelegramID adds v to the "owner_telegram_id" field.
-func (u *ShopUpsert) AddOwnerTelegramID(v int64) *ShopUpsert {
-	u.Add(shop.FieldOwnerTelegramID, v)
+// AddTelegramGroupID adds v to the "telegram_group_id" field.
+func (u *ShopUpsert) AddTelegramGroupID(v int64) *ShopUpsert {
+	u.Add(shop.FieldTelegramGroupID, v)
 	return u
 }
 
-// UpdateNewValues updates the mutable fields using the new values that were set on create.
+// SetPlan sets the "plan" field.
+func (u *ShopUpsert) SetPlan(v string) *ShopUpsert {
+	u.Set(shop.FieldPlan, v)
+	return u
+}
+
+// UpdatePlan sets the "plan" field to the value that was provided on create.
+func (u *ShopUpsert) UpdatePlan() *ShopUpsert {
+	u.SetExcluded(shop.FieldPlan)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
 //	client.Shop.Create().
 //		OnConflict(
 //			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(shop.FieldID)
+//			}),
 //		).
 //		Exec(ctx)
 func (u *ShopUpsertOne) UpdateNewValues() *ShopUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(shop.FieldID)
+		}
 		if _, exists := u.create.mutation.CreatedAt(); exists {
 			s.SetIgnore(shop.FieldCreatedAt)
 		}
@@ -594,24 +602,38 @@ func (u *ShopUpsertOne) UpdateInviteCode() *ShopUpsertOne {
 	})
 }
 
-// SetOwnerTelegramID sets the "owner_telegram_id" field.
-func (u *ShopUpsertOne) SetOwnerTelegramID(v int64) *ShopUpsertOne {
+// SetTelegramGroupID sets the "telegram_group_id" field.
+func (u *ShopUpsertOne) SetTelegramGroupID(v int64) *ShopUpsertOne {
 	return u.Update(func(s *ShopUpsert) {
-		s.SetOwnerTelegramID(v)
+		s.SetTelegramGroupID(v)
 	})
 }
 
-// AddOwnerTelegramID adds v to the "owner_telegram_id" field.
-func (u *ShopUpsertOne) AddOwnerTelegramID(v int64) *ShopUpsertOne {
+// AddTelegramGroupID adds v to the "telegram_group_id" field.
+func (u *ShopUpsertOne) AddTelegramGroupID(v int64) *ShopUpsertOne {
 	return u.Update(func(s *ShopUpsert) {
-		s.AddOwnerTelegramID(v)
+		s.AddTelegramGroupID(v)
 	})
 }
 
-// UpdateOwnerTelegramID sets the "owner_telegram_id" field to the value that was provided on create.
-func (u *ShopUpsertOne) UpdateOwnerTelegramID() *ShopUpsertOne {
+// UpdateTelegramGroupID sets the "telegram_group_id" field to the value that was provided on create.
+func (u *ShopUpsertOne) UpdateTelegramGroupID() *ShopUpsertOne {
 	return u.Update(func(s *ShopUpsert) {
-		s.UpdateOwnerTelegramID()
+		s.UpdateTelegramGroupID()
+	})
+}
+
+// SetPlan sets the "plan" field.
+func (u *ShopUpsertOne) SetPlan(v string) *ShopUpsertOne {
+	return u.Update(func(s *ShopUpsert) {
+		s.SetPlan(v)
+	})
+}
+
+// UpdatePlan sets the "plan" field to the value that was provided on create.
+func (u *ShopUpsertOne) UpdatePlan() *ShopUpsertOne {
+	return u.Update(func(s *ShopUpsert) {
+		s.UpdatePlan()
 	})
 }
 
@@ -631,7 +653,12 @@ func (u *ShopUpsertOne) ExecX(ctx context.Context) {
 }
 
 // Exec executes the UPSERT query and returns the inserted/updated ID.
-func (u *ShopUpsertOne) ID(ctx context.Context) (id int, err error) {
+func (u *ShopUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
+	if u.create.driver.Dialect() == dialect.MySQL {
+		// In case of "ON CONFLICT", there is no way to get back non-numeric ID
+		// fields from the database since MySQL does not support the RETURNING clause.
+		return id, errors.New("ent: ShopUpsertOne.ID is not supported by MySQL driver. Use ShopUpsertOne.Exec instead")
+	}
 	node, err := u.create.Save(ctx)
 	if err != nil {
 		return id, err
@@ -640,7 +667,7 @@ func (u *ShopUpsertOne) ID(ctx context.Context) (id int, err error) {
 }
 
 // IDX is like ID, but panics if an error occurs.
-func (u *ShopUpsertOne) IDX(ctx context.Context) int {
+func (u *ShopUpsertOne) IDX(ctx context.Context) uuid.UUID {
 	id, err := u.ID(ctx)
 	if err != nil {
 		panic(err)
@@ -695,10 +722,6 @@ func (_c *ShopCreateBulk) Save(ctx context.Context) ([]*Shop, error) {
 					return nil, err
 				}
 				mutation.id = &nodes[i].ID
-				if specs[i].ID.Value != nil {
-					id := specs[i].ID.Value.(int64)
-					nodes[i].ID = int(id)
-				}
 				mutation.done = true
 				return nodes[i], nil
 			})
@@ -785,12 +808,18 @@ type ShopUpsertBulk struct {
 //	client.Shop.Create().
 //		OnConflict(
 //			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(shop.FieldID)
+//			}),
 //		).
 //		Exec(ctx)
 func (u *ShopUpsertBulk) UpdateNewValues() *ShopUpsertBulk {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(shop.FieldID)
+			}
 			if _, exists := b.mutation.CreatedAt(); exists {
 				s.SetIgnore(shop.FieldCreatedAt)
 			}
@@ -868,24 +897,38 @@ func (u *ShopUpsertBulk) UpdateInviteCode() *ShopUpsertBulk {
 	})
 }
 
-// SetOwnerTelegramID sets the "owner_telegram_id" field.
-func (u *ShopUpsertBulk) SetOwnerTelegramID(v int64) *ShopUpsertBulk {
+// SetTelegramGroupID sets the "telegram_group_id" field.
+func (u *ShopUpsertBulk) SetTelegramGroupID(v int64) *ShopUpsertBulk {
 	return u.Update(func(s *ShopUpsert) {
-		s.SetOwnerTelegramID(v)
+		s.SetTelegramGroupID(v)
 	})
 }
 
-// AddOwnerTelegramID adds v to the "owner_telegram_id" field.
-func (u *ShopUpsertBulk) AddOwnerTelegramID(v int64) *ShopUpsertBulk {
+// AddTelegramGroupID adds v to the "telegram_group_id" field.
+func (u *ShopUpsertBulk) AddTelegramGroupID(v int64) *ShopUpsertBulk {
 	return u.Update(func(s *ShopUpsert) {
-		s.AddOwnerTelegramID(v)
+		s.AddTelegramGroupID(v)
 	})
 }
 
-// UpdateOwnerTelegramID sets the "owner_telegram_id" field to the value that was provided on create.
-func (u *ShopUpsertBulk) UpdateOwnerTelegramID() *ShopUpsertBulk {
+// UpdateTelegramGroupID sets the "telegram_group_id" field to the value that was provided on create.
+func (u *ShopUpsertBulk) UpdateTelegramGroupID() *ShopUpsertBulk {
 	return u.Update(func(s *ShopUpsert) {
-		s.UpdateOwnerTelegramID()
+		s.UpdateTelegramGroupID()
+	})
+}
+
+// SetPlan sets the "plan" field.
+func (u *ShopUpsertBulk) SetPlan(v string) *ShopUpsertBulk {
+	return u.Update(func(s *ShopUpsert) {
+		s.SetPlan(v)
+	})
+}
+
+// UpdatePlan sets the "plan" field to the value that was provided on create.
+func (u *ShopUpsertBulk) UpdatePlan() *ShopUpsertBulk {
+	return u.Update(func(s *ShopUpsert) {
+		s.UpdatePlan()
 	})
 }
 

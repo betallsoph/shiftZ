@@ -10,21 +10,24 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/betallsoph/shiftz/internal/ent/shop"
+	"github.com/google/uuid"
 )
 
 // Shop is the model entity for the Shop schema.
 type Shop struct {
 	config `json:"-"`
 	// ID of the ent.
-	ID int `json:"id,omitempty"`
+	ID uuid.UUID `json:"id,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
 	// Timezone holds the value of the "timezone" field.
 	Timezone string `json:"timezone,omitempty"`
 	// InviteCode holds the value of the "invite_code" field.
 	InviteCode string `json:"invite_code,omitempty"`
-	// OwnerTelegramID holds the value of the "owner_telegram_id" field.
-	OwnerTelegramID int64 `json:"owner_telegram_id,omitempty"`
+	// TelegramGroupID holds the value of the "telegram_group_id" field.
+	TelegramGroupID int64 `json:"telegram_group_id,omitempty"`
+	// Plan holds the value of the "plan" field.
+	Plan string `json:"plan,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -37,21 +40,17 @@ type Shop struct {
 type ShopEdges struct {
 	// Employees holds the value of the employees edge.
 	Employees []*Employee `json:"employees,omitempty"`
-	// Availability holds the value of the availability edge.
-	Availability []*Availability `json:"availability,omitempty"`
 	// Shifts holds the value of the shifts edge.
 	Shifts []*Shift `json:"shifts,omitempty"`
 	// Schedules holds the value of the schedules edge.
 	Schedules []*Schedule `json:"schedules,omitempty"`
-	// Assignments holds the value of the assignments edge.
-	Assignments []*ScheduleAssignment `json:"assignments,omitempty"`
-	// Votes holds the value of the votes edge.
-	Votes []*ScheduleVote `json:"votes,omitempty"`
 	// Rules holds the value of the rules edge.
 	Rules []*Rule `json:"rules,omitempty"`
+	// Availabilities holds the value of the availabilities edge.
+	Availabilities []*Availability `json:"availabilities,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [7]bool
+	loadedTypes [5]bool
 }
 
 // EmployeesOrErr returns the Employees value or an error if the edge
@@ -63,19 +62,10 @@ func (e ShopEdges) EmployeesOrErr() ([]*Employee, error) {
 	return nil, &NotLoadedError{edge: "employees"}
 }
 
-// AvailabilityOrErr returns the Availability value or an error if the edge
-// was not loaded in eager-loading.
-func (e ShopEdges) AvailabilityOrErr() ([]*Availability, error) {
-	if e.loadedTypes[1] {
-		return e.Availability, nil
-	}
-	return nil, &NotLoadedError{edge: "availability"}
-}
-
 // ShiftsOrErr returns the Shifts value or an error if the edge
 // was not loaded in eager-loading.
 func (e ShopEdges) ShiftsOrErr() ([]*Shift, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[1] {
 		return e.Shifts, nil
 	}
 	return nil, &NotLoadedError{edge: "shifts"}
@@ -84,37 +74,28 @@ func (e ShopEdges) ShiftsOrErr() ([]*Shift, error) {
 // SchedulesOrErr returns the Schedules value or an error if the edge
 // was not loaded in eager-loading.
 func (e ShopEdges) SchedulesOrErr() ([]*Schedule, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[2] {
 		return e.Schedules, nil
 	}
 	return nil, &NotLoadedError{edge: "schedules"}
 }
 
-// AssignmentsOrErr returns the Assignments value or an error if the edge
-// was not loaded in eager-loading.
-func (e ShopEdges) AssignmentsOrErr() ([]*ScheduleAssignment, error) {
-	if e.loadedTypes[4] {
-		return e.Assignments, nil
-	}
-	return nil, &NotLoadedError{edge: "assignments"}
-}
-
-// VotesOrErr returns the Votes value or an error if the edge
-// was not loaded in eager-loading.
-func (e ShopEdges) VotesOrErr() ([]*ScheduleVote, error) {
-	if e.loadedTypes[5] {
-		return e.Votes, nil
-	}
-	return nil, &NotLoadedError{edge: "votes"}
-}
-
 // RulesOrErr returns the Rules value or an error if the edge
 // was not loaded in eager-loading.
 func (e ShopEdges) RulesOrErr() ([]*Rule, error) {
-	if e.loadedTypes[6] {
+	if e.loadedTypes[3] {
 		return e.Rules, nil
 	}
 	return nil, &NotLoadedError{edge: "rules"}
+}
+
+// AvailabilitiesOrErr returns the Availabilities value or an error if the edge
+// was not loaded in eager-loading.
+func (e ShopEdges) AvailabilitiesOrErr() ([]*Availability, error) {
+	if e.loadedTypes[4] {
+		return e.Availabilities, nil
+	}
+	return nil, &NotLoadedError{edge: "availabilities"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -122,12 +103,14 @@ func (*Shop) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case shop.FieldID, shop.FieldOwnerTelegramID:
+		case shop.FieldTelegramGroupID:
 			values[i] = new(sql.NullInt64)
-		case shop.FieldName, shop.FieldTimezone, shop.FieldInviteCode:
+		case shop.FieldName, shop.FieldTimezone, shop.FieldInviteCode, shop.FieldPlan:
 			values[i] = new(sql.NullString)
 		case shop.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
+		case shop.FieldID:
+			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -144,11 +127,11 @@ func (_m *Shop) assignValues(columns []string, values []any) error {
 	for i := range columns {
 		switch columns[i] {
 		case shop.FieldID:
-			value, ok := values[i].(*sql.NullInt64)
-			if !ok {
-				return fmt.Errorf("unexpected type %T for field id", value)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field id", values[i])
+			} else if value != nil {
+				_m.ID = *value
 			}
-			_m.ID = int(value.Int64)
 		case shop.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
@@ -167,11 +150,17 @@ func (_m *Shop) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.InviteCode = value.String
 			}
-		case shop.FieldOwnerTelegramID:
+		case shop.FieldTelegramGroupID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field owner_telegram_id", values[i])
+				return fmt.Errorf("unexpected type %T for field telegram_group_id", values[i])
 			} else if value.Valid {
-				_m.OwnerTelegramID = value.Int64
+				_m.TelegramGroupID = value.Int64
+			}
+		case shop.FieldPlan:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field plan", values[i])
+			} else if value.Valid {
+				_m.Plan = value.String
 			}
 		case shop.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -197,11 +186,6 @@ func (_m *Shop) QueryEmployees() *EmployeeQuery {
 	return NewShopClient(_m.config).QueryEmployees(_m)
 }
 
-// QueryAvailability queries the "availability" edge of the Shop entity.
-func (_m *Shop) QueryAvailability() *AvailabilityQuery {
-	return NewShopClient(_m.config).QueryAvailability(_m)
-}
-
 // QueryShifts queries the "shifts" edge of the Shop entity.
 func (_m *Shop) QueryShifts() *ShiftQuery {
 	return NewShopClient(_m.config).QueryShifts(_m)
@@ -212,19 +196,14 @@ func (_m *Shop) QuerySchedules() *ScheduleQuery {
 	return NewShopClient(_m.config).QuerySchedules(_m)
 }
 
-// QueryAssignments queries the "assignments" edge of the Shop entity.
-func (_m *Shop) QueryAssignments() *ScheduleAssignmentQuery {
-	return NewShopClient(_m.config).QueryAssignments(_m)
-}
-
-// QueryVotes queries the "votes" edge of the Shop entity.
-func (_m *Shop) QueryVotes() *ScheduleVoteQuery {
-	return NewShopClient(_m.config).QueryVotes(_m)
-}
-
 // QueryRules queries the "rules" edge of the Shop entity.
 func (_m *Shop) QueryRules() *RuleQuery {
 	return NewShopClient(_m.config).QueryRules(_m)
+}
+
+// QueryAvailabilities queries the "availabilities" edge of the Shop entity.
+func (_m *Shop) QueryAvailabilities() *AvailabilityQuery {
+	return NewShopClient(_m.config).QueryAvailabilities(_m)
 }
 
 // Update returns a builder for updating this Shop.
@@ -259,8 +238,11 @@ func (_m *Shop) String() string {
 	builder.WriteString("invite_code=")
 	builder.WriteString(_m.InviteCode)
 	builder.WriteString(", ")
-	builder.WriteString("owner_telegram_id=")
-	builder.WriteString(fmt.Sprintf("%v", _m.OwnerTelegramID))
+	builder.WriteString("telegram_group_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.TelegramGroupID))
+	builder.WriteString(", ")
+	builder.WriteString("plan=")
+	builder.WriteString(_m.Plan)
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))

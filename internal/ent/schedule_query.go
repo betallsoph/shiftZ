@@ -17,6 +17,7 @@ import (
 	"github.com/betallsoph/shiftz/internal/ent/scheduleassignment"
 	"github.com/betallsoph/shiftz/internal/ent/schedulevote"
 	"github.com/betallsoph/shiftz/internal/ent/shop"
+	"github.com/google/uuid"
 )
 
 // ScheduleQuery is the builder for querying Schedule entities.
@@ -155,8 +156,8 @@ func (_q *ScheduleQuery) FirstX(ctx context.Context) *Schedule {
 
 // FirstID returns the first Schedule ID from the query.
 // Returns a *NotFoundError when no Schedule ID was found.
-func (_q *ScheduleQuery) FirstID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (_q *ScheduleQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
@@ -168,7 +169,7 @@ func (_q *ScheduleQuery) FirstID(ctx context.Context) (id int, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (_q *ScheduleQuery) FirstIDX(ctx context.Context) int {
+func (_q *ScheduleQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -206,8 +207,8 @@ func (_q *ScheduleQuery) OnlyX(ctx context.Context) *Schedule {
 // OnlyID is like Only, but returns the only Schedule ID in the query.
 // Returns a *NotSingularError when more than one Schedule ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (_q *ScheduleQuery) OnlyID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (_q *ScheduleQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
@@ -223,7 +224,7 @@ func (_q *ScheduleQuery) OnlyID(ctx context.Context) (id int, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (_q *ScheduleQuery) OnlyIDX(ctx context.Context) int {
+func (_q *ScheduleQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -251,7 +252,7 @@ func (_q *ScheduleQuery) AllX(ctx context.Context) []*Schedule {
 }
 
 // IDs executes the query and returns a list of Schedule IDs.
-func (_q *ScheduleQuery) IDs(ctx context.Context) (ids []int, err error) {
+func (_q *ScheduleQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
 	if _q.ctx.Unique == nil && _q.path != nil {
 		_q.Unique(true)
 	}
@@ -263,7 +264,7 @@ func (_q *ScheduleQuery) IDs(ctx context.Context) (ids []int, err error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (_q *ScheduleQuery) IDsX(ctx context.Context) []int {
+func (_q *ScheduleQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -371,7 +372,7 @@ func (_q *ScheduleQuery) WithVotes(opts ...func(*ScheduleVoteQuery)) *ScheduleQu
 // Example:
 //
 //	var v []struct {
-//		ShopID int `json:"shop_id,omitempty"`
+//		ShopID uuid.UUID `json:"shop_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
@@ -394,7 +395,7 @@ func (_q *ScheduleQuery) GroupBy(field string, fields ...string) *ScheduleGroupB
 // Example:
 //
 //	var v []struct {
-//		ShopID int `json:"shop_id,omitempty"`
+//		ShopID uuid.UUID `json:"shop_id,omitempty"`
 //	}
 //
 //	client.Schedule.Query().
@@ -491,8 +492,8 @@ func (_q *ScheduleQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Sch
 }
 
 func (_q *ScheduleQuery) loadShop(ctx context.Context, query *ShopQuery, nodes []*Schedule, init func(*Schedule), assign func(*Schedule, *Shop)) error {
-	ids := make([]int, 0, len(nodes))
-	nodeids := make(map[int][]*Schedule)
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Schedule)
 	for i := range nodes {
 		fk := nodes[i].ShopID
 		if _, ok := nodeids[fk]; !ok {
@@ -521,7 +522,7 @@ func (_q *ScheduleQuery) loadShop(ctx context.Context, query *ShopQuery, nodes [
 }
 func (_q *ScheduleQuery) loadAssignments(ctx context.Context, query *ScheduleAssignmentQuery, nodes []*Schedule, init func(*Schedule), assign func(*Schedule, *ScheduleAssignment)) error {
 	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[int]*Schedule)
+	nodeids := make(map[uuid.UUID]*Schedule)
 	for i := range nodes {
 		fks = append(fks, nodes[i].ID)
 		nodeids[nodes[i].ID] = nodes[i]
@@ -551,7 +552,7 @@ func (_q *ScheduleQuery) loadAssignments(ctx context.Context, query *ScheduleAss
 }
 func (_q *ScheduleQuery) loadVotes(ctx context.Context, query *ScheduleVoteQuery, nodes []*Schedule, init func(*Schedule), assign func(*Schedule, *ScheduleVote)) error {
 	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[int]*Schedule)
+	nodeids := make(map[uuid.UUID]*Schedule)
 	for i := range nodes {
 		fks = append(fks, nodes[i].ID)
 		nodeids[nodes[i].ID] = nodes[i]
@@ -590,7 +591,7 @@ func (_q *ScheduleQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (_q *ScheduleQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := sqlgraph.NewQuerySpec(schedule.Table, schedule.Columns, sqlgraph.NewFieldSpec(schedule.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewQuerySpec(schedule.Table, schedule.Columns, sqlgraph.NewFieldSpec(schedule.FieldID, field.TypeUUID))
 	_spec.From = _q.sql
 	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique

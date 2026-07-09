@@ -40,7 +40,7 @@ func (_d *ShiftDelete) ExecX(ctx context.Context) int {
 }
 
 func (_d *ShiftDelete) sqlExec(ctx context.Context) (int, error) {
-	_spec := sqlgraph.NewDeleteSpec(shift.Table, sqlgraph.NewFieldSpec(shift.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewDeleteSpec(shift.Table, sqlgraph.NewFieldSpec(shift.FieldID, field.TypeUUID))
 	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {

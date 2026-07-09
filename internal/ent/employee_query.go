@@ -18,19 +18,20 @@ import (
 	"github.com/betallsoph/shiftz/internal/ent/scheduleassignment"
 	"github.com/betallsoph/shiftz/internal/ent/schedulevote"
 	"github.com/betallsoph/shiftz/internal/ent/shop"
+	"github.com/google/uuid"
 )
 
 // EmployeeQuery is the builder for querying Employee entities.
 type EmployeeQuery struct {
 	config
-	ctx              *QueryContext
-	order            []employee.OrderOption
-	inters           []Interceptor
-	predicates       []predicate.Employee
-	withShop         *ShopQuery
-	withAvailability *AvailabilityQuery
-	withAssignments  *ScheduleAssignmentQuery
-	withVotes        *ScheduleVoteQuery
+	ctx                *QueryContext
+	order              []employee.OrderOption
+	inters             []Interceptor
+	predicates         []predicate.Employee
+	withShop           *ShopQuery
+	withAvailabilities *AvailabilityQuery
+	withAssignments    *ScheduleAssignmentQuery
+	withVotes          *ScheduleVoteQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -89,8 +90,8 @@ func (_q *EmployeeQuery) QueryShop() *ShopQuery {
 	return query
 }
 
-// QueryAvailability chains the current query on the "availability" edge.
-func (_q *EmployeeQuery) QueryAvailability() *AvailabilityQuery {
+// QueryAvailabilities chains the current query on the "availabilities" edge.
+func (_q *EmployeeQuery) QueryAvailabilities() *AvailabilityQuery {
 	query := (&AvailabilityClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
@@ -103,7 +104,7 @@ func (_q *EmployeeQuery) QueryAvailability() *AvailabilityQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(employee.Table, employee.FieldID, selector),
 			sqlgraph.To(availability.Table, availability.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, employee.AvailabilityTable, employee.AvailabilityColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, employee.AvailabilitiesTable, employee.AvailabilitiesColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -179,8 +180,8 @@ func (_q *EmployeeQuery) FirstX(ctx context.Context) *Employee {
 
 // FirstID returns the first Employee ID from the query.
 // Returns a *NotFoundError when no Employee ID was found.
-func (_q *EmployeeQuery) FirstID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (_q *EmployeeQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
@@ -192,7 +193,7 @@ func (_q *EmployeeQuery) FirstID(ctx context.Context) (id int, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (_q *EmployeeQuery) FirstIDX(ctx context.Context) int {
+func (_q *EmployeeQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -230,8 +231,8 @@ func (_q *EmployeeQuery) OnlyX(ctx context.Context) *Employee {
 // OnlyID is like Only, but returns the only Employee ID in the query.
 // Returns a *NotSingularError when more than one Employee ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (_q *EmployeeQuery) OnlyID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (_q *EmployeeQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
@@ -247,7 +248,7 @@ func (_q *EmployeeQuery) OnlyID(ctx context.Context) (id int, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (_q *EmployeeQuery) OnlyIDX(ctx context.Context) int {
+func (_q *EmployeeQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -275,7 +276,7 @@ func (_q *EmployeeQuery) AllX(ctx context.Context) []*Employee {
 }
 
 // IDs executes the query and returns a list of Employee IDs.
-func (_q *EmployeeQuery) IDs(ctx context.Context) (ids []int, err error) {
+func (_q *EmployeeQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
 	if _q.ctx.Unique == nil && _q.path != nil {
 		_q.Unique(true)
 	}
@@ -287,7 +288,7 @@ func (_q *EmployeeQuery) IDs(ctx context.Context) (ids []int, err error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (_q *EmployeeQuery) IDsX(ctx context.Context) []int {
+func (_q *EmployeeQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -342,15 +343,15 @@ func (_q *EmployeeQuery) Clone() *EmployeeQuery {
 		return nil
 	}
 	return &EmployeeQuery{
-		config:           _q.config,
-		ctx:              _q.ctx.Clone(),
-		order:            append([]employee.OrderOption{}, _q.order...),
-		inters:           append([]Interceptor{}, _q.inters...),
-		predicates:       append([]predicate.Employee{}, _q.predicates...),
-		withShop:         _q.withShop.Clone(),
-		withAvailability: _q.withAvailability.Clone(),
-		withAssignments:  _q.withAssignments.Clone(),
-		withVotes:        _q.withVotes.Clone(),
+		config:             _q.config,
+		ctx:                _q.ctx.Clone(),
+		order:              append([]employee.OrderOption{}, _q.order...),
+		inters:             append([]Interceptor{}, _q.inters...),
+		predicates:         append([]predicate.Employee{}, _q.predicates...),
+		withShop:           _q.withShop.Clone(),
+		withAvailabilities: _q.withAvailabilities.Clone(),
+		withAssignments:    _q.withAssignments.Clone(),
+		withVotes:          _q.withVotes.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -368,14 +369,14 @@ func (_q *EmployeeQuery) WithShop(opts ...func(*ShopQuery)) *EmployeeQuery {
 	return _q
 }
 
-// WithAvailability tells the query-builder to eager-load the nodes that are connected to
-// the "availability" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *EmployeeQuery) WithAvailability(opts ...func(*AvailabilityQuery)) *EmployeeQuery {
+// WithAvailabilities tells the query-builder to eager-load the nodes that are connected to
+// the "availabilities" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *EmployeeQuery) WithAvailabilities(opts ...func(*AvailabilityQuery)) *EmployeeQuery {
 	query := (&AvailabilityClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	_q.withAvailability = query
+	_q.withAvailabilities = query
 	return _q
 }
 
@@ -407,7 +408,7 @@ func (_q *EmployeeQuery) WithVotes(opts ...func(*ScheduleVoteQuery)) *EmployeeQu
 // Example:
 //
 //	var v []struct {
-//		ShopID int `json:"shop_id,omitempty"`
+//		ShopID uuid.UUID `json:"shop_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
@@ -430,7 +431,7 @@ func (_q *EmployeeQuery) GroupBy(field string, fields ...string) *EmployeeGroupB
 // Example:
 //
 //	var v []struct {
-//		ShopID int `json:"shop_id,omitempty"`
+//		ShopID uuid.UUID `json:"shop_id,omitempty"`
 //	}
 //
 //	client.Employee.Query().
@@ -481,7 +482,7 @@ func (_q *EmployeeQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Emp
 		_spec       = _q.querySpec()
 		loadedTypes = [4]bool{
 			_q.withShop != nil,
-			_q.withAvailability != nil,
+			_q.withAvailabilities != nil,
 			_q.withAssignments != nil,
 			_q.withVotes != nil,
 		}
@@ -510,10 +511,10 @@ func (_q *EmployeeQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Emp
 			return nil, err
 		}
 	}
-	if query := _q.withAvailability; query != nil {
-		if err := _q.loadAvailability(ctx, query, nodes,
-			func(n *Employee) { n.Edges.Availability = []*Availability{} },
-			func(n *Employee, e *Availability) { n.Edges.Availability = append(n.Edges.Availability, e) }); err != nil {
+	if query := _q.withAvailabilities; query != nil {
+		if err := _q.loadAvailabilities(ctx, query, nodes,
+			func(n *Employee) { n.Edges.Availabilities = []*Availability{} },
+			func(n *Employee, e *Availability) { n.Edges.Availabilities = append(n.Edges.Availabilities, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -535,8 +536,8 @@ func (_q *EmployeeQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Emp
 }
 
 func (_q *EmployeeQuery) loadShop(ctx context.Context, query *ShopQuery, nodes []*Employee, init func(*Employee), assign func(*Employee, *Shop)) error {
-	ids := make([]int, 0, len(nodes))
-	nodeids := make(map[int][]*Employee)
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Employee)
 	for i := range nodes {
 		fk := nodes[i].ShopID
 		if _, ok := nodeids[fk]; !ok {
@@ -563,9 +564,9 @@ func (_q *EmployeeQuery) loadShop(ctx context.Context, query *ShopQuery, nodes [
 	}
 	return nil
 }
-func (_q *EmployeeQuery) loadAvailability(ctx context.Context, query *AvailabilityQuery, nodes []*Employee, init func(*Employee), assign func(*Employee, *Availability)) error {
+func (_q *EmployeeQuery) loadAvailabilities(ctx context.Context, query *AvailabilityQuery, nodes []*Employee, init func(*Employee), assign func(*Employee, *Availability)) error {
 	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[int]*Employee)
+	nodeids := make(map[uuid.UUID]*Employee)
 	for i := range nodes {
 		fks = append(fks, nodes[i].ID)
 		nodeids[nodes[i].ID] = nodes[i]
@@ -577,7 +578,7 @@ func (_q *EmployeeQuery) loadAvailability(ctx context.Context, query *Availabili
 		query.ctx.AppendFieldOnce(availability.FieldEmployeeID)
 	}
 	query.Where(predicate.Availability(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(employee.AvailabilityColumn), fks...))
+		s.Where(sql.InValues(s.C(employee.AvailabilitiesColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
@@ -595,7 +596,7 @@ func (_q *EmployeeQuery) loadAvailability(ctx context.Context, query *Availabili
 }
 func (_q *EmployeeQuery) loadAssignments(ctx context.Context, query *ScheduleAssignmentQuery, nodes []*Employee, init func(*Employee), assign func(*Employee, *ScheduleAssignment)) error {
 	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[int]*Employee)
+	nodeids := make(map[uuid.UUID]*Employee)
 	for i := range nodes {
 		fks = append(fks, nodes[i].ID)
 		nodeids[nodes[i].ID] = nodes[i]
@@ -625,7 +626,7 @@ func (_q *EmployeeQuery) loadAssignments(ctx context.Context, query *ScheduleAss
 }
 func (_q *EmployeeQuery) loadVotes(ctx context.Context, query *ScheduleVoteQuery, nodes []*Employee, init func(*Employee), assign func(*Employee, *ScheduleVote)) error {
 	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[int]*Employee)
+	nodeids := make(map[uuid.UUID]*Employee)
 	for i := range nodes {
 		fks = append(fks, nodes[i].ID)
 		nodeids[nodes[i].ID] = nodes[i]
@@ -664,7 +665,7 @@ func (_q *EmployeeQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (_q *EmployeeQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := sqlgraph.NewQuerySpec(employee.Table, employee.Columns, sqlgraph.NewFieldSpec(employee.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewQuerySpec(employee.Table, employee.Columns, sqlgraph.NewFieldSpec(employee.FieldID, field.TypeUUID))
 	_spec.From = _q.sql
 	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique

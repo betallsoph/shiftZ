@@ -8,66 +8,72 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/betallsoph/shiftz/internal/ent/predicate"
+	"github.com/google/uuid"
 )
 
 // ID filters vertices based on their ID field.
-func ID(id int) predicate.ScheduleVote {
+func ID(id uuid.UUID) predicate.ScheduleVote {
 	return predicate.ScheduleVote(sql.FieldEQ(FieldID, id))
 }
 
 // IDEQ applies the EQ predicate on the ID field.
-func IDEQ(id int) predicate.ScheduleVote {
+func IDEQ(id uuid.UUID) predicate.ScheduleVote {
 	return predicate.ScheduleVote(sql.FieldEQ(FieldID, id))
 }
 
 // IDNEQ applies the NEQ predicate on the ID field.
-func IDNEQ(id int) predicate.ScheduleVote {
+func IDNEQ(id uuid.UUID) predicate.ScheduleVote {
 	return predicate.ScheduleVote(sql.FieldNEQ(FieldID, id))
 }
 
 // IDIn applies the In predicate on the ID field.
-func IDIn(ids ...int) predicate.ScheduleVote {
+func IDIn(ids ...uuid.UUID) predicate.ScheduleVote {
 	return predicate.ScheduleVote(sql.FieldIn(FieldID, ids...))
 }
 
 // IDNotIn applies the NotIn predicate on the ID field.
-func IDNotIn(ids ...int) predicate.ScheduleVote {
+func IDNotIn(ids ...uuid.UUID) predicate.ScheduleVote {
 	return predicate.ScheduleVote(sql.FieldNotIn(FieldID, ids...))
 }
 
 // IDGT applies the GT predicate on the ID field.
-func IDGT(id int) predicate.ScheduleVote {
+func IDGT(id uuid.UUID) predicate.ScheduleVote {
 	return predicate.ScheduleVote(sql.FieldGT(FieldID, id))
 }
 
 // IDGTE applies the GTE predicate on the ID field.
-func IDGTE(id int) predicate.ScheduleVote {
+func IDGTE(id uuid.UUID) predicate.ScheduleVote {
 	return predicate.ScheduleVote(sql.FieldGTE(FieldID, id))
 }
 
 // IDLT applies the LT predicate on the ID field.
-func IDLT(id int) predicate.ScheduleVote {
+func IDLT(id uuid.UUID) predicate.ScheduleVote {
 	return predicate.ScheduleVote(sql.FieldLT(FieldID, id))
 }
 
 // IDLTE applies the LTE predicate on the ID field.
-func IDLTE(id int) predicate.ScheduleVote {
+func IDLTE(id uuid.UUID) predicate.ScheduleVote {
 	return predicate.ScheduleVote(sql.FieldLTE(FieldID, id))
 }
 
 // ShopID applies equality check predicate on the "shop_id" field. It's identical to ShopIDEQ.
-func ShopID(v int) predicate.ScheduleVote {
+func ShopID(v uuid.UUID) predicate.ScheduleVote {
 	return predicate.ScheduleVote(sql.FieldEQ(FieldShopID, v))
 }
 
 // ScheduleID applies equality check predicate on the "schedule_id" field. It's identical to ScheduleIDEQ.
-func ScheduleID(v int) predicate.ScheduleVote {
+func ScheduleID(v uuid.UUID) predicate.ScheduleVote {
 	return predicate.ScheduleVote(sql.FieldEQ(FieldScheduleID, v))
 }
 
 // EmployeeID applies equality check predicate on the "employee_id" field. It's identical to EmployeeIDEQ.
-func EmployeeID(v int) predicate.ScheduleVote {
+func EmployeeID(v uuid.UUID) predicate.ScheduleVote {
 	return predicate.ScheduleVote(sql.FieldEQ(FieldEmployeeID, v))
+}
+
+// WeekStart applies equality check predicate on the "week_start" field. It's identical to WeekStartEQ.
+func WeekStart(v time.Time) predicate.ScheduleVote {
+	return predicate.ScheduleVote(sql.FieldEQ(FieldWeekStart, v))
 }
 
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
@@ -76,63 +82,103 @@ func CreatedAt(v time.Time) predicate.ScheduleVote {
 }
 
 // ShopIDEQ applies the EQ predicate on the "shop_id" field.
-func ShopIDEQ(v int) predicate.ScheduleVote {
+func ShopIDEQ(v uuid.UUID) predicate.ScheduleVote {
 	return predicate.ScheduleVote(sql.FieldEQ(FieldShopID, v))
 }
 
 // ShopIDNEQ applies the NEQ predicate on the "shop_id" field.
-func ShopIDNEQ(v int) predicate.ScheduleVote {
+func ShopIDNEQ(v uuid.UUID) predicate.ScheduleVote {
 	return predicate.ScheduleVote(sql.FieldNEQ(FieldShopID, v))
 }
 
 // ShopIDIn applies the In predicate on the "shop_id" field.
-func ShopIDIn(vs ...int) predicate.ScheduleVote {
+func ShopIDIn(vs ...uuid.UUID) predicate.ScheduleVote {
 	return predicate.ScheduleVote(sql.FieldIn(FieldShopID, vs...))
 }
 
 // ShopIDNotIn applies the NotIn predicate on the "shop_id" field.
-func ShopIDNotIn(vs ...int) predicate.ScheduleVote {
+func ShopIDNotIn(vs ...uuid.UUID) predicate.ScheduleVote {
 	return predicate.ScheduleVote(sql.FieldNotIn(FieldShopID, vs...))
 }
 
 // ScheduleIDEQ applies the EQ predicate on the "schedule_id" field.
-func ScheduleIDEQ(v int) predicate.ScheduleVote {
+func ScheduleIDEQ(v uuid.UUID) predicate.ScheduleVote {
 	return predicate.ScheduleVote(sql.FieldEQ(FieldScheduleID, v))
 }
 
 // ScheduleIDNEQ applies the NEQ predicate on the "schedule_id" field.
-func ScheduleIDNEQ(v int) predicate.ScheduleVote {
+func ScheduleIDNEQ(v uuid.UUID) predicate.ScheduleVote {
 	return predicate.ScheduleVote(sql.FieldNEQ(FieldScheduleID, v))
 }
 
 // ScheduleIDIn applies the In predicate on the "schedule_id" field.
-func ScheduleIDIn(vs ...int) predicate.ScheduleVote {
+func ScheduleIDIn(vs ...uuid.UUID) predicate.ScheduleVote {
 	return predicate.ScheduleVote(sql.FieldIn(FieldScheduleID, vs...))
 }
 
 // ScheduleIDNotIn applies the NotIn predicate on the "schedule_id" field.
-func ScheduleIDNotIn(vs ...int) predicate.ScheduleVote {
+func ScheduleIDNotIn(vs ...uuid.UUID) predicate.ScheduleVote {
 	return predicate.ScheduleVote(sql.FieldNotIn(FieldScheduleID, vs...))
 }
 
 // EmployeeIDEQ applies the EQ predicate on the "employee_id" field.
-func EmployeeIDEQ(v int) predicate.ScheduleVote {
+func EmployeeIDEQ(v uuid.UUID) predicate.ScheduleVote {
 	return predicate.ScheduleVote(sql.FieldEQ(FieldEmployeeID, v))
 }
 
 // EmployeeIDNEQ applies the NEQ predicate on the "employee_id" field.
-func EmployeeIDNEQ(v int) predicate.ScheduleVote {
+func EmployeeIDNEQ(v uuid.UUID) predicate.ScheduleVote {
 	return predicate.ScheduleVote(sql.FieldNEQ(FieldEmployeeID, v))
 }
 
 // EmployeeIDIn applies the In predicate on the "employee_id" field.
-func EmployeeIDIn(vs ...int) predicate.ScheduleVote {
+func EmployeeIDIn(vs ...uuid.UUID) predicate.ScheduleVote {
 	return predicate.ScheduleVote(sql.FieldIn(FieldEmployeeID, vs...))
 }
 
 // EmployeeIDNotIn applies the NotIn predicate on the "employee_id" field.
-func EmployeeIDNotIn(vs ...int) predicate.ScheduleVote {
+func EmployeeIDNotIn(vs ...uuid.UUID) predicate.ScheduleVote {
 	return predicate.ScheduleVote(sql.FieldNotIn(FieldEmployeeID, vs...))
+}
+
+// WeekStartEQ applies the EQ predicate on the "week_start" field.
+func WeekStartEQ(v time.Time) predicate.ScheduleVote {
+	return predicate.ScheduleVote(sql.FieldEQ(FieldWeekStart, v))
+}
+
+// WeekStartNEQ applies the NEQ predicate on the "week_start" field.
+func WeekStartNEQ(v time.Time) predicate.ScheduleVote {
+	return predicate.ScheduleVote(sql.FieldNEQ(FieldWeekStart, v))
+}
+
+// WeekStartIn applies the In predicate on the "week_start" field.
+func WeekStartIn(vs ...time.Time) predicate.ScheduleVote {
+	return predicate.ScheduleVote(sql.FieldIn(FieldWeekStart, vs...))
+}
+
+// WeekStartNotIn applies the NotIn predicate on the "week_start" field.
+func WeekStartNotIn(vs ...time.Time) predicate.ScheduleVote {
+	return predicate.ScheduleVote(sql.FieldNotIn(FieldWeekStart, vs...))
+}
+
+// WeekStartGT applies the GT predicate on the "week_start" field.
+func WeekStartGT(v time.Time) predicate.ScheduleVote {
+	return predicate.ScheduleVote(sql.FieldGT(FieldWeekStart, v))
+}
+
+// WeekStartGTE applies the GTE predicate on the "week_start" field.
+func WeekStartGTE(v time.Time) predicate.ScheduleVote {
+	return predicate.ScheduleVote(sql.FieldGTE(FieldWeekStart, v))
+}
+
+// WeekStartLT applies the LT predicate on the "week_start" field.
+func WeekStartLT(v time.Time) predicate.ScheduleVote {
+	return predicate.ScheduleVote(sql.FieldLT(FieldWeekStart, v))
+}
+
+// WeekStartLTE applies the LTE predicate on the "week_start" field.
+func WeekStartLTE(v time.Time) predicate.ScheduleVote {
+	return predicate.ScheduleVote(sql.FieldLTE(FieldWeekStart, v))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
@@ -180,7 +226,7 @@ func HasShop() predicate.ScheduleVote {
 	return predicate.ScheduleVote(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, ShopTable, ShopColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, ShopTable, ShopColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})

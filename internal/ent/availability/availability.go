@@ -7,6 +7,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/google/uuid"
 )
 
 const (
@@ -20,16 +21,10 @@ const (
 	FieldEmployeeID = "employee_id"
 	// FieldWeekStart holds the string denoting the week_start field in the database.
 	FieldWeekStart = "week_start"
-	// FieldStartsAt holds the string denoting the starts_at field in the database.
-	FieldStartsAt = "starts_at"
-	// FieldEndsAt holds the string denoting the ends_at field in the database.
-	FieldEndsAt = "ends_at"
-	// FieldPreference holds the string denoting the preference field in the database.
-	FieldPreference = "preference"
-	// FieldNote holds the string denoting the note field in the database.
-	FieldNote = "note"
-	// FieldRawText holds the string denoting the raw_text field in the database.
-	FieldRawText = "raw_text"
+	// FieldSlots holds the string denoting the slots field in the database.
+	FieldSlots = "slots"
+	// FieldRawMessage holds the string denoting the raw_message field in the database.
+	FieldRawMessage = "raw_message"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// EdgeShop holds the string denoting the shop edge name in mutations.
@@ -60,11 +55,8 @@ var Columns = []string{
 	FieldShopID,
 	FieldEmployeeID,
 	FieldWeekStart,
-	FieldStartsAt,
-	FieldEndsAt,
-	FieldPreference,
-	FieldNote,
-	FieldRawText,
+	FieldSlots,
+	FieldRawMessage,
 	FieldCreatedAt,
 }
 
@@ -79,14 +71,12 @@ func ValidColumn(column string) bool {
 }
 
 var (
-	// DefaultPreference holds the default value on creation for the "preference" field.
-	DefaultPreference int
-	// DefaultNote holds the default value on creation for the "note" field.
-	DefaultNote string
-	// DefaultRawText holds the default value on creation for the "raw_text" field.
-	DefaultRawText string
+	// DefaultRawMessage holds the default value on creation for the "raw_message" field.
+	DefaultRawMessage string
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
+	// DefaultID holds the default value on creation for the "id" field.
+	DefaultID func() uuid.UUID
 )
 
 // OrderOption defines the ordering options for the Availability queries.
@@ -112,29 +102,9 @@ func ByWeekStart(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldWeekStart, opts...).ToFunc()
 }
 
-// ByStartsAt orders the results by the starts_at field.
-func ByStartsAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldStartsAt, opts...).ToFunc()
-}
-
-// ByEndsAt orders the results by the ends_at field.
-func ByEndsAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldEndsAt, opts...).ToFunc()
-}
-
-// ByPreference orders the results by the preference field.
-func ByPreference(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldPreference, opts...).ToFunc()
-}
-
-// ByNote orders the results by the note field.
-func ByNote(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldNote, opts...).ToFunc()
-}
-
-// ByRawText orders the results by the raw_text field.
-func ByRawText(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldRawText, opts...).ToFunc()
+// ByRawMessage orders the results by the raw_message field.
+func ByRawMessage(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldRawMessage, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.

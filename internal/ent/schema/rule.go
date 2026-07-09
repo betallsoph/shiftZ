@@ -7,24 +7,26 @@ import (
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
+	"github.com/google/uuid"
 )
 
-// Rule is an owner scheduling rule translated from natural language into a
-// solver penalty spec (kind + params), mirroring llm.RuleSpec.
+// Rule is an owner scheduling rule: the original message plus the structured
+// penalty rule the LLM translated it into, consumed by the solver.
 type Rule struct {
 	ent.Schema
 }
 
 func (Rule) Fields() []ent.Field {
 	return []ent.Field{
-		field.Int("shop_id"),
-		// avoid_pair | day_off | custom
-		field.String("kind"),
-		field.JSON("params", map[string]any{}).Optional(),
+		field.UUID("id", uuid.UUID{}).Default(uuid.New),
+		field.UUID("shop_id", uuid.UUID{}),
+		// The owner's original message, kept for audit and re-translation.
+		field.Text("description").Default(""),
+		// Structured penalty rule (kind + params) consumed by the solver;
+		// mirrors llm.RuleSpec.
+		field.JSON("rule_json", map[string]any{}).Optional(),
 		field.Float("weight").Default(1),
-		// The owner's original wording, kept for auditing and re-translation.
-		field.Text("source_text").Default(""),
-		field.Bool("active").Default(true),
+		field.Bool("is_active").Default(true),
 		field.Time("created_at").Default(time.Now).Immutable(),
 	}
 }
@@ -37,6 +39,7 @@ func (Rule) Edges() []ent.Edge {
 
 func (Rule) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("shop_id", "active"),
+		// Solver input: "active rules of this shop".
+		index.Fields("shop_id", "is_active"),
 	}
 }

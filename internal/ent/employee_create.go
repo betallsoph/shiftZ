@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"time"
 
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -16,6 +17,7 @@ import (
 	"github.com/betallsoph/shiftz/internal/ent/scheduleassignment"
 	"github.com/betallsoph/shiftz/internal/ent/schedulevote"
 	"github.com/betallsoph/shiftz/internal/ent/shop"
+	"github.com/google/uuid"
 )
 
 // EmployeeCreate is the builder for creating a Employee entity.
@@ -27,7 +29,7 @@ type EmployeeCreate struct {
 }
 
 // SetShopID sets the "shop_id" field.
-func (_c *EmployeeCreate) SetShopID(v int) *EmployeeCreate {
+func (_c *EmployeeCreate) SetShopID(v uuid.UUID) *EmployeeCreate {
 	_c.mutation.SetShopID(v)
 	return _c
 }
@@ -41,6 +43,20 @@ func (_c *EmployeeCreate) SetTelegramUserID(v int64) *EmployeeCreate {
 // SetDisplayName sets the "display_name" field.
 func (_c *EmployeeCreate) SetDisplayName(v string) *EmployeeCreate {
 	_c.mutation.SetDisplayName(v)
+	return _c
+}
+
+// SetRole sets the "role" field.
+func (_c *EmployeeCreate) SetRole(v string) *EmployeeCreate {
+	_c.mutation.SetRole(v)
+	return _c
+}
+
+// SetNillableRole sets the "role" field if the given value is not nil.
+func (_c *EmployeeCreate) SetNillableRole(v *string) *EmployeeCreate {
+	if v != nil {
+		_c.SetRole(*v)
+	}
 	return _c
 }
 
@@ -58,16 +74,16 @@ func (_c *EmployeeCreate) SetNillableMaxHoursPerWeek(v *float64) *EmployeeCreate
 	return _c
 }
 
-// SetActive sets the "active" field.
-func (_c *EmployeeCreate) SetActive(v bool) *EmployeeCreate {
-	_c.mutation.SetActive(v)
+// SetIsActive sets the "is_active" field.
+func (_c *EmployeeCreate) SetIsActive(v bool) *EmployeeCreate {
+	_c.mutation.SetIsActive(v)
 	return _c
 }
 
-// SetNillableActive sets the "active" field if the given value is not nil.
-func (_c *EmployeeCreate) SetNillableActive(v *bool) *EmployeeCreate {
+// SetNillableIsActive sets the "is_active" field if the given value is not nil.
+func (_c *EmployeeCreate) SetNillableIsActive(v *bool) *EmployeeCreate {
 	if v != nil {
-		_c.SetActive(*v)
+		_c.SetIsActive(*v)
 	}
 	return _c
 }
@@ -86,20 +102,34 @@ func (_c *EmployeeCreate) SetNillableCreatedAt(v *time.Time) *EmployeeCreate {
 	return _c
 }
 
+// SetID sets the "id" field.
+func (_c *EmployeeCreate) SetID(v uuid.UUID) *EmployeeCreate {
+	_c.mutation.SetID(v)
+	return _c
+}
+
+// SetNillableID sets the "id" field if the given value is not nil.
+func (_c *EmployeeCreate) SetNillableID(v *uuid.UUID) *EmployeeCreate {
+	if v != nil {
+		_c.SetID(*v)
+	}
+	return _c
+}
+
 // SetShop sets the "shop" edge to the Shop entity.
 func (_c *EmployeeCreate) SetShop(v *Shop) *EmployeeCreate {
 	return _c.SetShopID(v.ID)
 }
 
-// AddAvailabilityIDs adds the "availability" edge to the Availability entity by IDs.
-func (_c *EmployeeCreate) AddAvailabilityIDs(ids ...int) *EmployeeCreate {
+// AddAvailabilityIDs adds the "availabilities" edge to the Availability entity by IDs.
+func (_c *EmployeeCreate) AddAvailabilityIDs(ids ...uuid.UUID) *EmployeeCreate {
 	_c.mutation.AddAvailabilityIDs(ids...)
 	return _c
 }
 
-// AddAvailability adds the "availability" edges to the Availability entity.
-func (_c *EmployeeCreate) AddAvailability(v ...*Availability) *EmployeeCreate {
-	ids := make([]int, len(v))
+// AddAvailabilities adds the "availabilities" edges to the Availability entity.
+func (_c *EmployeeCreate) AddAvailabilities(v ...*Availability) *EmployeeCreate {
+	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
@@ -107,14 +137,14 @@ func (_c *EmployeeCreate) AddAvailability(v ...*Availability) *EmployeeCreate {
 }
 
 // AddAssignmentIDs adds the "assignments" edge to the ScheduleAssignment entity by IDs.
-func (_c *EmployeeCreate) AddAssignmentIDs(ids ...int) *EmployeeCreate {
+func (_c *EmployeeCreate) AddAssignmentIDs(ids ...uuid.UUID) *EmployeeCreate {
 	_c.mutation.AddAssignmentIDs(ids...)
 	return _c
 }
 
 // AddAssignments adds the "assignments" edges to the ScheduleAssignment entity.
 func (_c *EmployeeCreate) AddAssignments(v ...*ScheduleAssignment) *EmployeeCreate {
-	ids := make([]int, len(v))
+	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
@@ -122,14 +152,14 @@ func (_c *EmployeeCreate) AddAssignments(v ...*ScheduleAssignment) *EmployeeCrea
 }
 
 // AddVoteIDs adds the "votes" edge to the ScheduleVote entity by IDs.
-func (_c *EmployeeCreate) AddVoteIDs(ids ...int) *EmployeeCreate {
+func (_c *EmployeeCreate) AddVoteIDs(ids ...uuid.UUID) *EmployeeCreate {
 	_c.mutation.AddVoteIDs(ids...)
 	return _c
 }
 
 // AddVotes adds the "votes" edges to the ScheduleVote entity.
 func (_c *EmployeeCreate) AddVotes(v ...*ScheduleVote) *EmployeeCreate {
-	ids := make([]int, len(v))
+	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
@@ -171,17 +201,25 @@ func (_c *EmployeeCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (_c *EmployeeCreate) defaults() {
+	if _, ok := _c.mutation.Role(); !ok {
+		v := employee.DefaultRole
+		_c.mutation.SetRole(v)
+	}
 	if _, ok := _c.mutation.MaxHoursPerWeek(); !ok {
 		v := employee.DefaultMaxHoursPerWeek
 		_c.mutation.SetMaxHoursPerWeek(v)
 	}
-	if _, ok := _c.mutation.Active(); !ok {
-		v := employee.DefaultActive
-		_c.mutation.SetActive(v)
+	if _, ok := _c.mutation.IsActive(); !ok {
+		v := employee.DefaultIsActive
+		_c.mutation.SetIsActive(v)
 	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		v := employee.DefaultCreatedAt()
 		_c.mutation.SetCreatedAt(v)
+	}
+	if _, ok := _c.mutation.ID(); !ok {
+		v := employee.DefaultID()
+		_c.mutation.SetID(v)
 	}
 }
 
@@ -196,11 +234,14 @@ func (_c *EmployeeCreate) check() error {
 	if _, ok := _c.mutation.DisplayName(); !ok {
 		return &ValidationError{Name: "display_name", err: errors.New(`ent: missing required field "Employee.display_name"`)}
 	}
+	if _, ok := _c.mutation.Role(); !ok {
+		return &ValidationError{Name: "role", err: errors.New(`ent: missing required field "Employee.role"`)}
+	}
 	if _, ok := _c.mutation.MaxHoursPerWeek(); !ok {
 		return &ValidationError{Name: "max_hours_per_week", err: errors.New(`ent: missing required field "Employee.max_hours_per_week"`)}
 	}
-	if _, ok := _c.mutation.Active(); !ok {
-		return &ValidationError{Name: "active", err: errors.New(`ent: missing required field "Employee.active"`)}
+	if _, ok := _c.mutation.IsActive(); !ok {
+		return &ValidationError{Name: "is_active", err: errors.New(`ent: missing required field "Employee.is_active"`)}
 	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Employee.created_at"`)}
@@ -222,8 +263,13 @@ func (_c *EmployeeCreate) sqlSave(ctx context.Context) (*Employee, error) {
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
+	if _spec.ID.Value != nil {
+		if id, ok := _spec.ID.Value.(*uuid.UUID); ok {
+			_node.ID = *id
+		} else if err := _node.ID.Scan(_spec.ID.Value); err != nil {
+			return nil, err
+		}
+	}
 	_c.mutation.id = &_node.ID
 	_c.mutation.done = true
 	return _node, nil
@@ -232,9 +278,13 @@ func (_c *EmployeeCreate) sqlSave(ctx context.Context) (*Employee, error) {
 func (_c *EmployeeCreate) createSpec() (*Employee, *sqlgraph.CreateSpec) {
 	var (
 		_node = &Employee{config: _c.config}
-		_spec = sqlgraph.NewCreateSpec(employee.Table, sqlgraph.NewFieldSpec(employee.FieldID, field.TypeInt))
+		_spec = sqlgraph.NewCreateSpec(employee.Table, sqlgraph.NewFieldSpec(employee.FieldID, field.TypeUUID))
 	)
 	_spec.OnConflict = _c.conflict
+	if id, ok := _c.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = &id
+	}
 	if value, ok := _c.mutation.TelegramUserID(); ok {
 		_spec.SetField(employee.FieldTelegramUserID, field.TypeInt64, value)
 		_node.TelegramUserID = value
@@ -243,13 +293,17 @@ func (_c *EmployeeCreate) createSpec() (*Employee, *sqlgraph.CreateSpec) {
 		_spec.SetField(employee.FieldDisplayName, field.TypeString, value)
 		_node.DisplayName = value
 	}
+	if value, ok := _c.mutation.Role(); ok {
+		_spec.SetField(employee.FieldRole, field.TypeString, value)
+		_node.Role = value
+	}
 	if value, ok := _c.mutation.MaxHoursPerWeek(); ok {
 		_spec.SetField(employee.FieldMaxHoursPerWeek, field.TypeFloat64, value)
 		_node.MaxHoursPerWeek = value
 	}
-	if value, ok := _c.mutation.Active(); ok {
-		_spec.SetField(employee.FieldActive, field.TypeBool, value)
-		_node.Active = value
+	if value, ok := _c.mutation.IsActive(); ok {
+		_spec.SetField(employee.FieldIsActive, field.TypeBool, value)
+		_node.IsActive = value
 	}
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(employee.FieldCreatedAt, field.TypeTime, value)
@@ -263,7 +317,7 @@ func (_c *EmployeeCreate) createSpec() (*Employee, *sqlgraph.CreateSpec) {
 			Columns: []string{employee.ShopColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -272,15 +326,15 @@ func (_c *EmployeeCreate) createSpec() (*Employee, *sqlgraph.CreateSpec) {
 		_node.ShopID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.AvailabilityIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.AvailabilitiesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   employee.AvailabilityTable,
-			Columns: []string{employee.AvailabilityColumn},
+			Table:   employee.AvailabilitiesTable,
+			Columns: []string{employee.AvailabilitiesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(availability.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(availability.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -296,7 +350,7 @@ func (_c *EmployeeCreate) createSpec() (*Employee, *sqlgraph.CreateSpec) {
 			Columns: []string{employee.AssignmentsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scheduleassignment.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scheduleassignment.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -312,7 +366,7 @@ func (_c *EmployeeCreate) createSpec() (*Employee, *sqlgraph.CreateSpec) {
 			Columns: []string{employee.VotesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(schedulevote.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(schedulevote.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -373,7 +427,7 @@ type (
 )
 
 // SetShopID sets the "shop_id" field.
-func (u *EmployeeUpsert) SetShopID(v int) *EmployeeUpsert {
+func (u *EmployeeUpsert) SetShopID(v uuid.UUID) *EmployeeUpsert {
 	u.Set(employee.FieldShopID, v)
 	return u
 }
@@ -414,6 +468,18 @@ func (u *EmployeeUpsert) UpdateDisplayName() *EmployeeUpsert {
 	return u
 }
 
+// SetRole sets the "role" field.
+func (u *EmployeeUpsert) SetRole(v string) *EmployeeUpsert {
+	u.Set(employee.FieldRole, v)
+	return u
+}
+
+// UpdateRole sets the "role" field to the value that was provided on create.
+func (u *EmployeeUpsert) UpdateRole() *EmployeeUpsert {
+	u.SetExcluded(employee.FieldRole)
+	return u
+}
+
 // SetMaxHoursPerWeek sets the "max_hours_per_week" field.
 func (u *EmployeeUpsert) SetMaxHoursPerWeek(v float64) *EmployeeUpsert {
 	u.Set(employee.FieldMaxHoursPerWeek, v)
@@ -432,29 +498,35 @@ func (u *EmployeeUpsert) AddMaxHoursPerWeek(v float64) *EmployeeUpsert {
 	return u
 }
 
-// SetActive sets the "active" field.
-func (u *EmployeeUpsert) SetActive(v bool) *EmployeeUpsert {
-	u.Set(employee.FieldActive, v)
+// SetIsActive sets the "is_active" field.
+func (u *EmployeeUpsert) SetIsActive(v bool) *EmployeeUpsert {
+	u.Set(employee.FieldIsActive, v)
 	return u
 }
 
-// UpdateActive sets the "active" field to the value that was provided on create.
-func (u *EmployeeUpsert) UpdateActive() *EmployeeUpsert {
-	u.SetExcluded(employee.FieldActive)
+// UpdateIsActive sets the "is_active" field to the value that was provided on create.
+func (u *EmployeeUpsert) UpdateIsActive() *EmployeeUpsert {
+	u.SetExcluded(employee.FieldIsActive)
 	return u
 }
 
-// UpdateNewValues updates the mutable fields using the new values that were set on create.
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
 //	client.Employee.Create().
 //		OnConflict(
 //			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(employee.FieldID)
+//			}),
 //		).
 //		Exec(ctx)
 func (u *EmployeeUpsertOne) UpdateNewValues() *EmployeeUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(employee.FieldID)
+		}
 		if _, exists := u.create.mutation.CreatedAt(); exists {
 			s.SetIgnore(employee.FieldCreatedAt)
 		}
@@ -490,7 +562,7 @@ func (u *EmployeeUpsertOne) Update(set func(*EmployeeUpsert)) *EmployeeUpsertOne
 }
 
 // SetShopID sets the "shop_id" field.
-func (u *EmployeeUpsertOne) SetShopID(v int) *EmployeeUpsertOne {
+func (u *EmployeeUpsertOne) SetShopID(v uuid.UUID) *EmployeeUpsertOne {
 	return u.Update(func(s *EmployeeUpsert) {
 		s.SetShopID(v)
 	})
@@ -538,6 +610,20 @@ func (u *EmployeeUpsertOne) UpdateDisplayName() *EmployeeUpsertOne {
 	})
 }
 
+// SetRole sets the "role" field.
+func (u *EmployeeUpsertOne) SetRole(v string) *EmployeeUpsertOne {
+	return u.Update(func(s *EmployeeUpsert) {
+		s.SetRole(v)
+	})
+}
+
+// UpdateRole sets the "role" field to the value that was provided on create.
+func (u *EmployeeUpsertOne) UpdateRole() *EmployeeUpsertOne {
+	return u.Update(func(s *EmployeeUpsert) {
+		s.UpdateRole()
+	})
+}
+
 // SetMaxHoursPerWeek sets the "max_hours_per_week" field.
 func (u *EmployeeUpsertOne) SetMaxHoursPerWeek(v float64) *EmployeeUpsertOne {
 	return u.Update(func(s *EmployeeUpsert) {
@@ -559,17 +645,17 @@ func (u *EmployeeUpsertOne) UpdateMaxHoursPerWeek() *EmployeeUpsertOne {
 	})
 }
 
-// SetActive sets the "active" field.
-func (u *EmployeeUpsertOne) SetActive(v bool) *EmployeeUpsertOne {
+// SetIsActive sets the "is_active" field.
+func (u *EmployeeUpsertOne) SetIsActive(v bool) *EmployeeUpsertOne {
 	return u.Update(func(s *EmployeeUpsert) {
-		s.SetActive(v)
+		s.SetIsActive(v)
 	})
 }
 
-// UpdateActive sets the "active" field to the value that was provided on create.
-func (u *EmployeeUpsertOne) UpdateActive() *EmployeeUpsertOne {
+// UpdateIsActive sets the "is_active" field to the value that was provided on create.
+func (u *EmployeeUpsertOne) UpdateIsActive() *EmployeeUpsertOne {
 	return u.Update(func(s *EmployeeUpsert) {
-		s.UpdateActive()
+		s.UpdateIsActive()
 	})
 }
 
@@ -589,7 +675,12 @@ func (u *EmployeeUpsertOne) ExecX(ctx context.Context) {
 }
 
 // Exec executes the UPSERT query and returns the inserted/updated ID.
-func (u *EmployeeUpsertOne) ID(ctx context.Context) (id int, err error) {
+func (u *EmployeeUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
+	if u.create.driver.Dialect() == dialect.MySQL {
+		// In case of "ON CONFLICT", there is no way to get back non-numeric ID
+		// fields from the database since MySQL does not support the RETURNING clause.
+		return id, errors.New("ent: EmployeeUpsertOne.ID is not supported by MySQL driver. Use EmployeeUpsertOne.Exec instead")
+	}
 	node, err := u.create.Save(ctx)
 	if err != nil {
 		return id, err
@@ -598,7 +689,7 @@ func (u *EmployeeUpsertOne) ID(ctx context.Context) (id int, err error) {
 }
 
 // IDX is like ID, but panics if an error occurs.
-func (u *EmployeeUpsertOne) IDX(ctx context.Context) int {
+func (u *EmployeeUpsertOne) IDX(ctx context.Context) uuid.UUID {
 	id, err := u.ID(ctx)
 	if err != nil {
 		panic(err)
@@ -653,10 +744,6 @@ func (_c *EmployeeCreateBulk) Save(ctx context.Context) ([]*Employee, error) {
 					return nil, err
 				}
 				mutation.id = &nodes[i].ID
-				if specs[i].ID.Value != nil {
-					id := specs[i].ID.Value.(int64)
-					nodes[i].ID = int(id)
-				}
 				mutation.done = true
 				return nodes[i], nil
 			})
@@ -743,12 +830,18 @@ type EmployeeUpsertBulk struct {
 //	client.Employee.Create().
 //		OnConflict(
 //			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(employee.FieldID)
+//			}),
 //		).
 //		Exec(ctx)
 func (u *EmployeeUpsertBulk) UpdateNewValues() *EmployeeUpsertBulk {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(employee.FieldID)
+			}
 			if _, exists := b.mutation.CreatedAt(); exists {
 				s.SetIgnore(employee.FieldCreatedAt)
 			}
@@ -785,7 +878,7 @@ func (u *EmployeeUpsertBulk) Update(set func(*EmployeeUpsert)) *EmployeeUpsertBu
 }
 
 // SetShopID sets the "shop_id" field.
-func (u *EmployeeUpsertBulk) SetShopID(v int) *EmployeeUpsertBulk {
+func (u *EmployeeUpsertBulk) SetShopID(v uuid.UUID) *EmployeeUpsertBulk {
 	return u.Update(func(s *EmployeeUpsert) {
 		s.SetShopID(v)
 	})
@@ -833,6 +926,20 @@ func (u *EmployeeUpsertBulk) UpdateDisplayName() *EmployeeUpsertBulk {
 	})
 }
 
+// SetRole sets the "role" field.
+func (u *EmployeeUpsertBulk) SetRole(v string) *EmployeeUpsertBulk {
+	return u.Update(func(s *EmployeeUpsert) {
+		s.SetRole(v)
+	})
+}
+
+// UpdateRole sets the "role" field to the value that was provided on create.
+func (u *EmployeeUpsertBulk) UpdateRole() *EmployeeUpsertBulk {
+	return u.Update(func(s *EmployeeUpsert) {
+		s.UpdateRole()
+	})
+}
+
 // SetMaxHoursPerWeek sets the "max_hours_per_week" field.
 func (u *EmployeeUpsertBulk) SetMaxHoursPerWeek(v float64) *EmployeeUpsertBulk {
 	return u.Update(func(s *EmployeeUpsert) {
@@ -854,17 +961,17 @@ func (u *EmployeeUpsertBulk) UpdateMaxHoursPerWeek() *EmployeeUpsertBulk {
 	})
 }
 
-// SetActive sets the "active" field.
-func (u *EmployeeUpsertBulk) SetActive(v bool) *EmployeeUpsertBulk {
+// SetIsActive sets the "is_active" field.
+func (u *EmployeeUpsertBulk) SetIsActive(v bool) *EmployeeUpsertBulk {
 	return u.Update(func(s *EmployeeUpsert) {
-		s.SetActive(v)
+		s.SetIsActive(v)
 	})
 }
 
-// UpdateActive sets the "active" field to the value that was provided on create.
-func (u *EmployeeUpsertBulk) UpdateActive() *EmployeeUpsertBulk {
+// UpdateIsActive sets the "is_active" field to the value that was provided on create.
+func (u *EmployeeUpsertBulk) UpdateIsActive() *EmployeeUpsertBulk {
 	return u.Update(func(s *EmployeeUpsert) {
-		s.UpdateActive()
+		s.UpdateIsActive()
 	})
 }
 

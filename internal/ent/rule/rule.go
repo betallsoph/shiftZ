@@ -7,6 +7,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/google/uuid"
 )
 
 const (
@@ -16,16 +17,14 @@ const (
 	FieldID = "id"
 	// FieldShopID holds the string denoting the shop_id field in the database.
 	FieldShopID = "shop_id"
-	// FieldKind holds the string denoting the kind field in the database.
-	FieldKind = "kind"
-	// FieldParams holds the string denoting the params field in the database.
-	FieldParams = "params"
+	// FieldDescription holds the string denoting the description field in the database.
+	FieldDescription = "description"
+	// FieldRuleJSON holds the string denoting the rule_json field in the database.
+	FieldRuleJSON = "rule_json"
 	// FieldWeight holds the string denoting the weight field in the database.
 	FieldWeight = "weight"
-	// FieldSourceText holds the string denoting the source_text field in the database.
-	FieldSourceText = "source_text"
-	// FieldActive holds the string denoting the active field in the database.
-	FieldActive = "active"
+	// FieldIsActive holds the string denoting the is_active field in the database.
+	FieldIsActive = "is_active"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// EdgeShop holds the string denoting the shop edge name in mutations.
@@ -45,11 +44,10 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldShopID,
-	FieldKind,
-	FieldParams,
+	FieldDescription,
+	FieldRuleJSON,
 	FieldWeight,
-	FieldSourceText,
-	FieldActive,
+	FieldIsActive,
 	FieldCreatedAt,
 }
 
@@ -64,14 +62,16 @@ func ValidColumn(column string) bool {
 }
 
 var (
+	// DefaultDescription holds the default value on creation for the "description" field.
+	DefaultDescription string
 	// DefaultWeight holds the default value on creation for the "weight" field.
 	DefaultWeight float64
-	// DefaultSourceText holds the default value on creation for the "source_text" field.
-	DefaultSourceText string
-	// DefaultActive holds the default value on creation for the "active" field.
-	DefaultActive bool
+	// DefaultIsActive holds the default value on creation for the "is_active" field.
+	DefaultIsActive bool
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
+	// DefaultID holds the default value on creation for the "id" field.
+	DefaultID func() uuid.UUID
 )
 
 // OrderOption defines the ordering options for the Rule queries.
@@ -87,9 +87,9 @@ func ByShopID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldShopID, opts...).ToFunc()
 }
 
-// ByKind orders the results by the kind field.
-func ByKind(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldKind, opts...).ToFunc()
+// ByDescription orders the results by the description field.
+func ByDescription(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDescription, opts...).ToFunc()
 }
 
 // ByWeight orders the results by the weight field.
@@ -97,14 +97,9 @@ func ByWeight(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldWeight, opts...).ToFunc()
 }
 
-// BySourceText orders the results by the source_text field.
-func BySourceText(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldSourceText, opts...).ToFunc()
-}
-
-// ByActive orders the results by the active field.
-func ByActive(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldActive, opts...).ToFunc()
+// ByIsActive orders the results by the is_active field.
+func ByIsActive(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldIsActive, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.

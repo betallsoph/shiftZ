@@ -13,6 +13,7 @@ import (
 	"github.com/betallsoph/shiftz/internal/ent/predicate"
 	"github.com/betallsoph/shiftz/internal/ent/rule"
 	"github.com/betallsoph/shiftz/internal/ent/shop"
+	"github.com/google/uuid"
 )
 
 // RuleUpdate is the builder for updating Rule entities.
@@ -29,42 +30,42 @@ func (_u *RuleUpdate) Where(ps ...predicate.Rule) *RuleUpdate {
 }
 
 // SetShopID sets the "shop_id" field.
-func (_u *RuleUpdate) SetShopID(v int) *RuleUpdate {
+func (_u *RuleUpdate) SetShopID(v uuid.UUID) *RuleUpdate {
 	_u.mutation.SetShopID(v)
 	return _u
 }
 
 // SetNillableShopID sets the "shop_id" field if the given value is not nil.
-func (_u *RuleUpdate) SetNillableShopID(v *int) *RuleUpdate {
+func (_u *RuleUpdate) SetNillableShopID(v *uuid.UUID) *RuleUpdate {
 	if v != nil {
 		_u.SetShopID(*v)
 	}
 	return _u
 }
 
-// SetKind sets the "kind" field.
-func (_u *RuleUpdate) SetKind(v string) *RuleUpdate {
-	_u.mutation.SetKind(v)
+// SetDescription sets the "description" field.
+func (_u *RuleUpdate) SetDescription(v string) *RuleUpdate {
+	_u.mutation.SetDescription(v)
 	return _u
 }
 
-// SetNillableKind sets the "kind" field if the given value is not nil.
-func (_u *RuleUpdate) SetNillableKind(v *string) *RuleUpdate {
+// SetNillableDescription sets the "description" field if the given value is not nil.
+func (_u *RuleUpdate) SetNillableDescription(v *string) *RuleUpdate {
 	if v != nil {
-		_u.SetKind(*v)
+		_u.SetDescription(*v)
 	}
 	return _u
 }
 
-// SetParams sets the "params" field.
-func (_u *RuleUpdate) SetParams(v map[string]interface{}) *RuleUpdate {
-	_u.mutation.SetParams(v)
+// SetRuleJSON sets the "rule_json" field.
+func (_u *RuleUpdate) SetRuleJSON(v map[string]interface{}) *RuleUpdate {
+	_u.mutation.SetRuleJSON(v)
 	return _u
 }
 
-// ClearParams clears the value of the "params" field.
-func (_u *RuleUpdate) ClearParams() *RuleUpdate {
-	_u.mutation.ClearParams()
+// ClearRuleJSON clears the value of the "rule_json" field.
+func (_u *RuleUpdate) ClearRuleJSON() *RuleUpdate {
+	_u.mutation.ClearRuleJSON()
 	return _u
 }
 
@@ -89,30 +90,16 @@ func (_u *RuleUpdate) AddWeight(v float64) *RuleUpdate {
 	return _u
 }
 
-// SetSourceText sets the "source_text" field.
-func (_u *RuleUpdate) SetSourceText(v string) *RuleUpdate {
-	_u.mutation.SetSourceText(v)
+// SetIsActive sets the "is_active" field.
+func (_u *RuleUpdate) SetIsActive(v bool) *RuleUpdate {
+	_u.mutation.SetIsActive(v)
 	return _u
 }
 
-// SetNillableSourceText sets the "source_text" field if the given value is not nil.
-func (_u *RuleUpdate) SetNillableSourceText(v *string) *RuleUpdate {
+// SetNillableIsActive sets the "is_active" field if the given value is not nil.
+func (_u *RuleUpdate) SetNillableIsActive(v *bool) *RuleUpdate {
 	if v != nil {
-		_u.SetSourceText(*v)
-	}
-	return _u
-}
-
-// SetActive sets the "active" field.
-func (_u *RuleUpdate) SetActive(v bool) *RuleUpdate {
-	_u.mutation.SetActive(v)
-	return _u
-}
-
-// SetNillableActive sets the "active" field if the given value is not nil.
-func (_u *RuleUpdate) SetNillableActive(v *bool) *RuleUpdate {
-	if v != nil {
-		_u.SetActive(*v)
+		_u.SetIsActive(*v)
 	}
 	return _u
 }
@@ -172,7 +159,7 @@ func (_u *RuleUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
 	}
-	_spec := sqlgraph.NewUpdateSpec(rule.Table, rule.Columns, sqlgraph.NewFieldSpec(rule.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewUpdateSpec(rule.Table, rule.Columns, sqlgraph.NewFieldSpec(rule.FieldID, field.TypeUUID))
 	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -180,14 +167,14 @@ func (_u *RuleUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			}
 		}
 	}
-	if value, ok := _u.mutation.Kind(); ok {
-		_spec.SetField(rule.FieldKind, field.TypeString, value)
+	if value, ok := _u.mutation.Description(); ok {
+		_spec.SetField(rule.FieldDescription, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.Params(); ok {
-		_spec.SetField(rule.FieldParams, field.TypeJSON, value)
+	if value, ok := _u.mutation.RuleJSON(); ok {
+		_spec.SetField(rule.FieldRuleJSON, field.TypeJSON, value)
 	}
-	if _u.mutation.ParamsCleared() {
-		_spec.ClearField(rule.FieldParams, field.TypeJSON)
+	if _u.mutation.RuleJSONCleared() {
+		_spec.ClearField(rule.FieldRuleJSON, field.TypeJSON)
 	}
 	if value, ok := _u.mutation.Weight(); ok {
 		_spec.SetField(rule.FieldWeight, field.TypeFloat64, value)
@@ -195,11 +182,8 @@ func (_u *RuleUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if value, ok := _u.mutation.AddedWeight(); ok {
 		_spec.AddField(rule.FieldWeight, field.TypeFloat64, value)
 	}
-	if value, ok := _u.mutation.SourceText(); ok {
-		_spec.SetField(rule.FieldSourceText, field.TypeString, value)
-	}
-	if value, ok := _u.mutation.Active(); ok {
-		_spec.SetField(rule.FieldActive, field.TypeBool, value)
+	if value, ok := _u.mutation.IsActive(); ok {
+		_spec.SetField(rule.FieldIsActive, field.TypeBool, value)
 	}
 	if _u.mutation.ShopCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -209,7 +193,7 @@ func (_u *RuleUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Columns: []string{rule.ShopColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -222,7 +206,7 @@ func (_u *RuleUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Columns: []string{rule.ShopColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -251,42 +235,42 @@ type RuleUpdateOne struct {
 }
 
 // SetShopID sets the "shop_id" field.
-func (_u *RuleUpdateOne) SetShopID(v int) *RuleUpdateOne {
+func (_u *RuleUpdateOne) SetShopID(v uuid.UUID) *RuleUpdateOne {
 	_u.mutation.SetShopID(v)
 	return _u
 }
 
 // SetNillableShopID sets the "shop_id" field if the given value is not nil.
-func (_u *RuleUpdateOne) SetNillableShopID(v *int) *RuleUpdateOne {
+func (_u *RuleUpdateOne) SetNillableShopID(v *uuid.UUID) *RuleUpdateOne {
 	if v != nil {
 		_u.SetShopID(*v)
 	}
 	return _u
 }
 
-// SetKind sets the "kind" field.
-func (_u *RuleUpdateOne) SetKind(v string) *RuleUpdateOne {
-	_u.mutation.SetKind(v)
+// SetDescription sets the "description" field.
+func (_u *RuleUpdateOne) SetDescription(v string) *RuleUpdateOne {
+	_u.mutation.SetDescription(v)
 	return _u
 }
 
-// SetNillableKind sets the "kind" field if the given value is not nil.
-func (_u *RuleUpdateOne) SetNillableKind(v *string) *RuleUpdateOne {
+// SetNillableDescription sets the "description" field if the given value is not nil.
+func (_u *RuleUpdateOne) SetNillableDescription(v *string) *RuleUpdateOne {
 	if v != nil {
-		_u.SetKind(*v)
+		_u.SetDescription(*v)
 	}
 	return _u
 }
 
-// SetParams sets the "params" field.
-func (_u *RuleUpdateOne) SetParams(v map[string]interface{}) *RuleUpdateOne {
-	_u.mutation.SetParams(v)
+// SetRuleJSON sets the "rule_json" field.
+func (_u *RuleUpdateOne) SetRuleJSON(v map[string]interface{}) *RuleUpdateOne {
+	_u.mutation.SetRuleJSON(v)
 	return _u
 }
 
-// ClearParams clears the value of the "params" field.
-func (_u *RuleUpdateOne) ClearParams() *RuleUpdateOne {
-	_u.mutation.ClearParams()
+// ClearRuleJSON clears the value of the "rule_json" field.
+func (_u *RuleUpdateOne) ClearRuleJSON() *RuleUpdateOne {
+	_u.mutation.ClearRuleJSON()
 	return _u
 }
 
@@ -311,30 +295,16 @@ func (_u *RuleUpdateOne) AddWeight(v float64) *RuleUpdateOne {
 	return _u
 }
 
-// SetSourceText sets the "source_text" field.
-func (_u *RuleUpdateOne) SetSourceText(v string) *RuleUpdateOne {
-	_u.mutation.SetSourceText(v)
+// SetIsActive sets the "is_active" field.
+func (_u *RuleUpdateOne) SetIsActive(v bool) *RuleUpdateOne {
+	_u.mutation.SetIsActive(v)
 	return _u
 }
 
-// SetNillableSourceText sets the "source_text" field if the given value is not nil.
-func (_u *RuleUpdateOne) SetNillableSourceText(v *string) *RuleUpdateOne {
+// SetNillableIsActive sets the "is_active" field if the given value is not nil.
+func (_u *RuleUpdateOne) SetNillableIsActive(v *bool) *RuleUpdateOne {
 	if v != nil {
-		_u.SetSourceText(*v)
-	}
-	return _u
-}
-
-// SetActive sets the "active" field.
-func (_u *RuleUpdateOne) SetActive(v bool) *RuleUpdateOne {
-	_u.mutation.SetActive(v)
-	return _u
-}
-
-// SetNillableActive sets the "active" field if the given value is not nil.
-func (_u *RuleUpdateOne) SetNillableActive(v *bool) *RuleUpdateOne {
-	if v != nil {
-		_u.SetActive(*v)
+		_u.SetIsActive(*v)
 	}
 	return _u
 }
@@ -407,7 +377,7 @@ func (_u *RuleUpdateOne) sqlSave(ctx context.Context) (_node *Rule, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
 	}
-	_spec := sqlgraph.NewUpdateSpec(rule.Table, rule.Columns, sqlgraph.NewFieldSpec(rule.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewUpdateSpec(rule.Table, rule.Columns, sqlgraph.NewFieldSpec(rule.FieldID, field.TypeUUID))
 	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Rule.id" for update`)}
@@ -432,14 +402,14 @@ func (_u *RuleUpdateOne) sqlSave(ctx context.Context) (_node *Rule, err error) {
 			}
 		}
 	}
-	if value, ok := _u.mutation.Kind(); ok {
-		_spec.SetField(rule.FieldKind, field.TypeString, value)
+	if value, ok := _u.mutation.Description(); ok {
+		_spec.SetField(rule.FieldDescription, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.Params(); ok {
-		_spec.SetField(rule.FieldParams, field.TypeJSON, value)
+	if value, ok := _u.mutation.RuleJSON(); ok {
+		_spec.SetField(rule.FieldRuleJSON, field.TypeJSON, value)
 	}
-	if _u.mutation.ParamsCleared() {
-		_spec.ClearField(rule.FieldParams, field.TypeJSON)
+	if _u.mutation.RuleJSONCleared() {
+		_spec.ClearField(rule.FieldRuleJSON, field.TypeJSON)
 	}
 	if value, ok := _u.mutation.Weight(); ok {
 		_spec.SetField(rule.FieldWeight, field.TypeFloat64, value)
@@ -447,11 +417,8 @@ func (_u *RuleUpdateOne) sqlSave(ctx context.Context) (_node *Rule, err error) {
 	if value, ok := _u.mutation.AddedWeight(); ok {
 		_spec.AddField(rule.FieldWeight, field.TypeFloat64, value)
 	}
-	if value, ok := _u.mutation.SourceText(); ok {
-		_spec.SetField(rule.FieldSourceText, field.TypeString, value)
-	}
-	if value, ok := _u.mutation.Active(); ok {
-		_spec.SetField(rule.FieldActive, field.TypeBool, value)
+	if value, ok := _u.mutation.IsActive(); ok {
+		_spec.SetField(rule.FieldIsActive, field.TypeBool, value)
 	}
 	if _u.mutation.ShopCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -461,7 +428,7 @@ func (_u *RuleUpdateOne) sqlSave(ctx context.Context) (_node *Rule, err error) {
 			Columns: []string{rule.ShopColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -474,7 +441,7 @@ func (_u *RuleUpdateOne) sqlSave(ctx context.Context) (_node *Rule, err error) {
 			Columns: []string{rule.ShopColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

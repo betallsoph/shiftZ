@@ -6,14 +6,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/betallsoph/shiftz/internal/ent/scheduleassignment"
 	"github.com/betallsoph/shiftz/internal/ent/shift"
 	"github.com/betallsoph/shiftz/internal/ent/shop"
+	"github.com/google/uuid"
 )
 
 // ShiftCreate is the builder for creating a Shift entity.
@@ -25,34 +26,32 @@ type ShiftCreate struct {
 }
 
 // SetShopID sets the "shop_id" field.
-func (_c *ShiftCreate) SetShopID(v int) *ShiftCreate {
+func (_c *ShiftCreate) SetShopID(v uuid.UUID) *ShiftCreate {
 	_c.mutation.SetShopID(v)
 	return _c
 }
 
-// SetRole sets the "role" field.
-func (_c *ShiftCreate) SetRole(v string) *ShiftCreate {
-	_c.mutation.SetRole(v)
+// SetName sets the "name" field.
+func (_c *ShiftCreate) SetName(v string) *ShiftCreate {
+	_c.mutation.SetName(v)
 	return _c
 }
 
-// SetNillableRole sets the "role" field if the given value is not nil.
-func (_c *ShiftCreate) SetNillableRole(v *string) *ShiftCreate {
-	if v != nil {
-		_c.SetRole(*v)
-	}
+// SetWeekday sets the "weekday" field.
+func (_c *ShiftCreate) SetWeekday(v int) *ShiftCreate {
+	_c.mutation.SetWeekday(v)
 	return _c
 }
 
-// SetStartsAt sets the "starts_at" field.
-func (_c *ShiftCreate) SetStartsAt(v time.Time) *ShiftCreate {
-	_c.mutation.SetStartsAt(v)
+// SetStartTime sets the "start_time" field.
+func (_c *ShiftCreate) SetStartTime(v string) *ShiftCreate {
+	_c.mutation.SetStartTime(v)
 	return _c
 }
 
-// SetEndsAt sets the "ends_at" field.
-func (_c *ShiftCreate) SetEndsAt(v time.Time) *ShiftCreate {
-	_c.mutation.SetEndsAt(v)
+// SetEndTime sets the "end_time" field.
+func (_c *ShiftCreate) SetEndTime(v string) *ShiftCreate {
+	_c.mutation.SetEndTime(v)
 	return _c
 }
 
@@ -84,16 +83,16 @@ func (_c *ShiftCreate) SetNillableMaxStaff(v *int) *ShiftCreate {
 	return _c
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (_c *ShiftCreate) SetCreatedAt(v time.Time) *ShiftCreate {
-	_c.mutation.SetCreatedAt(v)
+// SetID sets the "id" field.
+func (_c *ShiftCreate) SetID(v uuid.UUID) *ShiftCreate {
+	_c.mutation.SetID(v)
 	return _c
 }
 
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (_c *ShiftCreate) SetNillableCreatedAt(v *time.Time) *ShiftCreate {
+// SetNillableID sets the "id" field if the given value is not nil.
+func (_c *ShiftCreate) SetNillableID(v *uuid.UUID) *ShiftCreate {
 	if v != nil {
-		_c.SetCreatedAt(*v)
+		_c.SetID(*v)
 	}
 	return _c
 }
@@ -104,14 +103,14 @@ func (_c *ShiftCreate) SetShop(v *Shop) *ShiftCreate {
 }
 
 // AddAssignmentIDs adds the "assignments" edge to the ScheduleAssignment entity by IDs.
-func (_c *ShiftCreate) AddAssignmentIDs(ids ...int) *ShiftCreate {
+func (_c *ShiftCreate) AddAssignmentIDs(ids ...uuid.UUID) *ShiftCreate {
 	_c.mutation.AddAssignmentIDs(ids...)
 	return _c
 }
 
 // AddAssignments adds the "assignments" edges to the ScheduleAssignment entity.
 func (_c *ShiftCreate) AddAssignments(v ...*ScheduleAssignment) *ShiftCreate {
-	ids := make([]int, len(v))
+	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
@@ -125,7 +124,9 @@ func (_c *ShiftCreate) Mutation() *ShiftMutation {
 
 // Save creates the Shift in the database.
 func (_c *ShiftCreate) Save(ctx context.Context) (*Shift, error) {
-	_c.defaults()
+	if err := _c.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
@@ -152,11 +153,7 @@ func (_c *ShiftCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (_c *ShiftCreate) defaults() {
-	if _, ok := _c.mutation.Role(); !ok {
-		v := shift.DefaultRole
-		_c.mutation.SetRole(v)
-	}
+func (_c *ShiftCreate) defaults() error {
 	if _, ok := _c.mutation.MinStaff(); !ok {
 		v := shift.DefaultMinStaff
 		_c.mutation.SetMinStaff(v)
@@ -165,10 +162,14 @@ func (_c *ShiftCreate) defaults() {
 		v := shift.DefaultMaxStaff
 		_c.mutation.SetMaxStaff(v)
 	}
-	if _, ok := _c.mutation.CreatedAt(); !ok {
-		v := shift.DefaultCreatedAt()
-		_c.mutation.SetCreatedAt(v)
+	if _, ok := _c.mutation.ID(); !ok {
+		if shift.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized shift.DefaultID (forgotten import ent/runtime?)")
+		}
+		v := shift.DefaultID()
+		_c.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -176,14 +177,32 @@ func (_c *ShiftCreate) check() error {
 	if _, ok := _c.mutation.ShopID(); !ok {
 		return &ValidationError{Name: "shop_id", err: errors.New(`ent: missing required field "Shift.shop_id"`)}
 	}
-	if _, ok := _c.mutation.Role(); !ok {
-		return &ValidationError{Name: "role", err: errors.New(`ent: missing required field "Shift.role"`)}
+	if _, ok := _c.mutation.Name(); !ok {
+		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Shift.name"`)}
 	}
-	if _, ok := _c.mutation.StartsAt(); !ok {
-		return &ValidationError{Name: "starts_at", err: errors.New(`ent: missing required field "Shift.starts_at"`)}
+	if _, ok := _c.mutation.Weekday(); !ok {
+		return &ValidationError{Name: "weekday", err: errors.New(`ent: missing required field "Shift.weekday"`)}
 	}
-	if _, ok := _c.mutation.EndsAt(); !ok {
-		return &ValidationError{Name: "ends_at", err: errors.New(`ent: missing required field "Shift.ends_at"`)}
+	if v, ok := _c.mutation.Weekday(); ok {
+		if err := shift.WeekdayValidator(v); err != nil {
+			return &ValidationError{Name: "weekday", err: fmt.Errorf(`ent: validator failed for field "Shift.weekday": %w`, err)}
+		}
+	}
+	if _, ok := _c.mutation.StartTime(); !ok {
+		return &ValidationError{Name: "start_time", err: errors.New(`ent: missing required field "Shift.start_time"`)}
+	}
+	if v, ok := _c.mutation.StartTime(); ok {
+		if err := shift.StartTimeValidator(v); err != nil {
+			return &ValidationError{Name: "start_time", err: fmt.Errorf(`ent: validator failed for field "Shift.start_time": %w`, err)}
+		}
+	}
+	if _, ok := _c.mutation.EndTime(); !ok {
+		return &ValidationError{Name: "end_time", err: errors.New(`ent: missing required field "Shift.end_time"`)}
+	}
+	if v, ok := _c.mutation.EndTime(); ok {
+		if err := shift.EndTimeValidator(v); err != nil {
+			return &ValidationError{Name: "end_time", err: fmt.Errorf(`ent: validator failed for field "Shift.end_time": %w`, err)}
+		}
 	}
 	if _, ok := _c.mutation.MinStaff(); !ok {
 		return &ValidationError{Name: "min_staff", err: errors.New(`ent: missing required field "Shift.min_staff"`)}
@@ -200,9 +219,6 @@ func (_c *ShiftCreate) check() error {
 		if err := shift.MaxStaffValidator(v); err != nil {
 			return &ValidationError{Name: "max_staff", err: fmt.Errorf(`ent: validator failed for field "Shift.max_staff": %w`, err)}
 		}
-	}
-	if _, ok := _c.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Shift.created_at"`)}
 	}
 	if len(_c.mutation.ShopIDs()) == 0 {
 		return &ValidationError{Name: "shop", err: errors.New(`ent: missing required edge "Shift.shop"`)}
@@ -221,8 +237,13 @@ func (_c *ShiftCreate) sqlSave(ctx context.Context) (*Shift, error) {
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
+	if _spec.ID.Value != nil {
+		if id, ok := _spec.ID.Value.(*uuid.UUID); ok {
+			_node.ID = *id
+		} else if err := _node.ID.Scan(_spec.ID.Value); err != nil {
+			return nil, err
+		}
+	}
 	_c.mutation.id = &_node.ID
 	_c.mutation.done = true
 	return _node, nil
@@ -231,20 +252,28 @@ func (_c *ShiftCreate) sqlSave(ctx context.Context) (*Shift, error) {
 func (_c *ShiftCreate) createSpec() (*Shift, *sqlgraph.CreateSpec) {
 	var (
 		_node = &Shift{config: _c.config}
-		_spec = sqlgraph.NewCreateSpec(shift.Table, sqlgraph.NewFieldSpec(shift.FieldID, field.TypeInt))
+		_spec = sqlgraph.NewCreateSpec(shift.Table, sqlgraph.NewFieldSpec(shift.FieldID, field.TypeUUID))
 	)
 	_spec.OnConflict = _c.conflict
-	if value, ok := _c.mutation.Role(); ok {
-		_spec.SetField(shift.FieldRole, field.TypeString, value)
-		_node.Role = value
+	if id, ok := _c.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = &id
 	}
-	if value, ok := _c.mutation.StartsAt(); ok {
-		_spec.SetField(shift.FieldStartsAt, field.TypeTime, value)
-		_node.StartsAt = value
+	if value, ok := _c.mutation.Name(); ok {
+		_spec.SetField(shift.FieldName, field.TypeString, value)
+		_node.Name = value
 	}
-	if value, ok := _c.mutation.EndsAt(); ok {
-		_spec.SetField(shift.FieldEndsAt, field.TypeTime, value)
-		_node.EndsAt = value
+	if value, ok := _c.mutation.Weekday(); ok {
+		_spec.SetField(shift.FieldWeekday, field.TypeInt, value)
+		_node.Weekday = value
+	}
+	if value, ok := _c.mutation.StartTime(); ok {
+		_spec.SetField(shift.FieldStartTime, field.TypeString, value)
+		_node.StartTime = value
+	}
+	if value, ok := _c.mutation.EndTime(); ok {
+		_spec.SetField(shift.FieldEndTime, field.TypeString, value)
+		_node.EndTime = value
 	}
 	if value, ok := _c.mutation.MinStaff(); ok {
 		_spec.SetField(shift.FieldMinStaff, field.TypeInt, value)
@@ -254,10 +283,6 @@ func (_c *ShiftCreate) createSpec() (*Shift, *sqlgraph.CreateSpec) {
 		_spec.SetField(shift.FieldMaxStaff, field.TypeInt, value)
 		_node.MaxStaff = value
 	}
-	if value, ok := _c.mutation.CreatedAt(); ok {
-		_spec.SetField(shift.FieldCreatedAt, field.TypeTime, value)
-		_node.CreatedAt = value
-	}
 	if nodes := _c.mutation.ShopIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -266,7 +291,7 @@ func (_c *ShiftCreate) createSpec() (*Shift, *sqlgraph.CreateSpec) {
 			Columns: []string{shift.ShopColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -283,7 +308,7 @@ func (_c *ShiftCreate) createSpec() (*Shift, *sqlgraph.CreateSpec) {
 			Columns: []string{shift.AssignmentsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scheduleassignment.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scheduleassignment.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -344,7 +369,7 @@ type (
 )
 
 // SetShopID sets the "shop_id" field.
-func (u *ShiftUpsert) SetShopID(v int) *ShiftUpsert {
+func (u *ShiftUpsert) SetShopID(v uuid.UUID) *ShiftUpsert {
 	u.Set(shift.FieldShopID, v)
 	return u
 }
@@ -355,39 +380,57 @@ func (u *ShiftUpsert) UpdateShopID() *ShiftUpsert {
 	return u
 }
 
-// SetRole sets the "role" field.
-func (u *ShiftUpsert) SetRole(v string) *ShiftUpsert {
-	u.Set(shift.FieldRole, v)
+// SetName sets the "name" field.
+func (u *ShiftUpsert) SetName(v string) *ShiftUpsert {
+	u.Set(shift.FieldName, v)
 	return u
 }
 
-// UpdateRole sets the "role" field to the value that was provided on create.
-func (u *ShiftUpsert) UpdateRole() *ShiftUpsert {
-	u.SetExcluded(shift.FieldRole)
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *ShiftUpsert) UpdateName() *ShiftUpsert {
+	u.SetExcluded(shift.FieldName)
 	return u
 }
 
-// SetStartsAt sets the "starts_at" field.
-func (u *ShiftUpsert) SetStartsAt(v time.Time) *ShiftUpsert {
-	u.Set(shift.FieldStartsAt, v)
+// SetWeekday sets the "weekday" field.
+func (u *ShiftUpsert) SetWeekday(v int) *ShiftUpsert {
+	u.Set(shift.FieldWeekday, v)
 	return u
 }
 
-// UpdateStartsAt sets the "starts_at" field to the value that was provided on create.
-func (u *ShiftUpsert) UpdateStartsAt() *ShiftUpsert {
-	u.SetExcluded(shift.FieldStartsAt)
+// UpdateWeekday sets the "weekday" field to the value that was provided on create.
+func (u *ShiftUpsert) UpdateWeekday() *ShiftUpsert {
+	u.SetExcluded(shift.FieldWeekday)
 	return u
 }
 
-// SetEndsAt sets the "ends_at" field.
-func (u *ShiftUpsert) SetEndsAt(v time.Time) *ShiftUpsert {
-	u.Set(shift.FieldEndsAt, v)
+// AddWeekday adds v to the "weekday" field.
+func (u *ShiftUpsert) AddWeekday(v int) *ShiftUpsert {
+	u.Add(shift.FieldWeekday, v)
 	return u
 }
 
-// UpdateEndsAt sets the "ends_at" field to the value that was provided on create.
-func (u *ShiftUpsert) UpdateEndsAt() *ShiftUpsert {
-	u.SetExcluded(shift.FieldEndsAt)
+// SetStartTime sets the "start_time" field.
+func (u *ShiftUpsert) SetStartTime(v string) *ShiftUpsert {
+	u.Set(shift.FieldStartTime, v)
+	return u
+}
+
+// UpdateStartTime sets the "start_time" field to the value that was provided on create.
+func (u *ShiftUpsert) UpdateStartTime() *ShiftUpsert {
+	u.SetExcluded(shift.FieldStartTime)
+	return u
+}
+
+// SetEndTime sets the "end_time" field.
+func (u *ShiftUpsert) SetEndTime(v string) *ShiftUpsert {
+	u.Set(shift.FieldEndTime, v)
+	return u
+}
+
+// UpdateEndTime sets the "end_time" field to the value that was provided on create.
+func (u *ShiftUpsert) UpdateEndTime() *ShiftUpsert {
+	u.SetExcluded(shift.FieldEndTime)
 	return u
 }
 
@@ -427,19 +470,22 @@ func (u *ShiftUpsert) AddMaxStaff(v int) *ShiftUpsert {
 	return u
 }
 
-// UpdateNewValues updates the mutable fields using the new values that were set on create.
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
 //	client.Shift.Create().
 //		OnConflict(
 //			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(shift.FieldID)
+//			}),
 //		).
 //		Exec(ctx)
 func (u *ShiftUpsertOne) UpdateNewValues() *ShiftUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
-		if _, exists := u.create.mutation.CreatedAt(); exists {
-			s.SetIgnore(shift.FieldCreatedAt)
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(shift.FieldID)
 		}
 	}))
 	return u
@@ -473,7 +519,7 @@ func (u *ShiftUpsertOne) Update(set func(*ShiftUpsert)) *ShiftUpsertOne {
 }
 
 // SetShopID sets the "shop_id" field.
-func (u *ShiftUpsertOne) SetShopID(v int) *ShiftUpsertOne {
+func (u *ShiftUpsertOne) SetShopID(v uuid.UUID) *ShiftUpsertOne {
 	return u.Update(func(s *ShiftUpsert) {
 		s.SetShopID(v)
 	})
@@ -486,45 +532,66 @@ func (u *ShiftUpsertOne) UpdateShopID() *ShiftUpsertOne {
 	})
 }
 
-// SetRole sets the "role" field.
-func (u *ShiftUpsertOne) SetRole(v string) *ShiftUpsertOne {
+// SetName sets the "name" field.
+func (u *ShiftUpsertOne) SetName(v string) *ShiftUpsertOne {
 	return u.Update(func(s *ShiftUpsert) {
-		s.SetRole(v)
+		s.SetName(v)
 	})
 }
 
-// UpdateRole sets the "role" field to the value that was provided on create.
-func (u *ShiftUpsertOne) UpdateRole() *ShiftUpsertOne {
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *ShiftUpsertOne) UpdateName() *ShiftUpsertOne {
 	return u.Update(func(s *ShiftUpsert) {
-		s.UpdateRole()
+		s.UpdateName()
 	})
 }
 
-// SetStartsAt sets the "starts_at" field.
-func (u *ShiftUpsertOne) SetStartsAt(v time.Time) *ShiftUpsertOne {
+// SetWeekday sets the "weekday" field.
+func (u *ShiftUpsertOne) SetWeekday(v int) *ShiftUpsertOne {
 	return u.Update(func(s *ShiftUpsert) {
-		s.SetStartsAt(v)
+		s.SetWeekday(v)
 	})
 }
 
-// UpdateStartsAt sets the "starts_at" field to the value that was provided on create.
-func (u *ShiftUpsertOne) UpdateStartsAt() *ShiftUpsertOne {
+// AddWeekday adds v to the "weekday" field.
+func (u *ShiftUpsertOne) AddWeekday(v int) *ShiftUpsertOne {
 	return u.Update(func(s *ShiftUpsert) {
-		s.UpdateStartsAt()
+		s.AddWeekday(v)
 	})
 }
 
-// SetEndsAt sets the "ends_at" field.
-func (u *ShiftUpsertOne) SetEndsAt(v time.Time) *ShiftUpsertOne {
+// UpdateWeekday sets the "weekday" field to the value that was provided on create.
+func (u *ShiftUpsertOne) UpdateWeekday() *ShiftUpsertOne {
 	return u.Update(func(s *ShiftUpsert) {
-		s.SetEndsAt(v)
+		s.UpdateWeekday()
 	})
 }
 
-// UpdateEndsAt sets the "ends_at" field to the value that was provided on create.
-func (u *ShiftUpsertOne) UpdateEndsAt() *ShiftUpsertOne {
+// SetStartTime sets the "start_time" field.
+func (u *ShiftUpsertOne) SetStartTime(v string) *ShiftUpsertOne {
 	return u.Update(func(s *ShiftUpsert) {
-		s.UpdateEndsAt()
+		s.SetStartTime(v)
+	})
+}
+
+// UpdateStartTime sets the "start_time" field to the value that was provided on create.
+func (u *ShiftUpsertOne) UpdateStartTime() *ShiftUpsertOne {
+	return u.Update(func(s *ShiftUpsert) {
+		s.UpdateStartTime()
+	})
+}
+
+// SetEndTime sets the "end_time" field.
+func (u *ShiftUpsertOne) SetEndTime(v string) *ShiftUpsertOne {
+	return u.Update(func(s *ShiftUpsert) {
+		s.SetEndTime(v)
+	})
+}
+
+// UpdateEndTime sets the "end_time" field to the value that was provided on create.
+func (u *ShiftUpsertOne) UpdateEndTime() *ShiftUpsertOne {
+	return u.Update(func(s *ShiftUpsert) {
+		s.UpdateEndTime()
 	})
 }
 
@@ -586,7 +653,12 @@ func (u *ShiftUpsertOne) ExecX(ctx context.Context) {
 }
 
 // Exec executes the UPSERT query and returns the inserted/updated ID.
-func (u *ShiftUpsertOne) ID(ctx context.Context) (id int, err error) {
+func (u *ShiftUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
+	if u.create.driver.Dialect() == dialect.MySQL {
+		// In case of "ON CONFLICT", there is no way to get back non-numeric ID
+		// fields from the database since MySQL does not support the RETURNING clause.
+		return id, errors.New("ent: ShiftUpsertOne.ID is not supported by MySQL driver. Use ShiftUpsertOne.Exec instead")
+	}
 	node, err := u.create.Save(ctx)
 	if err != nil {
 		return id, err
@@ -595,7 +667,7 @@ func (u *ShiftUpsertOne) ID(ctx context.Context) (id int, err error) {
 }
 
 // IDX is like ID, but panics if an error occurs.
-func (u *ShiftUpsertOne) IDX(ctx context.Context) int {
+func (u *ShiftUpsertOne) IDX(ctx context.Context) uuid.UUID {
 	id, err := u.ID(ctx)
 	if err != nil {
 		panic(err)
@@ -650,10 +722,6 @@ func (_c *ShiftCreateBulk) Save(ctx context.Context) ([]*Shift, error) {
 					return nil, err
 				}
 				mutation.id = &nodes[i].ID
-				if specs[i].ID.Value != nil {
-					id := specs[i].ID.Value.(int64)
-					nodes[i].ID = int(id)
-				}
 				mutation.done = true
 				return nodes[i], nil
 			})
@@ -740,14 +808,17 @@ type ShiftUpsertBulk struct {
 //	client.Shift.Create().
 //		OnConflict(
 //			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(shift.FieldID)
+//			}),
 //		).
 //		Exec(ctx)
 func (u *ShiftUpsertBulk) UpdateNewValues() *ShiftUpsertBulk {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		for _, b := range u.create.builders {
-			if _, exists := b.mutation.CreatedAt(); exists {
-				s.SetIgnore(shift.FieldCreatedAt)
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(shift.FieldID)
 			}
 		}
 	}))
@@ -782,7 +853,7 @@ func (u *ShiftUpsertBulk) Update(set func(*ShiftUpsert)) *ShiftUpsertBulk {
 }
 
 // SetShopID sets the "shop_id" field.
-func (u *ShiftUpsertBulk) SetShopID(v int) *ShiftUpsertBulk {
+func (u *ShiftUpsertBulk) SetShopID(v uuid.UUID) *ShiftUpsertBulk {
 	return u.Update(func(s *ShiftUpsert) {
 		s.SetShopID(v)
 	})
@@ -795,45 +866,66 @@ func (u *ShiftUpsertBulk) UpdateShopID() *ShiftUpsertBulk {
 	})
 }
 
-// SetRole sets the "role" field.
-func (u *ShiftUpsertBulk) SetRole(v string) *ShiftUpsertBulk {
+// SetName sets the "name" field.
+func (u *ShiftUpsertBulk) SetName(v string) *ShiftUpsertBulk {
 	return u.Update(func(s *ShiftUpsert) {
-		s.SetRole(v)
+		s.SetName(v)
 	})
 }
 
-// UpdateRole sets the "role" field to the value that was provided on create.
-func (u *ShiftUpsertBulk) UpdateRole() *ShiftUpsertBulk {
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *ShiftUpsertBulk) UpdateName() *ShiftUpsertBulk {
 	return u.Update(func(s *ShiftUpsert) {
-		s.UpdateRole()
+		s.UpdateName()
 	})
 }
 
-// SetStartsAt sets the "starts_at" field.
-func (u *ShiftUpsertBulk) SetStartsAt(v time.Time) *ShiftUpsertBulk {
+// SetWeekday sets the "weekday" field.
+func (u *ShiftUpsertBulk) SetWeekday(v int) *ShiftUpsertBulk {
 	return u.Update(func(s *ShiftUpsert) {
-		s.SetStartsAt(v)
+		s.SetWeekday(v)
 	})
 }
 
-// UpdateStartsAt sets the "starts_at" field to the value that was provided on create.
-func (u *ShiftUpsertBulk) UpdateStartsAt() *ShiftUpsertBulk {
+// AddWeekday adds v to the "weekday" field.
+func (u *ShiftUpsertBulk) AddWeekday(v int) *ShiftUpsertBulk {
 	return u.Update(func(s *ShiftUpsert) {
-		s.UpdateStartsAt()
+		s.AddWeekday(v)
 	})
 }
 
-// SetEndsAt sets the "ends_at" field.
-func (u *ShiftUpsertBulk) SetEndsAt(v time.Time) *ShiftUpsertBulk {
+// UpdateWeekday sets the "weekday" field to the value that was provided on create.
+func (u *ShiftUpsertBulk) UpdateWeekday() *ShiftUpsertBulk {
 	return u.Update(func(s *ShiftUpsert) {
-		s.SetEndsAt(v)
+		s.UpdateWeekday()
 	})
 }
 
-// UpdateEndsAt sets the "ends_at" field to the value that was provided on create.
-func (u *ShiftUpsertBulk) UpdateEndsAt() *ShiftUpsertBulk {
+// SetStartTime sets the "start_time" field.
+func (u *ShiftUpsertBulk) SetStartTime(v string) *ShiftUpsertBulk {
 	return u.Update(func(s *ShiftUpsert) {
-		s.UpdateEndsAt()
+		s.SetStartTime(v)
+	})
+}
+
+// UpdateStartTime sets the "start_time" field to the value that was provided on create.
+func (u *ShiftUpsertBulk) UpdateStartTime() *ShiftUpsertBulk {
+	return u.Update(func(s *ShiftUpsert) {
+		s.UpdateStartTime()
+	})
+}
+
+// SetEndTime sets the "end_time" field.
+func (u *ShiftUpsertBulk) SetEndTime(v string) *ShiftUpsertBulk {
+	return u.Update(func(s *ShiftUpsert) {
+		s.SetEndTime(v)
+	})
+}
+
+// UpdateEndTime sets the "end_time" field to the value that was provided on create.
+func (u *ShiftUpsertBulk) UpdateEndTime() *ShiftUpsertBulk {
+	return u.Update(func(s *ShiftUpsert) {
+		s.UpdateEndTime()
 	})
 }
 

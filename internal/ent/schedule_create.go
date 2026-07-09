@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"time"
 
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -15,6 +16,7 @@ import (
 	"github.com/betallsoph/shiftz/internal/ent/scheduleassignment"
 	"github.com/betallsoph/shiftz/internal/ent/schedulevote"
 	"github.com/betallsoph/shiftz/internal/ent/shop"
+	"github.com/google/uuid"
 )
 
 // ScheduleCreate is the builder for creating a Schedule entity.
@@ -26,7 +28,7 @@ type ScheduleCreate struct {
 }
 
 // SetShopID sets the "shop_id" field.
-func (_c *ScheduleCreate) SetShopID(v int) *ScheduleCreate {
+func (_c *ScheduleCreate) SetShopID(v uuid.UUID) *ScheduleCreate {
 	_c.mutation.SetShopID(v)
 	return _c
 }
@@ -34,20 +36,6 @@ func (_c *ScheduleCreate) SetShopID(v int) *ScheduleCreate {
 // SetWeekStart sets the "week_start" field.
 func (_c *ScheduleCreate) SetWeekStart(v time.Time) *ScheduleCreate {
 	_c.mutation.SetWeekStart(v)
-	return _c
-}
-
-// SetLabel sets the "label" field.
-func (_c *ScheduleCreate) SetLabel(v string) *ScheduleCreate {
-	_c.mutation.SetLabel(v)
-	return _c
-}
-
-// SetNillableLabel sets the "label" field if the given value is not nil.
-func (_c *ScheduleCreate) SetNillableLabel(v *string) *ScheduleCreate {
-	if v != nil {
-		_c.SetLabel(*v)
-	}
 	return _c
 }
 
@@ -61,6 +49,20 @@ func (_c *ScheduleCreate) SetStatus(v schedule.Status) *ScheduleCreate {
 func (_c *ScheduleCreate) SetNillableStatus(v *schedule.Status) *ScheduleCreate {
 	if v != nil {
 		_c.SetStatus(*v)
+	}
+	return _c
+}
+
+// SetVariantLabel sets the "variant_label" field.
+func (_c *ScheduleCreate) SetVariantLabel(v string) *ScheduleCreate {
+	_c.mutation.SetVariantLabel(v)
+	return _c
+}
+
+// SetNillableVariantLabel sets the "variant_label" field if the given value is not nil.
+func (_c *ScheduleCreate) SetNillableVariantLabel(v *string) *ScheduleCreate {
+	if v != nil {
+		_c.SetVariantLabel(*v)
 	}
 	return _c
 }
@@ -93,20 +95,34 @@ func (_c *ScheduleCreate) SetNillableCreatedAt(v *time.Time) *ScheduleCreate {
 	return _c
 }
 
+// SetID sets the "id" field.
+func (_c *ScheduleCreate) SetID(v uuid.UUID) *ScheduleCreate {
+	_c.mutation.SetID(v)
+	return _c
+}
+
+// SetNillableID sets the "id" field if the given value is not nil.
+func (_c *ScheduleCreate) SetNillableID(v *uuid.UUID) *ScheduleCreate {
+	if v != nil {
+		_c.SetID(*v)
+	}
+	return _c
+}
+
 // SetShop sets the "shop" edge to the Shop entity.
 func (_c *ScheduleCreate) SetShop(v *Shop) *ScheduleCreate {
 	return _c.SetShopID(v.ID)
 }
 
 // AddAssignmentIDs adds the "assignments" edge to the ScheduleAssignment entity by IDs.
-func (_c *ScheduleCreate) AddAssignmentIDs(ids ...int) *ScheduleCreate {
+func (_c *ScheduleCreate) AddAssignmentIDs(ids ...uuid.UUID) *ScheduleCreate {
 	_c.mutation.AddAssignmentIDs(ids...)
 	return _c
 }
 
 // AddAssignments adds the "assignments" edges to the ScheduleAssignment entity.
 func (_c *ScheduleCreate) AddAssignments(v ...*ScheduleAssignment) *ScheduleCreate {
-	ids := make([]int, len(v))
+	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
@@ -114,14 +130,14 @@ func (_c *ScheduleCreate) AddAssignments(v ...*ScheduleAssignment) *ScheduleCrea
 }
 
 // AddVoteIDs adds the "votes" edge to the ScheduleVote entity by IDs.
-func (_c *ScheduleCreate) AddVoteIDs(ids ...int) *ScheduleCreate {
+func (_c *ScheduleCreate) AddVoteIDs(ids ...uuid.UUID) *ScheduleCreate {
 	_c.mutation.AddVoteIDs(ids...)
 	return _c
 }
 
 // AddVotes adds the "votes" edges to the ScheduleVote entity.
 func (_c *ScheduleCreate) AddVotes(v ...*ScheduleVote) *ScheduleCreate {
-	ids := make([]int, len(v))
+	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
@@ -163,13 +179,13 @@ func (_c *ScheduleCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (_c *ScheduleCreate) defaults() {
-	if _, ok := _c.mutation.Label(); !ok {
-		v := schedule.DefaultLabel
-		_c.mutation.SetLabel(v)
-	}
 	if _, ok := _c.mutation.Status(); !ok {
 		v := schedule.DefaultStatus
 		_c.mutation.SetStatus(v)
+	}
+	if _, ok := _c.mutation.VariantLabel(); !ok {
+		v := schedule.DefaultVariantLabel
+		_c.mutation.SetVariantLabel(v)
 	}
 	if _, ok := _c.mutation.Score(); !ok {
 		v := schedule.DefaultScore
@@ -178,6 +194,10 @@ func (_c *ScheduleCreate) defaults() {
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		v := schedule.DefaultCreatedAt()
 		_c.mutation.SetCreatedAt(v)
+	}
+	if _, ok := _c.mutation.ID(); !ok {
+		v := schedule.DefaultID()
+		_c.mutation.SetID(v)
 	}
 }
 
@@ -189,9 +209,6 @@ func (_c *ScheduleCreate) check() error {
 	if _, ok := _c.mutation.WeekStart(); !ok {
 		return &ValidationError{Name: "week_start", err: errors.New(`ent: missing required field "Schedule.week_start"`)}
 	}
-	if _, ok := _c.mutation.Label(); !ok {
-		return &ValidationError{Name: "label", err: errors.New(`ent: missing required field "Schedule.label"`)}
-	}
 	if _, ok := _c.mutation.Status(); !ok {
 		return &ValidationError{Name: "status", err: errors.New(`ent: missing required field "Schedule.status"`)}
 	}
@@ -199,6 +216,9 @@ func (_c *ScheduleCreate) check() error {
 		if err := schedule.StatusValidator(v); err != nil {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Schedule.status": %w`, err)}
 		}
+	}
+	if _, ok := _c.mutation.VariantLabel(); !ok {
+		return &ValidationError{Name: "variant_label", err: errors.New(`ent: missing required field "Schedule.variant_label"`)}
 	}
 	if _, ok := _c.mutation.Score(); !ok {
 		return &ValidationError{Name: "score", err: errors.New(`ent: missing required field "Schedule.score"`)}
@@ -223,8 +243,13 @@ func (_c *ScheduleCreate) sqlSave(ctx context.Context) (*Schedule, error) {
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
+	if _spec.ID.Value != nil {
+		if id, ok := _spec.ID.Value.(*uuid.UUID); ok {
+			_node.ID = *id
+		} else if err := _node.ID.Scan(_spec.ID.Value); err != nil {
+			return nil, err
+		}
+	}
 	_c.mutation.id = &_node.ID
 	_c.mutation.done = true
 	return _node, nil
@@ -233,20 +258,24 @@ func (_c *ScheduleCreate) sqlSave(ctx context.Context) (*Schedule, error) {
 func (_c *ScheduleCreate) createSpec() (*Schedule, *sqlgraph.CreateSpec) {
 	var (
 		_node = &Schedule{config: _c.config}
-		_spec = sqlgraph.NewCreateSpec(schedule.Table, sqlgraph.NewFieldSpec(schedule.FieldID, field.TypeInt))
+		_spec = sqlgraph.NewCreateSpec(schedule.Table, sqlgraph.NewFieldSpec(schedule.FieldID, field.TypeUUID))
 	)
 	_spec.OnConflict = _c.conflict
+	if id, ok := _c.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = &id
+	}
 	if value, ok := _c.mutation.WeekStart(); ok {
 		_spec.SetField(schedule.FieldWeekStart, field.TypeTime, value)
 		_node.WeekStart = value
 	}
-	if value, ok := _c.mutation.Label(); ok {
-		_spec.SetField(schedule.FieldLabel, field.TypeString, value)
-		_node.Label = value
-	}
 	if value, ok := _c.mutation.Status(); ok {
 		_spec.SetField(schedule.FieldStatus, field.TypeEnum, value)
 		_node.Status = value
+	}
+	if value, ok := _c.mutation.VariantLabel(); ok {
+		_spec.SetField(schedule.FieldVariantLabel, field.TypeString, value)
+		_node.VariantLabel = value
 	}
 	if value, ok := _c.mutation.Score(); ok {
 		_spec.SetField(schedule.FieldScore, field.TypeFloat64, value)
@@ -264,7 +293,7 @@ func (_c *ScheduleCreate) createSpec() (*Schedule, *sqlgraph.CreateSpec) {
 			Columns: []string{schedule.ShopColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -281,7 +310,7 @@ func (_c *ScheduleCreate) createSpec() (*Schedule, *sqlgraph.CreateSpec) {
 			Columns: []string{schedule.AssignmentsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scheduleassignment.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scheduleassignment.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -297,7 +326,7 @@ func (_c *ScheduleCreate) createSpec() (*Schedule, *sqlgraph.CreateSpec) {
 			Columns: []string{schedule.VotesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(schedulevote.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(schedulevote.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -358,7 +387,7 @@ type (
 )
 
 // SetShopID sets the "shop_id" field.
-func (u *ScheduleUpsert) SetShopID(v int) *ScheduleUpsert {
+func (u *ScheduleUpsert) SetShopID(v uuid.UUID) *ScheduleUpsert {
 	u.Set(schedule.FieldShopID, v)
 	return u
 }
@@ -381,18 +410,6 @@ func (u *ScheduleUpsert) UpdateWeekStart() *ScheduleUpsert {
 	return u
 }
 
-// SetLabel sets the "label" field.
-func (u *ScheduleUpsert) SetLabel(v string) *ScheduleUpsert {
-	u.Set(schedule.FieldLabel, v)
-	return u
-}
-
-// UpdateLabel sets the "label" field to the value that was provided on create.
-func (u *ScheduleUpsert) UpdateLabel() *ScheduleUpsert {
-	u.SetExcluded(schedule.FieldLabel)
-	return u
-}
-
 // SetStatus sets the "status" field.
 func (u *ScheduleUpsert) SetStatus(v schedule.Status) *ScheduleUpsert {
 	u.Set(schedule.FieldStatus, v)
@@ -402,6 +419,18 @@ func (u *ScheduleUpsert) SetStatus(v schedule.Status) *ScheduleUpsert {
 // UpdateStatus sets the "status" field to the value that was provided on create.
 func (u *ScheduleUpsert) UpdateStatus() *ScheduleUpsert {
 	u.SetExcluded(schedule.FieldStatus)
+	return u
+}
+
+// SetVariantLabel sets the "variant_label" field.
+func (u *ScheduleUpsert) SetVariantLabel(v string) *ScheduleUpsert {
+	u.Set(schedule.FieldVariantLabel, v)
+	return u
+}
+
+// UpdateVariantLabel sets the "variant_label" field to the value that was provided on create.
+func (u *ScheduleUpsert) UpdateVariantLabel() *ScheduleUpsert {
+	u.SetExcluded(schedule.FieldVariantLabel)
 	return u
 }
 
@@ -423,17 +452,23 @@ func (u *ScheduleUpsert) AddScore(v float64) *ScheduleUpsert {
 	return u
 }
 
-// UpdateNewValues updates the mutable fields using the new values that were set on create.
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
 //	client.Schedule.Create().
 //		OnConflict(
 //			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(schedule.FieldID)
+//			}),
 //		).
 //		Exec(ctx)
 func (u *ScheduleUpsertOne) UpdateNewValues() *ScheduleUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(schedule.FieldID)
+		}
 		if _, exists := u.create.mutation.CreatedAt(); exists {
 			s.SetIgnore(schedule.FieldCreatedAt)
 		}
@@ -469,7 +504,7 @@ func (u *ScheduleUpsertOne) Update(set func(*ScheduleUpsert)) *ScheduleUpsertOne
 }
 
 // SetShopID sets the "shop_id" field.
-func (u *ScheduleUpsertOne) SetShopID(v int) *ScheduleUpsertOne {
+func (u *ScheduleUpsertOne) SetShopID(v uuid.UUID) *ScheduleUpsertOne {
 	return u.Update(func(s *ScheduleUpsert) {
 		s.SetShopID(v)
 	})
@@ -496,20 +531,6 @@ func (u *ScheduleUpsertOne) UpdateWeekStart() *ScheduleUpsertOne {
 	})
 }
 
-// SetLabel sets the "label" field.
-func (u *ScheduleUpsertOne) SetLabel(v string) *ScheduleUpsertOne {
-	return u.Update(func(s *ScheduleUpsert) {
-		s.SetLabel(v)
-	})
-}
-
-// UpdateLabel sets the "label" field to the value that was provided on create.
-func (u *ScheduleUpsertOne) UpdateLabel() *ScheduleUpsertOne {
-	return u.Update(func(s *ScheduleUpsert) {
-		s.UpdateLabel()
-	})
-}
-
 // SetStatus sets the "status" field.
 func (u *ScheduleUpsertOne) SetStatus(v schedule.Status) *ScheduleUpsertOne {
 	return u.Update(func(s *ScheduleUpsert) {
@@ -521,6 +542,20 @@ func (u *ScheduleUpsertOne) SetStatus(v schedule.Status) *ScheduleUpsertOne {
 func (u *ScheduleUpsertOne) UpdateStatus() *ScheduleUpsertOne {
 	return u.Update(func(s *ScheduleUpsert) {
 		s.UpdateStatus()
+	})
+}
+
+// SetVariantLabel sets the "variant_label" field.
+func (u *ScheduleUpsertOne) SetVariantLabel(v string) *ScheduleUpsertOne {
+	return u.Update(func(s *ScheduleUpsert) {
+		s.SetVariantLabel(v)
+	})
+}
+
+// UpdateVariantLabel sets the "variant_label" field to the value that was provided on create.
+func (u *ScheduleUpsertOne) UpdateVariantLabel() *ScheduleUpsertOne {
+	return u.Update(func(s *ScheduleUpsert) {
+		s.UpdateVariantLabel()
 	})
 }
 
@@ -561,7 +596,12 @@ func (u *ScheduleUpsertOne) ExecX(ctx context.Context) {
 }
 
 // Exec executes the UPSERT query and returns the inserted/updated ID.
-func (u *ScheduleUpsertOne) ID(ctx context.Context) (id int, err error) {
+func (u *ScheduleUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
+	if u.create.driver.Dialect() == dialect.MySQL {
+		// In case of "ON CONFLICT", there is no way to get back non-numeric ID
+		// fields from the database since MySQL does not support the RETURNING clause.
+		return id, errors.New("ent: ScheduleUpsertOne.ID is not supported by MySQL driver. Use ScheduleUpsertOne.Exec instead")
+	}
 	node, err := u.create.Save(ctx)
 	if err != nil {
 		return id, err
@@ -570,7 +610,7 @@ func (u *ScheduleUpsertOne) ID(ctx context.Context) (id int, err error) {
 }
 
 // IDX is like ID, but panics if an error occurs.
-func (u *ScheduleUpsertOne) IDX(ctx context.Context) int {
+func (u *ScheduleUpsertOne) IDX(ctx context.Context) uuid.UUID {
 	id, err := u.ID(ctx)
 	if err != nil {
 		panic(err)
@@ -625,10 +665,6 @@ func (_c *ScheduleCreateBulk) Save(ctx context.Context) ([]*Schedule, error) {
 					return nil, err
 				}
 				mutation.id = &nodes[i].ID
-				if specs[i].ID.Value != nil {
-					id := specs[i].ID.Value.(int64)
-					nodes[i].ID = int(id)
-				}
 				mutation.done = true
 				return nodes[i], nil
 			})
@@ -715,12 +751,18 @@ type ScheduleUpsertBulk struct {
 //	client.Schedule.Create().
 //		OnConflict(
 //			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(schedule.FieldID)
+//			}),
 //		).
 //		Exec(ctx)
 func (u *ScheduleUpsertBulk) UpdateNewValues() *ScheduleUpsertBulk {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(schedule.FieldID)
+			}
 			if _, exists := b.mutation.CreatedAt(); exists {
 				s.SetIgnore(schedule.FieldCreatedAt)
 			}
@@ -757,7 +799,7 @@ func (u *ScheduleUpsertBulk) Update(set func(*ScheduleUpsert)) *ScheduleUpsertBu
 }
 
 // SetShopID sets the "shop_id" field.
-func (u *ScheduleUpsertBulk) SetShopID(v int) *ScheduleUpsertBulk {
+func (u *ScheduleUpsertBulk) SetShopID(v uuid.UUID) *ScheduleUpsertBulk {
 	return u.Update(func(s *ScheduleUpsert) {
 		s.SetShopID(v)
 	})
@@ -784,20 +826,6 @@ func (u *ScheduleUpsertBulk) UpdateWeekStart() *ScheduleUpsertBulk {
 	})
 }
 
-// SetLabel sets the "label" field.
-func (u *ScheduleUpsertBulk) SetLabel(v string) *ScheduleUpsertBulk {
-	return u.Update(func(s *ScheduleUpsert) {
-		s.SetLabel(v)
-	})
-}
-
-// UpdateLabel sets the "label" field to the value that was provided on create.
-func (u *ScheduleUpsertBulk) UpdateLabel() *ScheduleUpsertBulk {
-	return u.Update(func(s *ScheduleUpsert) {
-		s.UpdateLabel()
-	})
-}
-
 // SetStatus sets the "status" field.
 func (u *ScheduleUpsertBulk) SetStatus(v schedule.Status) *ScheduleUpsertBulk {
 	return u.Update(func(s *ScheduleUpsert) {
@@ -809,6 +837,20 @@ func (u *ScheduleUpsertBulk) SetStatus(v schedule.Status) *ScheduleUpsertBulk {
 func (u *ScheduleUpsertBulk) UpdateStatus() *ScheduleUpsertBulk {
 	return u.Update(func(s *ScheduleUpsert) {
 		s.UpdateStatus()
+	})
+}
+
+// SetVariantLabel sets the "variant_label" field.
+func (u *ScheduleUpsertBulk) SetVariantLabel(v string) *ScheduleUpsertBulk {
+	return u.Update(func(s *ScheduleUpsert) {
+		s.SetVariantLabel(v)
+	})
+}
+
+// UpdateVariantLabel sets the "variant_label" field to the value that was provided on create.
+func (u *ScheduleUpsertBulk) UpdateVariantLabel() *ScheduleUpsertBulk {
+	return u.Update(func(s *ScheduleUpsert) {
+		s.UpdateVariantLabel()
 	})
 }
 

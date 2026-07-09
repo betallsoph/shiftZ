@@ -16,6 +16,7 @@ import (
 	"github.com/betallsoph/shiftz/internal/ent/scheduleassignment"
 	"github.com/betallsoph/shiftz/internal/ent/schedulevote"
 	"github.com/betallsoph/shiftz/internal/ent/shop"
+	"github.com/google/uuid"
 )
 
 // ScheduleUpdate is the builder for updating Schedule entities.
@@ -32,13 +33,13 @@ func (_u *ScheduleUpdate) Where(ps ...predicate.Schedule) *ScheduleUpdate {
 }
 
 // SetShopID sets the "shop_id" field.
-func (_u *ScheduleUpdate) SetShopID(v int) *ScheduleUpdate {
+func (_u *ScheduleUpdate) SetShopID(v uuid.UUID) *ScheduleUpdate {
 	_u.mutation.SetShopID(v)
 	return _u
 }
 
 // SetNillableShopID sets the "shop_id" field if the given value is not nil.
-func (_u *ScheduleUpdate) SetNillableShopID(v *int) *ScheduleUpdate {
+func (_u *ScheduleUpdate) SetNillableShopID(v *uuid.UUID) *ScheduleUpdate {
 	if v != nil {
 		_u.SetShopID(*v)
 	}
@@ -59,20 +60,6 @@ func (_u *ScheduleUpdate) SetNillableWeekStart(v *time.Time) *ScheduleUpdate {
 	return _u
 }
 
-// SetLabel sets the "label" field.
-func (_u *ScheduleUpdate) SetLabel(v string) *ScheduleUpdate {
-	_u.mutation.SetLabel(v)
-	return _u
-}
-
-// SetNillableLabel sets the "label" field if the given value is not nil.
-func (_u *ScheduleUpdate) SetNillableLabel(v *string) *ScheduleUpdate {
-	if v != nil {
-		_u.SetLabel(*v)
-	}
-	return _u
-}
-
 // SetStatus sets the "status" field.
 func (_u *ScheduleUpdate) SetStatus(v schedule.Status) *ScheduleUpdate {
 	_u.mutation.SetStatus(v)
@@ -83,6 +70,20 @@ func (_u *ScheduleUpdate) SetStatus(v schedule.Status) *ScheduleUpdate {
 func (_u *ScheduleUpdate) SetNillableStatus(v *schedule.Status) *ScheduleUpdate {
 	if v != nil {
 		_u.SetStatus(*v)
+	}
+	return _u
+}
+
+// SetVariantLabel sets the "variant_label" field.
+func (_u *ScheduleUpdate) SetVariantLabel(v string) *ScheduleUpdate {
+	_u.mutation.SetVariantLabel(v)
+	return _u
+}
+
+// SetNillableVariantLabel sets the "variant_label" field if the given value is not nil.
+func (_u *ScheduleUpdate) SetNillableVariantLabel(v *string) *ScheduleUpdate {
+	if v != nil {
+		_u.SetVariantLabel(*v)
 	}
 	return _u
 }
@@ -114,14 +115,14 @@ func (_u *ScheduleUpdate) SetShop(v *Shop) *ScheduleUpdate {
 }
 
 // AddAssignmentIDs adds the "assignments" edge to the ScheduleAssignment entity by IDs.
-func (_u *ScheduleUpdate) AddAssignmentIDs(ids ...int) *ScheduleUpdate {
+func (_u *ScheduleUpdate) AddAssignmentIDs(ids ...uuid.UUID) *ScheduleUpdate {
 	_u.mutation.AddAssignmentIDs(ids...)
 	return _u
 }
 
 // AddAssignments adds the "assignments" edges to the ScheduleAssignment entity.
 func (_u *ScheduleUpdate) AddAssignments(v ...*ScheduleAssignment) *ScheduleUpdate {
-	ids := make([]int, len(v))
+	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
@@ -129,14 +130,14 @@ func (_u *ScheduleUpdate) AddAssignments(v ...*ScheduleAssignment) *ScheduleUpda
 }
 
 // AddVoteIDs adds the "votes" edge to the ScheduleVote entity by IDs.
-func (_u *ScheduleUpdate) AddVoteIDs(ids ...int) *ScheduleUpdate {
+func (_u *ScheduleUpdate) AddVoteIDs(ids ...uuid.UUID) *ScheduleUpdate {
 	_u.mutation.AddVoteIDs(ids...)
 	return _u
 }
 
 // AddVotes adds the "votes" edges to the ScheduleVote entity.
 func (_u *ScheduleUpdate) AddVotes(v ...*ScheduleVote) *ScheduleUpdate {
-	ids := make([]int, len(v))
+	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
@@ -161,14 +162,14 @@ func (_u *ScheduleUpdate) ClearAssignments() *ScheduleUpdate {
 }
 
 // RemoveAssignmentIDs removes the "assignments" edge to ScheduleAssignment entities by IDs.
-func (_u *ScheduleUpdate) RemoveAssignmentIDs(ids ...int) *ScheduleUpdate {
+func (_u *ScheduleUpdate) RemoveAssignmentIDs(ids ...uuid.UUID) *ScheduleUpdate {
 	_u.mutation.RemoveAssignmentIDs(ids...)
 	return _u
 }
 
 // RemoveAssignments removes "assignments" edges to ScheduleAssignment entities.
 func (_u *ScheduleUpdate) RemoveAssignments(v ...*ScheduleAssignment) *ScheduleUpdate {
-	ids := make([]int, len(v))
+	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
@@ -182,14 +183,14 @@ func (_u *ScheduleUpdate) ClearVotes() *ScheduleUpdate {
 }
 
 // RemoveVoteIDs removes the "votes" edge to ScheduleVote entities by IDs.
-func (_u *ScheduleUpdate) RemoveVoteIDs(ids ...int) *ScheduleUpdate {
+func (_u *ScheduleUpdate) RemoveVoteIDs(ids ...uuid.UUID) *ScheduleUpdate {
 	_u.mutation.RemoveVoteIDs(ids...)
 	return _u
 }
 
 // RemoveVotes removes "votes" edges to ScheduleVote entities.
 func (_u *ScheduleUpdate) RemoveVotes(v ...*ScheduleVote) *ScheduleUpdate {
-	ids := make([]int, len(v))
+	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
@@ -240,7 +241,7 @@ func (_u *ScheduleUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
 	}
-	_spec := sqlgraph.NewUpdateSpec(schedule.Table, schedule.Columns, sqlgraph.NewFieldSpec(schedule.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewUpdateSpec(schedule.Table, schedule.Columns, sqlgraph.NewFieldSpec(schedule.FieldID, field.TypeUUID))
 	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -251,11 +252,11 @@ func (_u *ScheduleUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if value, ok := _u.mutation.WeekStart(); ok {
 		_spec.SetField(schedule.FieldWeekStart, field.TypeTime, value)
 	}
-	if value, ok := _u.mutation.Label(); ok {
-		_spec.SetField(schedule.FieldLabel, field.TypeString, value)
-	}
 	if value, ok := _u.mutation.Status(); ok {
 		_spec.SetField(schedule.FieldStatus, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.VariantLabel(); ok {
+		_spec.SetField(schedule.FieldVariantLabel, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Score(); ok {
 		_spec.SetField(schedule.FieldScore, field.TypeFloat64, value)
@@ -271,7 +272,7 @@ func (_u *ScheduleUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Columns: []string{schedule.ShopColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -284,7 +285,7 @@ func (_u *ScheduleUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Columns: []string{schedule.ShopColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -300,7 +301,7 @@ func (_u *ScheduleUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Columns: []string{schedule.AssignmentsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scheduleassignment.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scheduleassignment.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -313,7 +314,7 @@ func (_u *ScheduleUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Columns: []string{schedule.AssignmentsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scheduleassignment.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scheduleassignment.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -329,7 +330,7 @@ func (_u *ScheduleUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Columns: []string{schedule.AssignmentsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scheduleassignment.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scheduleassignment.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -345,7 +346,7 @@ func (_u *ScheduleUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Columns: []string{schedule.VotesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(schedulevote.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(schedulevote.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -358,7 +359,7 @@ func (_u *ScheduleUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Columns: []string{schedule.VotesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(schedulevote.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(schedulevote.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -374,7 +375,7 @@ func (_u *ScheduleUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Columns: []string{schedule.VotesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(schedulevote.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(schedulevote.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -403,13 +404,13 @@ type ScheduleUpdateOne struct {
 }
 
 // SetShopID sets the "shop_id" field.
-func (_u *ScheduleUpdateOne) SetShopID(v int) *ScheduleUpdateOne {
+func (_u *ScheduleUpdateOne) SetShopID(v uuid.UUID) *ScheduleUpdateOne {
 	_u.mutation.SetShopID(v)
 	return _u
 }
 
 // SetNillableShopID sets the "shop_id" field if the given value is not nil.
-func (_u *ScheduleUpdateOne) SetNillableShopID(v *int) *ScheduleUpdateOne {
+func (_u *ScheduleUpdateOne) SetNillableShopID(v *uuid.UUID) *ScheduleUpdateOne {
 	if v != nil {
 		_u.SetShopID(*v)
 	}
@@ -430,20 +431,6 @@ func (_u *ScheduleUpdateOne) SetNillableWeekStart(v *time.Time) *ScheduleUpdateO
 	return _u
 }
 
-// SetLabel sets the "label" field.
-func (_u *ScheduleUpdateOne) SetLabel(v string) *ScheduleUpdateOne {
-	_u.mutation.SetLabel(v)
-	return _u
-}
-
-// SetNillableLabel sets the "label" field if the given value is not nil.
-func (_u *ScheduleUpdateOne) SetNillableLabel(v *string) *ScheduleUpdateOne {
-	if v != nil {
-		_u.SetLabel(*v)
-	}
-	return _u
-}
-
 // SetStatus sets the "status" field.
 func (_u *ScheduleUpdateOne) SetStatus(v schedule.Status) *ScheduleUpdateOne {
 	_u.mutation.SetStatus(v)
@@ -454,6 +441,20 @@ func (_u *ScheduleUpdateOne) SetStatus(v schedule.Status) *ScheduleUpdateOne {
 func (_u *ScheduleUpdateOne) SetNillableStatus(v *schedule.Status) *ScheduleUpdateOne {
 	if v != nil {
 		_u.SetStatus(*v)
+	}
+	return _u
+}
+
+// SetVariantLabel sets the "variant_label" field.
+func (_u *ScheduleUpdateOne) SetVariantLabel(v string) *ScheduleUpdateOne {
+	_u.mutation.SetVariantLabel(v)
+	return _u
+}
+
+// SetNillableVariantLabel sets the "variant_label" field if the given value is not nil.
+func (_u *ScheduleUpdateOne) SetNillableVariantLabel(v *string) *ScheduleUpdateOne {
+	if v != nil {
+		_u.SetVariantLabel(*v)
 	}
 	return _u
 }
@@ -485,14 +486,14 @@ func (_u *ScheduleUpdateOne) SetShop(v *Shop) *ScheduleUpdateOne {
 }
 
 // AddAssignmentIDs adds the "assignments" edge to the ScheduleAssignment entity by IDs.
-func (_u *ScheduleUpdateOne) AddAssignmentIDs(ids ...int) *ScheduleUpdateOne {
+func (_u *ScheduleUpdateOne) AddAssignmentIDs(ids ...uuid.UUID) *ScheduleUpdateOne {
 	_u.mutation.AddAssignmentIDs(ids...)
 	return _u
 }
 
 // AddAssignments adds the "assignments" edges to the ScheduleAssignment entity.
 func (_u *ScheduleUpdateOne) AddAssignments(v ...*ScheduleAssignment) *ScheduleUpdateOne {
-	ids := make([]int, len(v))
+	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
@@ -500,14 +501,14 @@ func (_u *ScheduleUpdateOne) AddAssignments(v ...*ScheduleAssignment) *ScheduleU
 }
 
 // AddVoteIDs adds the "votes" edge to the ScheduleVote entity by IDs.
-func (_u *ScheduleUpdateOne) AddVoteIDs(ids ...int) *ScheduleUpdateOne {
+func (_u *ScheduleUpdateOne) AddVoteIDs(ids ...uuid.UUID) *ScheduleUpdateOne {
 	_u.mutation.AddVoteIDs(ids...)
 	return _u
 }
 
 // AddVotes adds the "votes" edges to the ScheduleVote entity.
 func (_u *ScheduleUpdateOne) AddVotes(v ...*ScheduleVote) *ScheduleUpdateOne {
-	ids := make([]int, len(v))
+	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
@@ -532,14 +533,14 @@ func (_u *ScheduleUpdateOne) ClearAssignments() *ScheduleUpdateOne {
 }
 
 // RemoveAssignmentIDs removes the "assignments" edge to ScheduleAssignment entities by IDs.
-func (_u *ScheduleUpdateOne) RemoveAssignmentIDs(ids ...int) *ScheduleUpdateOne {
+func (_u *ScheduleUpdateOne) RemoveAssignmentIDs(ids ...uuid.UUID) *ScheduleUpdateOne {
 	_u.mutation.RemoveAssignmentIDs(ids...)
 	return _u
 }
 
 // RemoveAssignments removes "assignments" edges to ScheduleAssignment entities.
 func (_u *ScheduleUpdateOne) RemoveAssignments(v ...*ScheduleAssignment) *ScheduleUpdateOne {
-	ids := make([]int, len(v))
+	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
@@ -553,14 +554,14 @@ func (_u *ScheduleUpdateOne) ClearVotes() *ScheduleUpdateOne {
 }
 
 // RemoveVoteIDs removes the "votes" edge to ScheduleVote entities by IDs.
-func (_u *ScheduleUpdateOne) RemoveVoteIDs(ids ...int) *ScheduleUpdateOne {
+func (_u *ScheduleUpdateOne) RemoveVoteIDs(ids ...uuid.UUID) *ScheduleUpdateOne {
 	_u.mutation.RemoveVoteIDs(ids...)
 	return _u
 }
 
 // RemoveVotes removes "votes" edges to ScheduleVote entities.
 func (_u *ScheduleUpdateOne) RemoveVotes(v ...*ScheduleVote) *ScheduleUpdateOne {
-	ids := make([]int, len(v))
+	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
@@ -624,7 +625,7 @@ func (_u *ScheduleUpdateOne) sqlSave(ctx context.Context) (_node *Schedule, err 
 	if err := _u.check(); err != nil {
 		return _node, err
 	}
-	_spec := sqlgraph.NewUpdateSpec(schedule.Table, schedule.Columns, sqlgraph.NewFieldSpec(schedule.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewUpdateSpec(schedule.Table, schedule.Columns, sqlgraph.NewFieldSpec(schedule.FieldID, field.TypeUUID))
 	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Schedule.id" for update`)}
@@ -652,11 +653,11 @@ func (_u *ScheduleUpdateOne) sqlSave(ctx context.Context) (_node *Schedule, err 
 	if value, ok := _u.mutation.WeekStart(); ok {
 		_spec.SetField(schedule.FieldWeekStart, field.TypeTime, value)
 	}
-	if value, ok := _u.mutation.Label(); ok {
-		_spec.SetField(schedule.FieldLabel, field.TypeString, value)
-	}
 	if value, ok := _u.mutation.Status(); ok {
 		_spec.SetField(schedule.FieldStatus, field.TypeEnum, value)
+	}
+	if value, ok := _u.mutation.VariantLabel(); ok {
+		_spec.SetField(schedule.FieldVariantLabel, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Score(); ok {
 		_spec.SetField(schedule.FieldScore, field.TypeFloat64, value)
@@ -672,7 +673,7 @@ func (_u *ScheduleUpdateOne) sqlSave(ctx context.Context) (_node *Schedule, err 
 			Columns: []string{schedule.ShopColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -685,7 +686,7 @@ func (_u *ScheduleUpdateOne) sqlSave(ctx context.Context) (_node *Schedule, err 
 			Columns: []string{schedule.ShopColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -701,7 +702,7 @@ func (_u *ScheduleUpdateOne) sqlSave(ctx context.Context) (_node *Schedule, err 
 			Columns: []string{schedule.AssignmentsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scheduleassignment.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scheduleassignment.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -714,7 +715,7 @@ func (_u *ScheduleUpdateOne) sqlSave(ctx context.Context) (_node *Schedule, err 
 			Columns: []string{schedule.AssignmentsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scheduleassignment.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scheduleassignment.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -730,7 +731,7 @@ func (_u *ScheduleUpdateOne) sqlSave(ctx context.Context) (_node *Schedule, err 
 			Columns: []string{schedule.AssignmentsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scheduleassignment.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scheduleassignment.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -746,7 +747,7 @@ func (_u *ScheduleUpdateOne) sqlSave(ctx context.Context) (_node *Schedule, err 
 			Columns: []string{schedule.VotesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(schedulevote.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(schedulevote.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -759,7 +760,7 @@ func (_u *ScheduleUpdateOne) sqlSave(ctx context.Context) (_node *Schedule, err 
 			Columns: []string{schedule.VotesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(schedulevote.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(schedulevote.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -775,7 +776,7 @@ func (_u *ScheduleUpdateOne) sqlSave(ctx context.Context) (_node *Schedule, err 
 			Columns: []string{schedule.VotesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(schedulevote.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(schedulevote.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

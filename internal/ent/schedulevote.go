@@ -13,19 +13,22 @@ import (
 	"github.com/betallsoph/shiftz/internal/ent/schedule"
 	"github.com/betallsoph/shiftz/internal/ent/schedulevote"
 	"github.com/betallsoph/shiftz/internal/ent/shop"
+	"github.com/google/uuid"
 )
 
 // ScheduleVote is the model entity for the ScheduleVote schema.
 type ScheduleVote struct {
 	config `json:"-"`
 	// ID of the ent.
-	ID int `json:"id,omitempty"`
+	ID uuid.UUID `json:"id,omitempty"`
 	// ShopID holds the value of the "shop_id" field.
-	ShopID int `json:"shop_id,omitempty"`
+	ShopID uuid.UUID `json:"shop_id,omitempty"`
 	// ScheduleID holds the value of the "schedule_id" field.
-	ScheduleID int `json:"schedule_id,omitempty"`
+	ScheduleID uuid.UUID `json:"schedule_id,omitempty"`
 	// EmployeeID holds the value of the "employee_id" field.
-	EmployeeID int `json:"employee_id,omitempty"`
+	EmployeeID uuid.UUID `json:"employee_id,omitempty"`
+	// WeekStart holds the value of the "week_start" field.
+	WeekStart time.Time `json:"week_start,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -85,10 +88,10 @@ func (*ScheduleVote) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case schedulevote.FieldID, schedulevote.FieldShopID, schedulevote.FieldScheduleID, schedulevote.FieldEmployeeID:
-			values[i] = new(sql.NullInt64)
-		case schedulevote.FieldCreatedAt:
+		case schedulevote.FieldWeekStart, schedulevote.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
+		case schedulevote.FieldID, schedulevote.FieldShopID, schedulevote.FieldScheduleID, schedulevote.FieldEmployeeID:
+			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -105,28 +108,34 @@ func (_m *ScheduleVote) assignValues(columns []string, values []any) error {
 	for i := range columns {
 		switch columns[i] {
 		case schedulevote.FieldID:
-			value, ok := values[i].(*sql.NullInt64)
-			if !ok {
-				return fmt.Errorf("unexpected type %T for field id", value)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field id", values[i])
+			} else if value != nil {
+				_m.ID = *value
 			}
-			_m.ID = int(value.Int64)
 		case schedulevote.FieldShopID:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
+			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field shop_id", values[i])
-			} else if value.Valid {
-				_m.ShopID = int(value.Int64)
+			} else if value != nil {
+				_m.ShopID = *value
 			}
 		case schedulevote.FieldScheduleID:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
+			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field schedule_id", values[i])
-			} else if value.Valid {
-				_m.ScheduleID = int(value.Int64)
+			} else if value != nil {
+				_m.ScheduleID = *value
 			}
 		case schedulevote.FieldEmployeeID:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
+			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field employee_id", values[i])
+			} else if value != nil {
+				_m.EmployeeID = *value
+			}
+		case schedulevote.FieldWeekStart:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field week_start", values[i])
 			} else if value.Valid {
-				_m.EmployeeID = int(value.Int64)
+				_m.WeekStart = value.Time
 			}
 		case schedulevote.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -193,6 +202,9 @@ func (_m *ScheduleVote) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("employee_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.EmployeeID))
+	builder.WriteString(", ")
+	builder.WriteString("week_start=")
+	builder.WriteString(_m.WeekStart.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))

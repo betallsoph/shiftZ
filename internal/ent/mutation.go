@@ -18,8 +18,10 @@ import (
 	"github.com/betallsoph/shiftz/internal/ent/schedule"
 	"github.com/betallsoph/shiftz/internal/ent/scheduleassignment"
 	"github.com/betallsoph/shiftz/internal/ent/schedulevote"
+	"github.com/betallsoph/shiftz/internal/ent/schema"
 	"github.com/betallsoph/shiftz/internal/ent/shift"
 	"github.com/betallsoph/shiftz/internal/ent/shop"
+	"github.com/google/uuid"
 )
 
 const (
@@ -46,19 +48,16 @@ type AvailabilityMutation struct {
 	config
 	op              Op
 	typ             string
-	id              *int
+	id              *uuid.UUID
 	week_start      *time.Time
-	starts_at       *time.Time
-	ends_at         *time.Time
-	preference      *int
-	addpreference   *int
-	note            *string
-	raw_text        *string
+	slots           *[]schema.AvailabilitySlot
+	appendslots     []schema.AvailabilitySlot
+	raw_message     *string
 	created_at      *time.Time
 	clearedFields   map[string]struct{}
-	shop            *int
+	shop            *uuid.UUID
 	clearedshop     bool
-	employee        *int
+	employee        *uuid.UUID
 	clearedemployee bool
 	done            bool
 	oldValue        func(context.Context) (*Availability, error)
@@ -85,7 +84,7 @@ func newAvailabilityMutation(c config, op Op, opts ...availabilityOption) *Avail
 }
 
 // withAvailabilityID sets the ID field of the mutation.
-func withAvailabilityID(id int) availabilityOption {
+func withAvailabilityID(id uuid.UUID) availabilityOption {
 	return func(m *AvailabilityMutation) {
 		var (
 			err   error
@@ -135,9 +134,15 @@ func (m AvailabilityMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Availability entities.
+func (m *AvailabilityMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
 // ID returns the ID value in the mutation. Note that the ID is only available
 // if it was provided to the builder or after it was returned from the database.
-func (m *AvailabilityMutation) ID() (id int, exists bool) {
+func (m *AvailabilityMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -148,12 +153,12 @@ func (m *AvailabilityMutation) ID() (id int, exists bool) {
 // That means, if the mutation is applied within a transaction with an isolation level such
 // as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
 // or updated by the mutation.
-func (m *AvailabilityMutation) IDs(ctx context.Context) ([]int, error) {
+func (m *AvailabilityMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	switch {
 	case m.op.Is(OpUpdateOne | OpDeleteOne):
 		id, exists := m.ID()
 		if exists {
-			return []int{id}, nil
+			return []uuid.UUID{id}, nil
 		}
 		fallthrough
 	case m.op.Is(OpUpdate | OpDelete):
@@ -164,12 +169,12 @@ func (m *AvailabilityMutation) IDs(ctx context.Context) ([]int, error) {
 }
 
 // SetShopID sets the "shop_id" field.
-func (m *AvailabilityMutation) SetShopID(i int) {
-	m.shop = &i
+func (m *AvailabilityMutation) SetShopID(u uuid.UUID) {
+	m.shop = &u
 }
 
 // ShopID returns the value of the "shop_id" field in the mutation.
-func (m *AvailabilityMutation) ShopID() (r int, exists bool) {
+func (m *AvailabilityMutation) ShopID() (r uuid.UUID, exists bool) {
 	v := m.shop
 	if v == nil {
 		return
@@ -180,7 +185,7 @@ func (m *AvailabilityMutation) ShopID() (r int, exists bool) {
 // OldShopID returns the old "shop_id" field's value of the Availability entity.
 // If the Availability object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AvailabilityMutation) OldShopID(ctx context.Context) (v int, err error) {
+func (m *AvailabilityMutation) OldShopID(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldShopID is only allowed on UpdateOne operations")
 	}
@@ -200,12 +205,12 @@ func (m *AvailabilityMutation) ResetShopID() {
 }
 
 // SetEmployeeID sets the "employee_id" field.
-func (m *AvailabilityMutation) SetEmployeeID(i int) {
-	m.employee = &i
+func (m *AvailabilityMutation) SetEmployeeID(u uuid.UUID) {
+	m.employee = &u
 }
 
 // EmployeeID returns the value of the "employee_id" field in the mutation.
-func (m *AvailabilityMutation) EmployeeID() (r int, exists bool) {
+func (m *AvailabilityMutation) EmployeeID() (r uuid.UUID, exists bool) {
 	v := m.employee
 	if v == nil {
 		return
@@ -216,7 +221,7 @@ func (m *AvailabilityMutation) EmployeeID() (r int, exists bool) {
 // OldEmployeeID returns the old "employee_id" field's value of the Availability entity.
 // If the Availability object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AvailabilityMutation) OldEmployeeID(ctx context.Context) (v int, err error) {
+func (m *AvailabilityMutation) OldEmployeeID(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldEmployeeID is only allowed on UpdateOne operations")
 	}
@@ -271,204 +276,91 @@ func (m *AvailabilityMutation) ResetWeekStart() {
 	m.week_start = nil
 }
 
-// SetStartsAt sets the "starts_at" field.
-func (m *AvailabilityMutation) SetStartsAt(t time.Time) {
-	m.starts_at = &t
+// SetSlots sets the "slots" field.
+func (m *AvailabilityMutation) SetSlots(ss []schema.AvailabilitySlot) {
+	m.slots = &ss
+	m.appendslots = nil
 }
 
-// StartsAt returns the value of the "starts_at" field in the mutation.
-func (m *AvailabilityMutation) StartsAt() (r time.Time, exists bool) {
-	v := m.starts_at
+// Slots returns the value of the "slots" field in the mutation.
+func (m *AvailabilityMutation) Slots() (r []schema.AvailabilitySlot, exists bool) {
+	v := m.slots
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldStartsAt returns the old "starts_at" field's value of the Availability entity.
+// OldSlots returns the old "slots" field's value of the Availability entity.
 // If the Availability object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AvailabilityMutation) OldStartsAt(ctx context.Context) (v time.Time, err error) {
+func (m *AvailabilityMutation) OldSlots(ctx context.Context) (v []schema.AvailabilitySlot, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldStartsAt is only allowed on UpdateOne operations")
+		return v, errors.New("OldSlots is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldStartsAt requires an ID field in the mutation")
+		return v, errors.New("OldSlots requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldStartsAt: %w", err)
+		return v, fmt.Errorf("querying old value for OldSlots: %w", err)
 	}
-	return oldValue.StartsAt, nil
+	return oldValue.Slots, nil
 }
 
-// ResetStartsAt resets all changes to the "starts_at" field.
-func (m *AvailabilityMutation) ResetStartsAt() {
-	m.starts_at = nil
+// AppendSlots adds ss to the "slots" field.
+func (m *AvailabilityMutation) AppendSlots(ss []schema.AvailabilitySlot) {
+	m.appendslots = append(m.appendslots, ss...)
 }
 
-// SetEndsAt sets the "ends_at" field.
-func (m *AvailabilityMutation) SetEndsAt(t time.Time) {
-	m.ends_at = &t
+// AppendedSlots returns the list of values that were appended to the "slots" field in this mutation.
+func (m *AvailabilityMutation) AppendedSlots() ([]schema.AvailabilitySlot, bool) {
+	if len(m.appendslots) == 0 {
+		return nil, false
+	}
+	return m.appendslots, true
 }
 
-// EndsAt returns the value of the "ends_at" field in the mutation.
-func (m *AvailabilityMutation) EndsAt() (r time.Time, exists bool) {
-	v := m.ends_at
+// ResetSlots resets all changes to the "slots" field.
+func (m *AvailabilityMutation) ResetSlots() {
+	m.slots = nil
+	m.appendslots = nil
+}
+
+// SetRawMessage sets the "raw_message" field.
+func (m *AvailabilityMutation) SetRawMessage(s string) {
+	m.raw_message = &s
+}
+
+// RawMessage returns the value of the "raw_message" field in the mutation.
+func (m *AvailabilityMutation) RawMessage() (r string, exists bool) {
+	v := m.raw_message
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldEndsAt returns the old "ends_at" field's value of the Availability entity.
+// OldRawMessage returns the old "raw_message" field's value of the Availability entity.
 // If the Availability object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AvailabilityMutation) OldEndsAt(ctx context.Context) (v time.Time, err error) {
+func (m *AvailabilityMutation) OldRawMessage(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldEndsAt is only allowed on UpdateOne operations")
+		return v, errors.New("OldRawMessage is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldEndsAt requires an ID field in the mutation")
+		return v, errors.New("OldRawMessage requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldEndsAt: %w", err)
+		return v, fmt.Errorf("querying old value for OldRawMessage: %w", err)
 	}
-	return oldValue.EndsAt, nil
+	return oldValue.RawMessage, nil
 }
 
-// ResetEndsAt resets all changes to the "ends_at" field.
-func (m *AvailabilityMutation) ResetEndsAt() {
-	m.ends_at = nil
-}
-
-// SetPreference sets the "preference" field.
-func (m *AvailabilityMutation) SetPreference(i int) {
-	m.preference = &i
-	m.addpreference = nil
-}
-
-// Preference returns the value of the "preference" field in the mutation.
-func (m *AvailabilityMutation) Preference() (r int, exists bool) {
-	v := m.preference
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldPreference returns the old "preference" field's value of the Availability entity.
-// If the Availability object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AvailabilityMutation) OldPreference(ctx context.Context) (v int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldPreference is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldPreference requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldPreference: %w", err)
-	}
-	return oldValue.Preference, nil
-}
-
-// AddPreference adds i to the "preference" field.
-func (m *AvailabilityMutation) AddPreference(i int) {
-	if m.addpreference != nil {
-		*m.addpreference += i
-	} else {
-		m.addpreference = &i
-	}
-}
-
-// AddedPreference returns the value that was added to the "preference" field in this mutation.
-func (m *AvailabilityMutation) AddedPreference() (r int, exists bool) {
-	v := m.addpreference
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// ResetPreference resets all changes to the "preference" field.
-func (m *AvailabilityMutation) ResetPreference() {
-	m.preference = nil
-	m.addpreference = nil
-}
-
-// SetNote sets the "note" field.
-func (m *AvailabilityMutation) SetNote(s string) {
-	m.note = &s
-}
-
-// Note returns the value of the "note" field in the mutation.
-func (m *AvailabilityMutation) Note() (r string, exists bool) {
-	v := m.note
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldNote returns the old "note" field's value of the Availability entity.
-// If the Availability object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AvailabilityMutation) OldNote(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldNote is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldNote requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldNote: %w", err)
-	}
-	return oldValue.Note, nil
-}
-
-// ResetNote resets all changes to the "note" field.
-func (m *AvailabilityMutation) ResetNote() {
-	m.note = nil
-}
-
-// SetRawText sets the "raw_text" field.
-func (m *AvailabilityMutation) SetRawText(s string) {
-	m.raw_text = &s
-}
-
-// RawText returns the value of the "raw_text" field in the mutation.
-func (m *AvailabilityMutation) RawText() (r string, exists bool) {
-	v := m.raw_text
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldRawText returns the old "raw_text" field's value of the Availability entity.
-// If the Availability object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AvailabilityMutation) OldRawText(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldRawText is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldRawText requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldRawText: %w", err)
-	}
-	return oldValue.RawText, nil
-}
-
-// ResetRawText resets all changes to the "raw_text" field.
-func (m *AvailabilityMutation) ResetRawText() {
-	m.raw_text = nil
+// ResetRawMessage resets all changes to the "raw_message" field.
+func (m *AvailabilityMutation) ResetRawMessage() {
+	m.raw_message = nil
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -521,7 +413,7 @@ func (m *AvailabilityMutation) ShopCleared() bool {
 // ShopIDs returns the "shop" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // ShopID instead. It exists only for internal usage by the builders.
-func (m *AvailabilityMutation) ShopIDs() (ids []int) {
+func (m *AvailabilityMutation) ShopIDs() (ids []uuid.UUID) {
 	if id := m.shop; id != nil {
 		ids = append(ids, *id)
 	}
@@ -548,7 +440,7 @@ func (m *AvailabilityMutation) EmployeeCleared() bool {
 // EmployeeIDs returns the "employee" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // EmployeeID instead. It exists only for internal usage by the builders.
-func (m *AvailabilityMutation) EmployeeIDs() (ids []int) {
+func (m *AvailabilityMutation) EmployeeIDs() (ids []uuid.UUID) {
 	if id := m.employee; id != nil {
 		ids = append(ids, *id)
 	}
@@ -595,7 +487,7 @@ func (m *AvailabilityMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AvailabilityMutation) Fields() []string {
-	fields := make([]string, 0, 9)
+	fields := make([]string, 0, 6)
 	if m.shop != nil {
 		fields = append(fields, availability.FieldShopID)
 	}
@@ -605,20 +497,11 @@ func (m *AvailabilityMutation) Fields() []string {
 	if m.week_start != nil {
 		fields = append(fields, availability.FieldWeekStart)
 	}
-	if m.starts_at != nil {
-		fields = append(fields, availability.FieldStartsAt)
+	if m.slots != nil {
+		fields = append(fields, availability.FieldSlots)
 	}
-	if m.ends_at != nil {
-		fields = append(fields, availability.FieldEndsAt)
-	}
-	if m.preference != nil {
-		fields = append(fields, availability.FieldPreference)
-	}
-	if m.note != nil {
-		fields = append(fields, availability.FieldNote)
-	}
-	if m.raw_text != nil {
-		fields = append(fields, availability.FieldRawText)
+	if m.raw_message != nil {
+		fields = append(fields, availability.FieldRawMessage)
 	}
 	if m.created_at != nil {
 		fields = append(fields, availability.FieldCreatedAt)
@@ -637,16 +520,10 @@ func (m *AvailabilityMutation) Field(name string) (ent.Value, bool) {
 		return m.EmployeeID()
 	case availability.FieldWeekStart:
 		return m.WeekStart()
-	case availability.FieldStartsAt:
-		return m.StartsAt()
-	case availability.FieldEndsAt:
-		return m.EndsAt()
-	case availability.FieldPreference:
-		return m.Preference()
-	case availability.FieldNote:
-		return m.Note()
-	case availability.FieldRawText:
-		return m.RawText()
+	case availability.FieldSlots:
+		return m.Slots()
+	case availability.FieldRawMessage:
+		return m.RawMessage()
 	case availability.FieldCreatedAt:
 		return m.CreatedAt()
 	}
@@ -664,16 +541,10 @@ func (m *AvailabilityMutation) OldField(ctx context.Context, name string) (ent.V
 		return m.OldEmployeeID(ctx)
 	case availability.FieldWeekStart:
 		return m.OldWeekStart(ctx)
-	case availability.FieldStartsAt:
-		return m.OldStartsAt(ctx)
-	case availability.FieldEndsAt:
-		return m.OldEndsAt(ctx)
-	case availability.FieldPreference:
-		return m.OldPreference(ctx)
-	case availability.FieldNote:
-		return m.OldNote(ctx)
-	case availability.FieldRawText:
-		return m.OldRawText(ctx)
+	case availability.FieldSlots:
+		return m.OldSlots(ctx)
+	case availability.FieldRawMessage:
+		return m.OldRawMessage(ctx)
 	case availability.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	}
@@ -686,14 +557,14 @@ func (m *AvailabilityMutation) OldField(ctx context.Context, name string) (ent.V
 func (m *AvailabilityMutation) SetField(name string, value ent.Value) error {
 	switch name {
 	case availability.FieldShopID:
-		v, ok := value.(int)
+		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetShopID(v)
 		return nil
 	case availability.FieldEmployeeID:
-		v, ok := value.(int)
+		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -706,40 +577,19 @@ func (m *AvailabilityMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetWeekStart(v)
 		return nil
-	case availability.FieldStartsAt:
-		v, ok := value.(time.Time)
+	case availability.FieldSlots:
+		v, ok := value.([]schema.AvailabilitySlot)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetStartsAt(v)
+		m.SetSlots(v)
 		return nil
-	case availability.FieldEndsAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetEndsAt(v)
-		return nil
-	case availability.FieldPreference:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetPreference(v)
-		return nil
-	case availability.FieldNote:
+	case availability.FieldRawMessage:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetNote(v)
-		return nil
-	case availability.FieldRawText:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetRawText(v)
+		m.SetRawMessage(v)
 		return nil
 	case availability.FieldCreatedAt:
 		v, ok := value.(time.Time)
@@ -755,21 +605,13 @@ func (m *AvailabilityMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *AvailabilityMutation) AddedFields() []string {
-	var fields []string
-	if m.addpreference != nil {
-		fields = append(fields, availability.FieldPreference)
-	}
-	return fields
+	return nil
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *AvailabilityMutation) AddedField(name string) (ent.Value, bool) {
-	switch name {
-	case availability.FieldPreference:
-		return m.AddedPreference()
-	}
 	return nil, false
 }
 
@@ -778,13 +620,6 @@ func (m *AvailabilityMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *AvailabilityMutation) AddField(name string, value ent.Value) error {
 	switch name {
-	case availability.FieldPreference:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddPreference(v)
-		return nil
 	}
 	return fmt.Errorf("unknown Availability numeric field %s", name)
 }
@@ -821,20 +656,11 @@ func (m *AvailabilityMutation) ResetField(name string) error {
 	case availability.FieldWeekStart:
 		m.ResetWeekStart()
 		return nil
-	case availability.FieldStartsAt:
-		m.ResetStartsAt()
+	case availability.FieldSlots:
+		m.ResetSlots()
 		return nil
-	case availability.FieldEndsAt:
-		m.ResetEndsAt()
-		return nil
-	case availability.FieldPreference:
-		m.ResetPreference()
-		return nil
-	case availability.FieldNote:
-		m.ResetNote()
-		return nil
-	case availability.FieldRawText:
-		m.ResetRawText()
+	case availability.FieldRawMessage:
+		m.ResetRawMessage()
 		return nil
 	case availability.FieldCreatedAt:
 		m.ResetCreatedAt()
@@ -940,25 +766,26 @@ type EmployeeMutation struct {
 	config
 	op                    Op
 	typ                   string
-	id                    *int
+	id                    *uuid.UUID
 	telegram_user_id      *int64
 	addtelegram_user_id   *int64
 	display_name          *string
+	role                  *string
 	max_hours_per_week    *float64
 	addmax_hours_per_week *float64
-	active                *bool
+	is_active             *bool
 	created_at            *time.Time
 	clearedFields         map[string]struct{}
-	shop                  *int
+	shop                  *uuid.UUID
 	clearedshop           bool
-	availability          map[int]struct{}
-	removedavailability   map[int]struct{}
-	clearedavailability   bool
-	assignments           map[int]struct{}
-	removedassignments    map[int]struct{}
+	availabilities        map[uuid.UUID]struct{}
+	removedavailabilities map[uuid.UUID]struct{}
+	clearedavailabilities bool
+	assignments           map[uuid.UUID]struct{}
+	removedassignments    map[uuid.UUID]struct{}
 	clearedassignments    bool
-	votes                 map[int]struct{}
-	removedvotes          map[int]struct{}
+	votes                 map[uuid.UUID]struct{}
+	removedvotes          map[uuid.UUID]struct{}
 	clearedvotes          bool
 	done                  bool
 	oldValue              func(context.Context) (*Employee, error)
@@ -985,7 +812,7 @@ func newEmployeeMutation(c config, op Op, opts ...employeeOption) *EmployeeMutat
 }
 
 // withEmployeeID sets the ID field of the mutation.
-func withEmployeeID(id int) employeeOption {
+func withEmployeeID(id uuid.UUID) employeeOption {
 	return func(m *EmployeeMutation) {
 		var (
 			err   error
@@ -1035,9 +862,15 @@ func (m EmployeeMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Employee entities.
+func (m *EmployeeMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
 // ID returns the ID value in the mutation. Note that the ID is only available
 // if it was provided to the builder or after it was returned from the database.
-func (m *EmployeeMutation) ID() (id int, exists bool) {
+func (m *EmployeeMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -1048,12 +881,12 @@ func (m *EmployeeMutation) ID() (id int, exists bool) {
 // That means, if the mutation is applied within a transaction with an isolation level such
 // as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
 // or updated by the mutation.
-func (m *EmployeeMutation) IDs(ctx context.Context) ([]int, error) {
+func (m *EmployeeMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	switch {
 	case m.op.Is(OpUpdateOne | OpDeleteOne):
 		id, exists := m.ID()
 		if exists {
-			return []int{id}, nil
+			return []uuid.UUID{id}, nil
 		}
 		fallthrough
 	case m.op.Is(OpUpdate | OpDelete):
@@ -1064,12 +897,12 @@ func (m *EmployeeMutation) IDs(ctx context.Context) ([]int, error) {
 }
 
 // SetShopID sets the "shop_id" field.
-func (m *EmployeeMutation) SetShopID(i int) {
-	m.shop = &i
+func (m *EmployeeMutation) SetShopID(u uuid.UUID) {
+	m.shop = &u
 }
 
 // ShopID returns the value of the "shop_id" field in the mutation.
-func (m *EmployeeMutation) ShopID() (r int, exists bool) {
+func (m *EmployeeMutation) ShopID() (r uuid.UUID, exists bool) {
 	v := m.shop
 	if v == nil {
 		return
@@ -1080,7 +913,7 @@ func (m *EmployeeMutation) ShopID() (r int, exists bool) {
 // OldShopID returns the old "shop_id" field's value of the Employee entity.
 // If the Employee object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *EmployeeMutation) OldShopID(ctx context.Context) (v int, err error) {
+func (m *EmployeeMutation) OldShopID(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldShopID is only allowed on UpdateOne operations")
 	}
@@ -1191,6 +1024,42 @@ func (m *EmployeeMutation) ResetDisplayName() {
 	m.display_name = nil
 }
 
+// SetRole sets the "role" field.
+func (m *EmployeeMutation) SetRole(s string) {
+	m.role = &s
+}
+
+// Role returns the value of the "role" field in the mutation.
+func (m *EmployeeMutation) Role() (r string, exists bool) {
+	v := m.role
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRole returns the old "role" field's value of the Employee entity.
+// If the Employee object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EmployeeMutation) OldRole(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRole is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRole requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRole: %w", err)
+	}
+	return oldValue.Role, nil
+}
+
+// ResetRole resets all changes to the "role" field.
+func (m *EmployeeMutation) ResetRole() {
+	m.role = nil
+}
+
 // SetMaxHoursPerWeek sets the "max_hours_per_week" field.
 func (m *EmployeeMutation) SetMaxHoursPerWeek(f float64) {
 	m.max_hours_per_week = &f
@@ -1247,40 +1116,40 @@ func (m *EmployeeMutation) ResetMaxHoursPerWeek() {
 	m.addmax_hours_per_week = nil
 }
 
-// SetActive sets the "active" field.
-func (m *EmployeeMutation) SetActive(b bool) {
-	m.active = &b
+// SetIsActive sets the "is_active" field.
+func (m *EmployeeMutation) SetIsActive(b bool) {
+	m.is_active = &b
 }
 
-// Active returns the value of the "active" field in the mutation.
-func (m *EmployeeMutation) Active() (r bool, exists bool) {
-	v := m.active
+// IsActive returns the value of the "is_active" field in the mutation.
+func (m *EmployeeMutation) IsActive() (r bool, exists bool) {
+	v := m.is_active
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldActive returns the old "active" field's value of the Employee entity.
+// OldIsActive returns the old "is_active" field's value of the Employee entity.
 // If the Employee object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *EmployeeMutation) OldActive(ctx context.Context) (v bool, err error) {
+func (m *EmployeeMutation) OldIsActive(ctx context.Context) (v bool, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldActive is only allowed on UpdateOne operations")
+		return v, errors.New("OldIsActive is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldActive requires an ID field in the mutation")
+		return v, errors.New("OldIsActive requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldActive: %w", err)
+		return v, fmt.Errorf("querying old value for OldIsActive: %w", err)
 	}
-	return oldValue.Active, nil
+	return oldValue.IsActive, nil
 }
 
-// ResetActive resets all changes to the "active" field.
-func (m *EmployeeMutation) ResetActive() {
-	m.active = nil
+// ResetIsActive resets all changes to the "is_active" field.
+func (m *EmployeeMutation) ResetIsActive() {
+	m.is_active = nil
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -1333,7 +1202,7 @@ func (m *EmployeeMutation) ShopCleared() bool {
 // ShopIDs returns the "shop" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // ShopID instead. It exists only for internal usage by the builders.
-func (m *EmployeeMutation) ShopIDs() (ids []int) {
+func (m *EmployeeMutation) ShopIDs() (ids []uuid.UUID) {
 	if id := m.shop; id != nil {
 		ids = append(ids, *id)
 	}
@@ -1346,64 +1215,64 @@ func (m *EmployeeMutation) ResetShop() {
 	m.clearedshop = false
 }
 
-// AddAvailabilityIDs adds the "availability" edge to the Availability entity by ids.
-func (m *EmployeeMutation) AddAvailabilityIDs(ids ...int) {
-	if m.availability == nil {
-		m.availability = make(map[int]struct{})
+// AddAvailabilityIDs adds the "availabilities" edge to the Availability entity by ids.
+func (m *EmployeeMutation) AddAvailabilityIDs(ids ...uuid.UUID) {
+	if m.availabilities == nil {
+		m.availabilities = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
-		m.availability[ids[i]] = struct{}{}
+		m.availabilities[ids[i]] = struct{}{}
 	}
 }
 
-// ClearAvailability clears the "availability" edge to the Availability entity.
-func (m *EmployeeMutation) ClearAvailability() {
-	m.clearedavailability = true
+// ClearAvailabilities clears the "availabilities" edge to the Availability entity.
+func (m *EmployeeMutation) ClearAvailabilities() {
+	m.clearedavailabilities = true
 }
 
-// AvailabilityCleared reports if the "availability" edge to the Availability entity was cleared.
-func (m *EmployeeMutation) AvailabilityCleared() bool {
-	return m.clearedavailability
+// AvailabilitiesCleared reports if the "availabilities" edge to the Availability entity was cleared.
+func (m *EmployeeMutation) AvailabilitiesCleared() bool {
+	return m.clearedavailabilities
 }
 
-// RemoveAvailabilityIDs removes the "availability" edge to the Availability entity by IDs.
-func (m *EmployeeMutation) RemoveAvailabilityIDs(ids ...int) {
-	if m.removedavailability == nil {
-		m.removedavailability = make(map[int]struct{})
+// RemoveAvailabilityIDs removes the "availabilities" edge to the Availability entity by IDs.
+func (m *EmployeeMutation) RemoveAvailabilityIDs(ids ...uuid.UUID) {
+	if m.removedavailabilities == nil {
+		m.removedavailabilities = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
-		delete(m.availability, ids[i])
-		m.removedavailability[ids[i]] = struct{}{}
+		delete(m.availabilities, ids[i])
+		m.removedavailabilities[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedAvailability returns the removed IDs of the "availability" edge to the Availability entity.
-func (m *EmployeeMutation) RemovedAvailabilityIDs() (ids []int) {
-	for id := range m.removedavailability {
+// RemovedAvailabilities returns the removed IDs of the "availabilities" edge to the Availability entity.
+func (m *EmployeeMutation) RemovedAvailabilitiesIDs() (ids []uuid.UUID) {
+	for id := range m.removedavailabilities {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// AvailabilityIDs returns the "availability" edge IDs in the mutation.
-func (m *EmployeeMutation) AvailabilityIDs() (ids []int) {
-	for id := range m.availability {
+// AvailabilitiesIDs returns the "availabilities" edge IDs in the mutation.
+func (m *EmployeeMutation) AvailabilitiesIDs() (ids []uuid.UUID) {
+	for id := range m.availabilities {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetAvailability resets all changes to the "availability" edge.
-func (m *EmployeeMutation) ResetAvailability() {
-	m.availability = nil
-	m.clearedavailability = false
-	m.removedavailability = nil
+// ResetAvailabilities resets all changes to the "availabilities" edge.
+func (m *EmployeeMutation) ResetAvailabilities() {
+	m.availabilities = nil
+	m.clearedavailabilities = false
+	m.removedavailabilities = nil
 }
 
 // AddAssignmentIDs adds the "assignments" edge to the ScheduleAssignment entity by ids.
-func (m *EmployeeMutation) AddAssignmentIDs(ids ...int) {
+func (m *EmployeeMutation) AddAssignmentIDs(ids ...uuid.UUID) {
 	if m.assignments == nil {
-		m.assignments = make(map[int]struct{})
+		m.assignments = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.assignments[ids[i]] = struct{}{}
@@ -1421,9 +1290,9 @@ func (m *EmployeeMutation) AssignmentsCleared() bool {
 }
 
 // RemoveAssignmentIDs removes the "assignments" edge to the ScheduleAssignment entity by IDs.
-func (m *EmployeeMutation) RemoveAssignmentIDs(ids ...int) {
+func (m *EmployeeMutation) RemoveAssignmentIDs(ids ...uuid.UUID) {
 	if m.removedassignments == nil {
-		m.removedassignments = make(map[int]struct{})
+		m.removedassignments = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		delete(m.assignments, ids[i])
@@ -1432,7 +1301,7 @@ func (m *EmployeeMutation) RemoveAssignmentIDs(ids ...int) {
 }
 
 // RemovedAssignments returns the removed IDs of the "assignments" edge to the ScheduleAssignment entity.
-func (m *EmployeeMutation) RemovedAssignmentsIDs() (ids []int) {
+func (m *EmployeeMutation) RemovedAssignmentsIDs() (ids []uuid.UUID) {
 	for id := range m.removedassignments {
 		ids = append(ids, id)
 	}
@@ -1440,7 +1309,7 @@ func (m *EmployeeMutation) RemovedAssignmentsIDs() (ids []int) {
 }
 
 // AssignmentsIDs returns the "assignments" edge IDs in the mutation.
-func (m *EmployeeMutation) AssignmentsIDs() (ids []int) {
+func (m *EmployeeMutation) AssignmentsIDs() (ids []uuid.UUID) {
 	for id := range m.assignments {
 		ids = append(ids, id)
 	}
@@ -1455,9 +1324,9 @@ func (m *EmployeeMutation) ResetAssignments() {
 }
 
 // AddVoteIDs adds the "votes" edge to the ScheduleVote entity by ids.
-func (m *EmployeeMutation) AddVoteIDs(ids ...int) {
+func (m *EmployeeMutation) AddVoteIDs(ids ...uuid.UUID) {
 	if m.votes == nil {
-		m.votes = make(map[int]struct{})
+		m.votes = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.votes[ids[i]] = struct{}{}
@@ -1475,9 +1344,9 @@ func (m *EmployeeMutation) VotesCleared() bool {
 }
 
 // RemoveVoteIDs removes the "votes" edge to the ScheduleVote entity by IDs.
-func (m *EmployeeMutation) RemoveVoteIDs(ids ...int) {
+func (m *EmployeeMutation) RemoveVoteIDs(ids ...uuid.UUID) {
 	if m.removedvotes == nil {
-		m.removedvotes = make(map[int]struct{})
+		m.removedvotes = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		delete(m.votes, ids[i])
@@ -1486,7 +1355,7 @@ func (m *EmployeeMutation) RemoveVoteIDs(ids ...int) {
 }
 
 // RemovedVotes returns the removed IDs of the "votes" edge to the ScheduleVote entity.
-func (m *EmployeeMutation) RemovedVotesIDs() (ids []int) {
+func (m *EmployeeMutation) RemovedVotesIDs() (ids []uuid.UUID) {
 	for id := range m.removedvotes {
 		ids = append(ids, id)
 	}
@@ -1494,7 +1363,7 @@ func (m *EmployeeMutation) RemovedVotesIDs() (ids []int) {
 }
 
 // VotesIDs returns the "votes" edge IDs in the mutation.
-func (m *EmployeeMutation) VotesIDs() (ids []int) {
+func (m *EmployeeMutation) VotesIDs() (ids []uuid.UUID) {
 	for id := range m.votes {
 		ids = append(ids, id)
 	}
@@ -1542,7 +1411,7 @@ func (m *EmployeeMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *EmployeeMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 7)
 	if m.shop != nil {
 		fields = append(fields, employee.FieldShopID)
 	}
@@ -1552,11 +1421,14 @@ func (m *EmployeeMutation) Fields() []string {
 	if m.display_name != nil {
 		fields = append(fields, employee.FieldDisplayName)
 	}
+	if m.role != nil {
+		fields = append(fields, employee.FieldRole)
+	}
 	if m.max_hours_per_week != nil {
 		fields = append(fields, employee.FieldMaxHoursPerWeek)
 	}
-	if m.active != nil {
-		fields = append(fields, employee.FieldActive)
+	if m.is_active != nil {
+		fields = append(fields, employee.FieldIsActive)
 	}
 	if m.created_at != nil {
 		fields = append(fields, employee.FieldCreatedAt)
@@ -1575,10 +1447,12 @@ func (m *EmployeeMutation) Field(name string) (ent.Value, bool) {
 		return m.TelegramUserID()
 	case employee.FieldDisplayName:
 		return m.DisplayName()
+	case employee.FieldRole:
+		return m.Role()
 	case employee.FieldMaxHoursPerWeek:
 		return m.MaxHoursPerWeek()
-	case employee.FieldActive:
-		return m.Active()
+	case employee.FieldIsActive:
+		return m.IsActive()
 	case employee.FieldCreatedAt:
 		return m.CreatedAt()
 	}
@@ -1596,10 +1470,12 @@ func (m *EmployeeMutation) OldField(ctx context.Context, name string) (ent.Value
 		return m.OldTelegramUserID(ctx)
 	case employee.FieldDisplayName:
 		return m.OldDisplayName(ctx)
+	case employee.FieldRole:
+		return m.OldRole(ctx)
 	case employee.FieldMaxHoursPerWeek:
 		return m.OldMaxHoursPerWeek(ctx)
-	case employee.FieldActive:
-		return m.OldActive(ctx)
+	case employee.FieldIsActive:
+		return m.OldIsActive(ctx)
 	case employee.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	}
@@ -1612,7 +1488,7 @@ func (m *EmployeeMutation) OldField(ctx context.Context, name string) (ent.Value
 func (m *EmployeeMutation) SetField(name string, value ent.Value) error {
 	switch name {
 	case employee.FieldShopID:
-		v, ok := value.(int)
+		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -1632,6 +1508,13 @@ func (m *EmployeeMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetDisplayName(v)
 		return nil
+	case employee.FieldRole:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRole(v)
+		return nil
 	case employee.FieldMaxHoursPerWeek:
 		v, ok := value.(float64)
 		if !ok {
@@ -1639,12 +1522,12 @@ func (m *EmployeeMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetMaxHoursPerWeek(v)
 		return nil
-	case employee.FieldActive:
+	case employee.FieldIsActive:
 		v, ok := value.(bool)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetActive(v)
+		m.SetIsActive(v)
 		return nil
 	case employee.FieldCreatedAt:
 		v, ok := value.(time.Time)
@@ -1738,11 +1621,14 @@ func (m *EmployeeMutation) ResetField(name string) error {
 	case employee.FieldDisplayName:
 		m.ResetDisplayName()
 		return nil
+	case employee.FieldRole:
+		m.ResetRole()
+		return nil
 	case employee.FieldMaxHoursPerWeek:
 		m.ResetMaxHoursPerWeek()
 		return nil
-	case employee.FieldActive:
-		m.ResetActive()
+	case employee.FieldIsActive:
+		m.ResetIsActive()
 		return nil
 	case employee.FieldCreatedAt:
 		m.ResetCreatedAt()
@@ -1757,8 +1643,8 @@ func (m *EmployeeMutation) AddedEdges() []string {
 	if m.shop != nil {
 		edges = append(edges, employee.EdgeShop)
 	}
-	if m.availability != nil {
-		edges = append(edges, employee.EdgeAvailability)
+	if m.availabilities != nil {
+		edges = append(edges, employee.EdgeAvailabilities)
 	}
 	if m.assignments != nil {
 		edges = append(edges, employee.EdgeAssignments)
@@ -1777,9 +1663,9 @@ func (m *EmployeeMutation) AddedIDs(name string) []ent.Value {
 		if id := m.shop; id != nil {
 			return []ent.Value{*id}
 		}
-	case employee.EdgeAvailability:
-		ids := make([]ent.Value, 0, len(m.availability))
-		for id := range m.availability {
+	case employee.EdgeAvailabilities:
+		ids := make([]ent.Value, 0, len(m.availabilities))
+		for id := range m.availabilities {
 			ids = append(ids, id)
 		}
 		return ids
@@ -1802,8 +1688,8 @@ func (m *EmployeeMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *EmployeeMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 4)
-	if m.removedavailability != nil {
-		edges = append(edges, employee.EdgeAvailability)
+	if m.removedavailabilities != nil {
+		edges = append(edges, employee.EdgeAvailabilities)
 	}
 	if m.removedassignments != nil {
 		edges = append(edges, employee.EdgeAssignments)
@@ -1818,9 +1704,9 @@ func (m *EmployeeMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *EmployeeMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case employee.EdgeAvailability:
-		ids := make([]ent.Value, 0, len(m.removedavailability))
-		for id := range m.removedavailability {
+	case employee.EdgeAvailabilities:
+		ids := make([]ent.Value, 0, len(m.removedavailabilities))
+		for id := range m.removedavailabilities {
 			ids = append(ids, id)
 		}
 		return ids
@@ -1846,8 +1732,8 @@ func (m *EmployeeMutation) ClearedEdges() []string {
 	if m.clearedshop {
 		edges = append(edges, employee.EdgeShop)
 	}
-	if m.clearedavailability {
-		edges = append(edges, employee.EdgeAvailability)
+	if m.clearedavailabilities {
+		edges = append(edges, employee.EdgeAvailabilities)
 	}
 	if m.clearedassignments {
 		edges = append(edges, employee.EdgeAssignments)
@@ -1864,8 +1750,8 @@ func (m *EmployeeMutation) EdgeCleared(name string) bool {
 	switch name {
 	case employee.EdgeShop:
 		return m.clearedshop
-	case employee.EdgeAvailability:
-		return m.clearedavailability
+	case employee.EdgeAvailabilities:
+		return m.clearedavailabilities
 	case employee.EdgeAssignments:
 		return m.clearedassignments
 	case employee.EdgeVotes:
@@ -1892,8 +1778,8 @@ func (m *EmployeeMutation) ResetEdge(name string) error {
 	case employee.EdgeShop:
 		m.ResetShop()
 		return nil
-	case employee.EdgeAvailability:
-		m.ResetAvailability()
+	case employee.EdgeAvailabilities:
+		m.ResetAvailabilities()
 		return nil
 	case employee.EdgeAssignments:
 		m.ResetAssignments()
@@ -1910,16 +1796,15 @@ type RuleMutation struct {
 	config
 	op            Op
 	typ           string
-	id            *int
-	kind          *string
-	params        *map[string]interface{}
+	id            *uuid.UUID
+	description   *string
+	rule_json     *map[string]interface{}
 	weight        *float64
 	addweight     *float64
-	source_text   *string
-	active        *bool
+	is_active     *bool
 	created_at    *time.Time
 	clearedFields map[string]struct{}
-	shop          *int
+	shop          *uuid.UUID
 	clearedshop   bool
 	done          bool
 	oldValue      func(context.Context) (*Rule, error)
@@ -1946,7 +1831,7 @@ func newRuleMutation(c config, op Op, opts ...ruleOption) *RuleMutation {
 }
 
 // withRuleID sets the ID field of the mutation.
-func withRuleID(id int) ruleOption {
+func withRuleID(id uuid.UUID) ruleOption {
 	return func(m *RuleMutation) {
 		var (
 			err   error
@@ -1996,9 +1881,15 @@ func (m RuleMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Rule entities.
+func (m *RuleMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
 // ID returns the ID value in the mutation. Note that the ID is only available
 // if it was provided to the builder or after it was returned from the database.
-func (m *RuleMutation) ID() (id int, exists bool) {
+func (m *RuleMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -2009,12 +1900,12 @@ func (m *RuleMutation) ID() (id int, exists bool) {
 // That means, if the mutation is applied within a transaction with an isolation level such
 // as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
 // or updated by the mutation.
-func (m *RuleMutation) IDs(ctx context.Context) ([]int, error) {
+func (m *RuleMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	switch {
 	case m.op.Is(OpUpdateOne | OpDeleteOne):
 		id, exists := m.ID()
 		if exists {
-			return []int{id}, nil
+			return []uuid.UUID{id}, nil
 		}
 		fallthrough
 	case m.op.Is(OpUpdate | OpDelete):
@@ -2025,12 +1916,12 @@ func (m *RuleMutation) IDs(ctx context.Context) ([]int, error) {
 }
 
 // SetShopID sets the "shop_id" field.
-func (m *RuleMutation) SetShopID(i int) {
-	m.shop = &i
+func (m *RuleMutation) SetShopID(u uuid.UUID) {
+	m.shop = &u
 }
 
 // ShopID returns the value of the "shop_id" field in the mutation.
-func (m *RuleMutation) ShopID() (r int, exists bool) {
+func (m *RuleMutation) ShopID() (r uuid.UUID, exists bool) {
 	v := m.shop
 	if v == nil {
 		return
@@ -2041,7 +1932,7 @@ func (m *RuleMutation) ShopID() (r int, exists bool) {
 // OldShopID returns the old "shop_id" field's value of the Rule entity.
 // If the Rule object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *RuleMutation) OldShopID(ctx context.Context) (v int, err error) {
+func (m *RuleMutation) OldShopID(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldShopID is only allowed on UpdateOne operations")
 	}
@@ -2060,89 +1951,89 @@ func (m *RuleMutation) ResetShopID() {
 	m.shop = nil
 }
 
-// SetKind sets the "kind" field.
-func (m *RuleMutation) SetKind(s string) {
-	m.kind = &s
+// SetDescription sets the "description" field.
+func (m *RuleMutation) SetDescription(s string) {
+	m.description = &s
 }
 
-// Kind returns the value of the "kind" field in the mutation.
-func (m *RuleMutation) Kind() (r string, exists bool) {
-	v := m.kind
+// Description returns the value of the "description" field in the mutation.
+func (m *RuleMutation) Description() (r string, exists bool) {
+	v := m.description
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldKind returns the old "kind" field's value of the Rule entity.
+// OldDescription returns the old "description" field's value of the Rule entity.
 // If the Rule object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *RuleMutation) OldKind(ctx context.Context) (v string, err error) {
+func (m *RuleMutation) OldDescription(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldKind is only allowed on UpdateOne operations")
+		return v, errors.New("OldDescription is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldKind requires an ID field in the mutation")
+		return v, errors.New("OldDescription requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldKind: %w", err)
+		return v, fmt.Errorf("querying old value for OldDescription: %w", err)
 	}
-	return oldValue.Kind, nil
+	return oldValue.Description, nil
 }
 
-// ResetKind resets all changes to the "kind" field.
-func (m *RuleMutation) ResetKind() {
-	m.kind = nil
+// ResetDescription resets all changes to the "description" field.
+func (m *RuleMutation) ResetDescription() {
+	m.description = nil
 }
 
-// SetParams sets the "params" field.
-func (m *RuleMutation) SetParams(value map[string]interface{}) {
-	m.params = &value
+// SetRuleJSON sets the "rule_json" field.
+func (m *RuleMutation) SetRuleJSON(value map[string]interface{}) {
+	m.rule_json = &value
 }
 
-// Params returns the value of the "params" field in the mutation.
-func (m *RuleMutation) Params() (r map[string]interface{}, exists bool) {
-	v := m.params
+// RuleJSON returns the value of the "rule_json" field in the mutation.
+func (m *RuleMutation) RuleJSON() (r map[string]interface{}, exists bool) {
+	v := m.rule_json
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldParams returns the old "params" field's value of the Rule entity.
+// OldRuleJSON returns the old "rule_json" field's value of the Rule entity.
 // If the Rule object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *RuleMutation) OldParams(ctx context.Context) (v map[string]interface{}, err error) {
+func (m *RuleMutation) OldRuleJSON(ctx context.Context) (v map[string]interface{}, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldParams is only allowed on UpdateOne operations")
+		return v, errors.New("OldRuleJSON is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldParams requires an ID field in the mutation")
+		return v, errors.New("OldRuleJSON requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldParams: %w", err)
+		return v, fmt.Errorf("querying old value for OldRuleJSON: %w", err)
 	}
-	return oldValue.Params, nil
+	return oldValue.RuleJSON, nil
 }
 
-// ClearParams clears the value of the "params" field.
-func (m *RuleMutation) ClearParams() {
-	m.params = nil
-	m.clearedFields[rule.FieldParams] = struct{}{}
+// ClearRuleJSON clears the value of the "rule_json" field.
+func (m *RuleMutation) ClearRuleJSON() {
+	m.rule_json = nil
+	m.clearedFields[rule.FieldRuleJSON] = struct{}{}
 }
 
-// ParamsCleared returns if the "params" field was cleared in this mutation.
-func (m *RuleMutation) ParamsCleared() bool {
-	_, ok := m.clearedFields[rule.FieldParams]
+// RuleJSONCleared returns if the "rule_json" field was cleared in this mutation.
+func (m *RuleMutation) RuleJSONCleared() bool {
+	_, ok := m.clearedFields[rule.FieldRuleJSON]
 	return ok
 }
 
-// ResetParams resets all changes to the "params" field.
-func (m *RuleMutation) ResetParams() {
-	m.params = nil
-	delete(m.clearedFields, rule.FieldParams)
+// ResetRuleJSON resets all changes to the "rule_json" field.
+func (m *RuleMutation) ResetRuleJSON() {
+	m.rule_json = nil
+	delete(m.clearedFields, rule.FieldRuleJSON)
 }
 
 // SetWeight sets the "weight" field.
@@ -2201,76 +2092,40 @@ func (m *RuleMutation) ResetWeight() {
 	m.addweight = nil
 }
 
-// SetSourceText sets the "source_text" field.
-func (m *RuleMutation) SetSourceText(s string) {
-	m.source_text = &s
+// SetIsActive sets the "is_active" field.
+func (m *RuleMutation) SetIsActive(b bool) {
+	m.is_active = &b
 }
 
-// SourceText returns the value of the "source_text" field in the mutation.
-func (m *RuleMutation) SourceText() (r string, exists bool) {
-	v := m.source_text
+// IsActive returns the value of the "is_active" field in the mutation.
+func (m *RuleMutation) IsActive() (r bool, exists bool) {
+	v := m.is_active
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldSourceText returns the old "source_text" field's value of the Rule entity.
+// OldIsActive returns the old "is_active" field's value of the Rule entity.
 // If the Rule object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *RuleMutation) OldSourceText(ctx context.Context) (v string, err error) {
+func (m *RuleMutation) OldIsActive(ctx context.Context) (v bool, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldSourceText is only allowed on UpdateOne operations")
+		return v, errors.New("OldIsActive is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldSourceText requires an ID field in the mutation")
+		return v, errors.New("OldIsActive requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldSourceText: %w", err)
+		return v, fmt.Errorf("querying old value for OldIsActive: %w", err)
 	}
-	return oldValue.SourceText, nil
+	return oldValue.IsActive, nil
 }
 
-// ResetSourceText resets all changes to the "source_text" field.
-func (m *RuleMutation) ResetSourceText() {
-	m.source_text = nil
-}
-
-// SetActive sets the "active" field.
-func (m *RuleMutation) SetActive(b bool) {
-	m.active = &b
-}
-
-// Active returns the value of the "active" field in the mutation.
-func (m *RuleMutation) Active() (r bool, exists bool) {
-	v := m.active
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldActive returns the old "active" field's value of the Rule entity.
-// If the Rule object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *RuleMutation) OldActive(ctx context.Context) (v bool, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldActive is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldActive requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldActive: %w", err)
-	}
-	return oldValue.Active, nil
-}
-
-// ResetActive resets all changes to the "active" field.
-func (m *RuleMutation) ResetActive() {
-	m.active = nil
+// ResetIsActive resets all changes to the "is_active" field.
+func (m *RuleMutation) ResetIsActive() {
+	m.is_active = nil
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -2323,7 +2178,7 @@ func (m *RuleMutation) ShopCleared() bool {
 // ShopIDs returns the "shop" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // ShopID instead. It exists only for internal usage by the builders.
-func (m *RuleMutation) ShopIDs() (ids []int) {
+func (m *RuleMutation) ShopIDs() (ids []uuid.UUID) {
 	if id := m.shop; id != nil {
 		ids = append(ids, *id)
 	}
@@ -2370,24 +2225,21 @@ func (m *RuleMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *RuleMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 6)
 	if m.shop != nil {
 		fields = append(fields, rule.FieldShopID)
 	}
-	if m.kind != nil {
-		fields = append(fields, rule.FieldKind)
+	if m.description != nil {
+		fields = append(fields, rule.FieldDescription)
 	}
-	if m.params != nil {
-		fields = append(fields, rule.FieldParams)
+	if m.rule_json != nil {
+		fields = append(fields, rule.FieldRuleJSON)
 	}
 	if m.weight != nil {
 		fields = append(fields, rule.FieldWeight)
 	}
-	if m.source_text != nil {
-		fields = append(fields, rule.FieldSourceText)
-	}
-	if m.active != nil {
-		fields = append(fields, rule.FieldActive)
+	if m.is_active != nil {
+		fields = append(fields, rule.FieldIsActive)
 	}
 	if m.created_at != nil {
 		fields = append(fields, rule.FieldCreatedAt)
@@ -2402,16 +2254,14 @@ func (m *RuleMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case rule.FieldShopID:
 		return m.ShopID()
-	case rule.FieldKind:
-		return m.Kind()
-	case rule.FieldParams:
-		return m.Params()
+	case rule.FieldDescription:
+		return m.Description()
+	case rule.FieldRuleJSON:
+		return m.RuleJSON()
 	case rule.FieldWeight:
 		return m.Weight()
-	case rule.FieldSourceText:
-		return m.SourceText()
-	case rule.FieldActive:
-		return m.Active()
+	case rule.FieldIsActive:
+		return m.IsActive()
 	case rule.FieldCreatedAt:
 		return m.CreatedAt()
 	}
@@ -2425,16 +2275,14 @@ func (m *RuleMutation) OldField(ctx context.Context, name string) (ent.Value, er
 	switch name {
 	case rule.FieldShopID:
 		return m.OldShopID(ctx)
-	case rule.FieldKind:
-		return m.OldKind(ctx)
-	case rule.FieldParams:
-		return m.OldParams(ctx)
+	case rule.FieldDescription:
+		return m.OldDescription(ctx)
+	case rule.FieldRuleJSON:
+		return m.OldRuleJSON(ctx)
 	case rule.FieldWeight:
 		return m.OldWeight(ctx)
-	case rule.FieldSourceText:
-		return m.OldSourceText(ctx)
-	case rule.FieldActive:
-		return m.OldActive(ctx)
+	case rule.FieldIsActive:
+		return m.OldIsActive(ctx)
 	case rule.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	}
@@ -2447,25 +2295,25 @@ func (m *RuleMutation) OldField(ctx context.Context, name string) (ent.Value, er
 func (m *RuleMutation) SetField(name string, value ent.Value) error {
 	switch name {
 	case rule.FieldShopID:
-		v, ok := value.(int)
+		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetShopID(v)
 		return nil
-	case rule.FieldKind:
+	case rule.FieldDescription:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetKind(v)
+		m.SetDescription(v)
 		return nil
-	case rule.FieldParams:
+	case rule.FieldRuleJSON:
 		v, ok := value.(map[string]interface{})
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetParams(v)
+		m.SetRuleJSON(v)
 		return nil
 	case rule.FieldWeight:
 		v, ok := value.(float64)
@@ -2474,19 +2322,12 @@ func (m *RuleMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetWeight(v)
 		return nil
-	case rule.FieldSourceText:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetSourceText(v)
-		return nil
-	case rule.FieldActive:
+	case rule.FieldIsActive:
 		v, ok := value.(bool)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetActive(v)
+		m.SetIsActive(v)
 		return nil
 	case rule.FieldCreatedAt:
 		v, ok := value.(time.Time)
@@ -2540,8 +2381,8 @@ func (m *RuleMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *RuleMutation) ClearedFields() []string {
 	var fields []string
-	if m.FieldCleared(rule.FieldParams) {
-		fields = append(fields, rule.FieldParams)
+	if m.FieldCleared(rule.FieldRuleJSON) {
+		fields = append(fields, rule.FieldRuleJSON)
 	}
 	return fields
 }
@@ -2557,8 +2398,8 @@ func (m *RuleMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *RuleMutation) ClearField(name string) error {
 	switch name {
-	case rule.FieldParams:
-		m.ClearParams()
+	case rule.FieldRuleJSON:
+		m.ClearRuleJSON()
 		return nil
 	}
 	return fmt.Errorf("unknown Rule nullable field %s", name)
@@ -2571,20 +2412,17 @@ func (m *RuleMutation) ResetField(name string) error {
 	case rule.FieldShopID:
 		m.ResetShopID()
 		return nil
-	case rule.FieldKind:
-		m.ResetKind()
+	case rule.FieldDescription:
+		m.ResetDescription()
 		return nil
-	case rule.FieldParams:
-		m.ResetParams()
+	case rule.FieldRuleJSON:
+		m.ResetRuleJSON()
 		return nil
 	case rule.FieldWeight:
 		m.ResetWeight()
 		return nil
-	case rule.FieldSourceText:
-		m.ResetSourceText()
-		return nil
-	case rule.FieldActive:
-		m.ResetActive()
+	case rule.FieldIsActive:
+		m.ResetIsActive()
 		return nil
 	case rule.FieldCreatedAt:
 		m.ResetCreatedAt()
@@ -2672,21 +2510,21 @@ type ScheduleMutation struct {
 	config
 	op                 Op
 	typ                string
-	id                 *int
+	id                 *uuid.UUID
 	week_start         *time.Time
-	label              *string
 	status             *schedule.Status
+	variant_label      *string
 	score              *float64
 	addscore           *float64
 	created_at         *time.Time
 	clearedFields      map[string]struct{}
-	shop               *int
+	shop               *uuid.UUID
 	clearedshop        bool
-	assignments        map[int]struct{}
-	removedassignments map[int]struct{}
+	assignments        map[uuid.UUID]struct{}
+	removedassignments map[uuid.UUID]struct{}
 	clearedassignments bool
-	votes              map[int]struct{}
-	removedvotes       map[int]struct{}
+	votes              map[uuid.UUID]struct{}
+	removedvotes       map[uuid.UUID]struct{}
 	clearedvotes       bool
 	done               bool
 	oldValue           func(context.Context) (*Schedule, error)
@@ -2713,7 +2551,7 @@ func newScheduleMutation(c config, op Op, opts ...scheduleOption) *ScheduleMutat
 }
 
 // withScheduleID sets the ID field of the mutation.
-func withScheduleID(id int) scheduleOption {
+func withScheduleID(id uuid.UUID) scheduleOption {
 	return func(m *ScheduleMutation) {
 		var (
 			err   error
@@ -2763,9 +2601,15 @@ func (m ScheduleMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Schedule entities.
+func (m *ScheduleMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
 // ID returns the ID value in the mutation. Note that the ID is only available
 // if it was provided to the builder or after it was returned from the database.
-func (m *ScheduleMutation) ID() (id int, exists bool) {
+func (m *ScheduleMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -2776,12 +2620,12 @@ func (m *ScheduleMutation) ID() (id int, exists bool) {
 // That means, if the mutation is applied within a transaction with an isolation level such
 // as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
 // or updated by the mutation.
-func (m *ScheduleMutation) IDs(ctx context.Context) ([]int, error) {
+func (m *ScheduleMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	switch {
 	case m.op.Is(OpUpdateOne | OpDeleteOne):
 		id, exists := m.ID()
 		if exists {
-			return []int{id}, nil
+			return []uuid.UUID{id}, nil
 		}
 		fallthrough
 	case m.op.Is(OpUpdate | OpDelete):
@@ -2792,12 +2636,12 @@ func (m *ScheduleMutation) IDs(ctx context.Context) ([]int, error) {
 }
 
 // SetShopID sets the "shop_id" field.
-func (m *ScheduleMutation) SetShopID(i int) {
-	m.shop = &i
+func (m *ScheduleMutation) SetShopID(u uuid.UUID) {
+	m.shop = &u
 }
 
 // ShopID returns the value of the "shop_id" field in the mutation.
-func (m *ScheduleMutation) ShopID() (r int, exists bool) {
+func (m *ScheduleMutation) ShopID() (r uuid.UUID, exists bool) {
 	v := m.shop
 	if v == nil {
 		return
@@ -2808,7 +2652,7 @@ func (m *ScheduleMutation) ShopID() (r int, exists bool) {
 // OldShopID returns the old "shop_id" field's value of the Schedule entity.
 // If the Schedule object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ScheduleMutation) OldShopID(ctx context.Context) (v int, err error) {
+func (m *ScheduleMutation) OldShopID(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldShopID is only allowed on UpdateOne operations")
 	}
@@ -2863,42 +2707,6 @@ func (m *ScheduleMutation) ResetWeekStart() {
 	m.week_start = nil
 }
 
-// SetLabel sets the "label" field.
-func (m *ScheduleMutation) SetLabel(s string) {
-	m.label = &s
-}
-
-// Label returns the value of the "label" field in the mutation.
-func (m *ScheduleMutation) Label() (r string, exists bool) {
-	v := m.label
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldLabel returns the old "label" field's value of the Schedule entity.
-// If the Schedule object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ScheduleMutation) OldLabel(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldLabel is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldLabel requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldLabel: %w", err)
-	}
-	return oldValue.Label, nil
-}
-
-// ResetLabel resets all changes to the "label" field.
-func (m *ScheduleMutation) ResetLabel() {
-	m.label = nil
-}
-
 // SetStatus sets the "status" field.
 func (m *ScheduleMutation) SetStatus(s schedule.Status) {
 	m.status = &s
@@ -2933,6 +2741,42 @@ func (m *ScheduleMutation) OldStatus(ctx context.Context) (v schedule.Status, er
 // ResetStatus resets all changes to the "status" field.
 func (m *ScheduleMutation) ResetStatus() {
 	m.status = nil
+}
+
+// SetVariantLabel sets the "variant_label" field.
+func (m *ScheduleMutation) SetVariantLabel(s string) {
+	m.variant_label = &s
+}
+
+// VariantLabel returns the value of the "variant_label" field in the mutation.
+func (m *ScheduleMutation) VariantLabel() (r string, exists bool) {
+	v := m.variant_label
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldVariantLabel returns the old "variant_label" field's value of the Schedule entity.
+// If the Schedule object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ScheduleMutation) OldVariantLabel(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldVariantLabel is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldVariantLabel requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldVariantLabel: %w", err)
+	}
+	return oldValue.VariantLabel, nil
+}
+
+// ResetVariantLabel resets all changes to the "variant_label" field.
+func (m *ScheduleMutation) ResetVariantLabel() {
+	m.variant_label = nil
 }
 
 // SetScore sets the "score" field.
@@ -3041,7 +2885,7 @@ func (m *ScheduleMutation) ShopCleared() bool {
 // ShopIDs returns the "shop" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // ShopID instead. It exists only for internal usage by the builders.
-func (m *ScheduleMutation) ShopIDs() (ids []int) {
+func (m *ScheduleMutation) ShopIDs() (ids []uuid.UUID) {
 	if id := m.shop; id != nil {
 		ids = append(ids, *id)
 	}
@@ -3055,9 +2899,9 @@ func (m *ScheduleMutation) ResetShop() {
 }
 
 // AddAssignmentIDs adds the "assignments" edge to the ScheduleAssignment entity by ids.
-func (m *ScheduleMutation) AddAssignmentIDs(ids ...int) {
+func (m *ScheduleMutation) AddAssignmentIDs(ids ...uuid.UUID) {
 	if m.assignments == nil {
-		m.assignments = make(map[int]struct{})
+		m.assignments = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.assignments[ids[i]] = struct{}{}
@@ -3075,9 +2919,9 @@ func (m *ScheduleMutation) AssignmentsCleared() bool {
 }
 
 // RemoveAssignmentIDs removes the "assignments" edge to the ScheduleAssignment entity by IDs.
-func (m *ScheduleMutation) RemoveAssignmentIDs(ids ...int) {
+func (m *ScheduleMutation) RemoveAssignmentIDs(ids ...uuid.UUID) {
 	if m.removedassignments == nil {
-		m.removedassignments = make(map[int]struct{})
+		m.removedassignments = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		delete(m.assignments, ids[i])
@@ -3086,7 +2930,7 @@ func (m *ScheduleMutation) RemoveAssignmentIDs(ids ...int) {
 }
 
 // RemovedAssignments returns the removed IDs of the "assignments" edge to the ScheduleAssignment entity.
-func (m *ScheduleMutation) RemovedAssignmentsIDs() (ids []int) {
+func (m *ScheduleMutation) RemovedAssignmentsIDs() (ids []uuid.UUID) {
 	for id := range m.removedassignments {
 		ids = append(ids, id)
 	}
@@ -3094,7 +2938,7 @@ func (m *ScheduleMutation) RemovedAssignmentsIDs() (ids []int) {
 }
 
 // AssignmentsIDs returns the "assignments" edge IDs in the mutation.
-func (m *ScheduleMutation) AssignmentsIDs() (ids []int) {
+func (m *ScheduleMutation) AssignmentsIDs() (ids []uuid.UUID) {
 	for id := range m.assignments {
 		ids = append(ids, id)
 	}
@@ -3109,9 +2953,9 @@ func (m *ScheduleMutation) ResetAssignments() {
 }
 
 // AddVoteIDs adds the "votes" edge to the ScheduleVote entity by ids.
-func (m *ScheduleMutation) AddVoteIDs(ids ...int) {
+func (m *ScheduleMutation) AddVoteIDs(ids ...uuid.UUID) {
 	if m.votes == nil {
-		m.votes = make(map[int]struct{})
+		m.votes = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.votes[ids[i]] = struct{}{}
@@ -3129,9 +2973,9 @@ func (m *ScheduleMutation) VotesCleared() bool {
 }
 
 // RemoveVoteIDs removes the "votes" edge to the ScheduleVote entity by IDs.
-func (m *ScheduleMutation) RemoveVoteIDs(ids ...int) {
+func (m *ScheduleMutation) RemoveVoteIDs(ids ...uuid.UUID) {
 	if m.removedvotes == nil {
-		m.removedvotes = make(map[int]struct{})
+		m.removedvotes = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		delete(m.votes, ids[i])
@@ -3140,7 +2984,7 @@ func (m *ScheduleMutation) RemoveVoteIDs(ids ...int) {
 }
 
 // RemovedVotes returns the removed IDs of the "votes" edge to the ScheduleVote entity.
-func (m *ScheduleMutation) RemovedVotesIDs() (ids []int) {
+func (m *ScheduleMutation) RemovedVotesIDs() (ids []uuid.UUID) {
 	for id := range m.removedvotes {
 		ids = append(ids, id)
 	}
@@ -3148,7 +2992,7 @@ func (m *ScheduleMutation) RemovedVotesIDs() (ids []int) {
 }
 
 // VotesIDs returns the "votes" edge IDs in the mutation.
-func (m *ScheduleMutation) VotesIDs() (ids []int) {
+func (m *ScheduleMutation) VotesIDs() (ids []uuid.UUID) {
 	for id := range m.votes {
 		ids = append(ids, id)
 	}
@@ -3203,11 +3047,11 @@ func (m *ScheduleMutation) Fields() []string {
 	if m.week_start != nil {
 		fields = append(fields, schedule.FieldWeekStart)
 	}
-	if m.label != nil {
-		fields = append(fields, schedule.FieldLabel)
-	}
 	if m.status != nil {
 		fields = append(fields, schedule.FieldStatus)
+	}
+	if m.variant_label != nil {
+		fields = append(fields, schedule.FieldVariantLabel)
 	}
 	if m.score != nil {
 		fields = append(fields, schedule.FieldScore)
@@ -3227,10 +3071,10 @@ func (m *ScheduleMutation) Field(name string) (ent.Value, bool) {
 		return m.ShopID()
 	case schedule.FieldWeekStart:
 		return m.WeekStart()
-	case schedule.FieldLabel:
-		return m.Label()
 	case schedule.FieldStatus:
 		return m.Status()
+	case schedule.FieldVariantLabel:
+		return m.VariantLabel()
 	case schedule.FieldScore:
 		return m.Score()
 	case schedule.FieldCreatedAt:
@@ -3248,10 +3092,10 @@ func (m *ScheduleMutation) OldField(ctx context.Context, name string) (ent.Value
 		return m.OldShopID(ctx)
 	case schedule.FieldWeekStart:
 		return m.OldWeekStart(ctx)
-	case schedule.FieldLabel:
-		return m.OldLabel(ctx)
 	case schedule.FieldStatus:
 		return m.OldStatus(ctx)
+	case schedule.FieldVariantLabel:
+		return m.OldVariantLabel(ctx)
 	case schedule.FieldScore:
 		return m.OldScore(ctx)
 	case schedule.FieldCreatedAt:
@@ -3266,7 +3110,7 @@ func (m *ScheduleMutation) OldField(ctx context.Context, name string) (ent.Value
 func (m *ScheduleMutation) SetField(name string, value ent.Value) error {
 	switch name {
 	case schedule.FieldShopID:
-		v, ok := value.(int)
+		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -3279,19 +3123,19 @@ func (m *ScheduleMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetWeekStart(v)
 		return nil
-	case schedule.FieldLabel:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetLabel(v)
-		return nil
 	case schedule.FieldStatus:
 		v, ok := value.(schedule.Status)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetStatus(v)
+		return nil
+	case schedule.FieldVariantLabel:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetVariantLabel(v)
 		return nil
 	case schedule.FieldScore:
 		v, ok := value.(float64)
@@ -3377,11 +3221,11 @@ func (m *ScheduleMutation) ResetField(name string) error {
 	case schedule.FieldWeekStart:
 		m.ResetWeekStart()
 		return nil
-	case schedule.FieldLabel:
-		m.ResetLabel()
-		return nil
 	case schedule.FieldStatus:
 		m.ResetStatus()
+		return nil
+	case schedule.FieldVariantLabel:
+		m.ResetVariantLabel()
 		return nil
 	case schedule.FieldScore:
 		m.ResetScore()
@@ -3526,15 +3370,16 @@ type ScheduleAssignmentMutation struct {
 	config
 	op              Op
 	typ             string
-	id              *int
+	id              *uuid.UUID
+	date            *time.Time
 	clearedFields   map[string]struct{}
-	shop            *int
+	shop            *uuid.UUID
 	clearedshop     bool
-	schedule        *int
+	schedule        *uuid.UUID
 	clearedschedule bool
-	shift           *int
+	shift           *uuid.UUID
 	clearedshift    bool
-	employee        *int
+	employee        *uuid.UUID
 	clearedemployee bool
 	done            bool
 	oldValue        func(context.Context) (*ScheduleAssignment, error)
@@ -3561,7 +3406,7 @@ func newScheduleAssignmentMutation(c config, op Op, opts ...scheduleassignmentOp
 }
 
 // withScheduleAssignmentID sets the ID field of the mutation.
-func withScheduleAssignmentID(id int) scheduleassignmentOption {
+func withScheduleAssignmentID(id uuid.UUID) scheduleassignmentOption {
 	return func(m *ScheduleAssignmentMutation) {
 		var (
 			err   error
@@ -3611,9 +3456,15 @@ func (m ScheduleAssignmentMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of ScheduleAssignment entities.
+func (m *ScheduleAssignmentMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
 // ID returns the ID value in the mutation. Note that the ID is only available
 // if it was provided to the builder or after it was returned from the database.
-func (m *ScheduleAssignmentMutation) ID() (id int, exists bool) {
+func (m *ScheduleAssignmentMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -3624,12 +3475,12 @@ func (m *ScheduleAssignmentMutation) ID() (id int, exists bool) {
 // That means, if the mutation is applied within a transaction with an isolation level such
 // as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
 // or updated by the mutation.
-func (m *ScheduleAssignmentMutation) IDs(ctx context.Context) ([]int, error) {
+func (m *ScheduleAssignmentMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	switch {
 	case m.op.Is(OpUpdateOne | OpDeleteOne):
 		id, exists := m.ID()
 		if exists {
-			return []int{id}, nil
+			return []uuid.UUID{id}, nil
 		}
 		fallthrough
 	case m.op.Is(OpUpdate | OpDelete):
@@ -3640,12 +3491,12 @@ func (m *ScheduleAssignmentMutation) IDs(ctx context.Context) ([]int, error) {
 }
 
 // SetShopID sets the "shop_id" field.
-func (m *ScheduleAssignmentMutation) SetShopID(i int) {
-	m.shop = &i
+func (m *ScheduleAssignmentMutation) SetShopID(u uuid.UUID) {
+	m.shop = &u
 }
 
 // ShopID returns the value of the "shop_id" field in the mutation.
-func (m *ScheduleAssignmentMutation) ShopID() (r int, exists bool) {
+func (m *ScheduleAssignmentMutation) ShopID() (r uuid.UUID, exists bool) {
 	v := m.shop
 	if v == nil {
 		return
@@ -3656,7 +3507,7 @@ func (m *ScheduleAssignmentMutation) ShopID() (r int, exists bool) {
 // OldShopID returns the old "shop_id" field's value of the ScheduleAssignment entity.
 // If the ScheduleAssignment object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ScheduleAssignmentMutation) OldShopID(ctx context.Context) (v int, err error) {
+func (m *ScheduleAssignmentMutation) OldShopID(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldShopID is only allowed on UpdateOne operations")
 	}
@@ -3676,12 +3527,12 @@ func (m *ScheduleAssignmentMutation) ResetShopID() {
 }
 
 // SetScheduleID sets the "schedule_id" field.
-func (m *ScheduleAssignmentMutation) SetScheduleID(i int) {
-	m.schedule = &i
+func (m *ScheduleAssignmentMutation) SetScheduleID(u uuid.UUID) {
+	m.schedule = &u
 }
 
 // ScheduleID returns the value of the "schedule_id" field in the mutation.
-func (m *ScheduleAssignmentMutation) ScheduleID() (r int, exists bool) {
+func (m *ScheduleAssignmentMutation) ScheduleID() (r uuid.UUID, exists bool) {
 	v := m.schedule
 	if v == nil {
 		return
@@ -3692,7 +3543,7 @@ func (m *ScheduleAssignmentMutation) ScheduleID() (r int, exists bool) {
 // OldScheduleID returns the old "schedule_id" field's value of the ScheduleAssignment entity.
 // If the ScheduleAssignment object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ScheduleAssignmentMutation) OldScheduleID(ctx context.Context) (v int, err error) {
+func (m *ScheduleAssignmentMutation) OldScheduleID(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldScheduleID is only allowed on UpdateOne operations")
 	}
@@ -3712,12 +3563,12 @@ func (m *ScheduleAssignmentMutation) ResetScheduleID() {
 }
 
 // SetShiftID sets the "shift_id" field.
-func (m *ScheduleAssignmentMutation) SetShiftID(i int) {
-	m.shift = &i
+func (m *ScheduleAssignmentMutation) SetShiftID(u uuid.UUID) {
+	m.shift = &u
 }
 
 // ShiftID returns the value of the "shift_id" field in the mutation.
-func (m *ScheduleAssignmentMutation) ShiftID() (r int, exists bool) {
+func (m *ScheduleAssignmentMutation) ShiftID() (r uuid.UUID, exists bool) {
 	v := m.shift
 	if v == nil {
 		return
@@ -3728,7 +3579,7 @@ func (m *ScheduleAssignmentMutation) ShiftID() (r int, exists bool) {
 // OldShiftID returns the old "shift_id" field's value of the ScheduleAssignment entity.
 // If the ScheduleAssignment object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ScheduleAssignmentMutation) OldShiftID(ctx context.Context) (v int, err error) {
+func (m *ScheduleAssignmentMutation) OldShiftID(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldShiftID is only allowed on UpdateOne operations")
 	}
@@ -3748,12 +3599,12 @@ func (m *ScheduleAssignmentMutation) ResetShiftID() {
 }
 
 // SetEmployeeID sets the "employee_id" field.
-func (m *ScheduleAssignmentMutation) SetEmployeeID(i int) {
-	m.employee = &i
+func (m *ScheduleAssignmentMutation) SetEmployeeID(u uuid.UUID) {
+	m.employee = &u
 }
 
 // EmployeeID returns the value of the "employee_id" field in the mutation.
-func (m *ScheduleAssignmentMutation) EmployeeID() (r int, exists bool) {
+func (m *ScheduleAssignmentMutation) EmployeeID() (r uuid.UUID, exists bool) {
 	v := m.employee
 	if v == nil {
 		return
@@ -3764,7 +3615,7 @@ func (m *ScheduleAssignmentMutation) EmployeeID() (r int, exists bool) {
 // OldEmployeeID returns the old "employee_id" field's value of the ScheduleAssignment entity.
 // If the ScheduleAssignment object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ScheduleAssignmentMutation) OldEmployeeID(ctx context.Context) (v int, err error) {
+func (m *ScheduleAssignmentMutation) OldEmployeeID(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldEmployeeID is only allowed on UpdateOne operations")
 	}
@@ -3783,6 +3634,42 @@ func (m *ScheduleAssignmentMutation) ResetEmployeeID() {
 	m.employee = nil
 }
 
+// SetDate sets the "date" field.
+func (m *ScheduleAssignmentMutation) SetDate(t time.Time) {
+	m.date = &t
+}
+
+// Date returns the value of the "date" field in the mutation.
+func (m *ScheduleAssignmentMutation) Date() (r time.Time, exists bool) {
+	v := m.date
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDate returns the old "date" field's value of the ScheduleAssignment entity.
+// If the ScheduleAssignment object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ScheduleAssignmentMutation) OldDate(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDate is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDate requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDate: %w", err)
+	}
+	return oldValue.Date, nil
+}
+
+// ResetDate resets all changes to the "date" field.
+func (m *ScheduleAssignmentMutation) ResetDate() {
+	m.date = nil
+}
+
 // ClearShop clears the "shop" edge to the Shop entity.
 func (m *ScheduleAssignmentMutation) ClearShop() {
 	m.clearedshop = true
@@ -3797,7 +3684,7 @@ func (m *ScheduleAssignmentMutation) ShopCleared() bool {
 // ShopIDs returns the "shop" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // ShopID instead. It exists only for internal usage by the builders.
-func (m *ScheduleAssignmentMutation) ShopIDs() (ids []int) {
+func (m *ScheduleAssignmentMutation) ShopIDs() (ids []uuid.UUID) {
 	if id := m.shop; id != nil {
 		ids = append(ids, *id)
 	}
@@ -3824,7 +3711,7 @@ func (m *ScheduleAssignmentMutation) ScheduleCleared() bool {
 // ScheduleIDs returns the "schedule" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // ScheduleID instead. It exists only for internal usage by the builders.
-func (m *ScheduleAssignmentMutation) ScheduleIDs() (ids []int) {
+func (m *ScheduleAssignmentMutation) ScheduleIDs() (ids []uuid.UUID) {
 	if id := m.schedule; id != nil {
 		ids = append(ids, *id)
 	}
@@ -3851,7 +3738,7 @@ func (m *ScheduleAssignmentMutation) ShiftCleared() bool {
 // ShiftIDs returns the "shift" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // ShiftID instead. It exists only for internal usage by the builders.
-func (m *ScheduleAssignmentMutation) ShiftIDs() (ids []int) {
+func (m *ScheduleAssignmentMutation) ShiftIDs() (ids []uuid.UUID) {
 	if id := m.shift; id != nil {
 		ids = append(ids, *id)
 	}
@@ -3878,7 +3765,7 @@ func (m *ScheduleAssignmentMutation) EmployeeCleared() bool {
 // EmployeeIDs returns the "employee" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // EmployeeID instead. It exists only for internal usage by the builders.
-func (m *ScheduleAssignmentMutation) EmployeeIDs() (ids []int) {
+func (m *ScheduleAssignmentMutation) EmployeeIDs() (ids []uuid.UUID) {
 	if id := m.employee; id != nil {
 		ids = append(ids, *id)
 	}
@@ -3925,7 +3812,7 @@ func (m *ScheduleAssignmentMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ScheduleAssignmentMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 5)
 	if m.shop != nil {
 		fields = append(fields, scheduleassignment.FieldShopID)
 	}
@@ -3937,6 +3824,9 @@ func (m *ScheduleAssignmentMutation) Fields() []string {
 	}
 	if m.employee != nil {
 		fields = append(fields, scheduleassignment.FieldEmployeeID)
+	}
+	if m.date != nil {
+		fields = append(fields, scheduleassignment.FieldDate)
 	}
 	return fields
 }
@@ -3954,6 +3844,8 @@ func (m *ScheduleAssignmentMutation) Field(name string) (ent.Value, bool) {
 		return m.ShiftID()
 	case scheduleassignment.FieldEmployeeID:
 		return m.EmployeeID()
+	case scheduleassignment.FieldDate:
+		return m.Date()
 	}
 	return nil, false
 }
@@ -3971,6 +3863,8 @@ func (m *ScheduleAssignmentMutation) OldField(ctx context.Context, name string) 
 		return m.OldShiftID(ctx)
 	case scheduleassignment.FieldEmployeeID:
 		return m.OldEmployeeID(ctx)
+	case scheduleassignment.FieldDate:
+		return m.OldDate(ctx)
 	}
 	return nil, fmt.Errorf("unknown ScheduleAssignment field %s", name)
 }
@@ -3981,32 +3875,39 @@ func (m *ScheduleAssignmentMutation) OldField(ctx context.Context, name string) 
 func (m *ScheduleAssignmentMutation) SetField(name string, value ent.Value) error {
 	switch name {
 	case scheduleassignment.FieldShopID:
-		v, ok := value.(int)
+		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetShopID(v)
 		return nil
 	case scheduleassignment.FieldScheduleID:
-		v, ok := value.(int)
+		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetScheduleID(v)
 		return nil
 	case scheduleassignment.FieldShiftID:
-		v, ok := value.(int)
+		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetShiftID(v)
 		return nil
 	case scheduleassignment.FieldEmployeeID:
-		v, ok := value.(int)
+		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetEmployeeID(v)
+		return nil
+	case scheduleassignment.FieldDate:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDate(v)
 		return nil
 	}
 	return fmt.Errorf("unknown ScheduleAssignment field %s", name)
@@ -4015,16 +3916,13 @@ func (m *ScheduleAssignmentMutation) SetField(name string, value ent.Value) erro
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *ScheduleAssignmentMutation) AddedFields() []string {
-	var fields []string
-	return fields
+	return nil
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *ScheduleAssignmentMutation) AddedField(name string) (ent.Value, bool) {
-	switch name {
-	}
 	return nil, false
 }
 
@@ -4071,6 +3969,9 @@ func (m *ScheduleAssignmentMutation) ResetField(name string) error {
 		return nil
 	case scheduleassignment.FieldEmployeeID:
 		m.ResetEmployeeID()
+		return nil
+	case scheduleassignment.FieldDate:
+		m.ResetDate()
 		return nil
 	}
 	return fmt.Errorf("unknown ScheduleAssignment field %s", name)
@@ -4209,14 +4110,15 @@ type ScheduleVoteMutation struct {
 	config
 	op              Op
 	typ             string
-	id              *int
+	id              *uuid.UUID
+	week_start      *time.Time
 	created_at      *time.Time
 	clearedFields   map[string]struct{}
-	shop            *int
+	shop            *uuid.UUID
 	clearedshop     bool
-	schedule        *int
+	schedule        *uuid.UUID
 	clearedschedule bool
-	employee        *int
+	employee        *uuid.UUID
 	clearedemployee bool
 	done            bool
 	oldValue        func(context.Context) (*ScheduleVote, error)
@@ -4243,7 +4145,7 @@ func newScheduleVoteMutation(c config, op Op, opts ...schedulevoteOption) *Sched
 }
 
 // withScheduleVoteID sets the ID field of the mutation.
-func withScheduleVoteID(id int) schedulevoteOption {
+func withScheduleVoteID(id uuid.UUID) schedulevoteOption {
 	return func(m *ScheduleVoteMutation) {
 		var (
 			err   error
@@ -4293,9 +4195,15 @@ func (m ScheduleVoteMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of ScheduleVote entities.
+func (m *ScheduleVoteMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
 // ID returns the ID value in the mutation. Note that the ID is only available
 // if it was provided to the builder or after it was returned from the database.
-func (m *ScheduleVoteMutation) ID() (id int, exists bool) {
+func (m *ScheduleVoteMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -4306,12 +4214,12 @@ func (m *ScheduleVoteMutation) ID() (id int, exists bool) {
 // That means, if the mutation is applied within a transaction with an isolation level such
 // as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
 // or updated by the mutation.
-func (m *ScheduleVoteMutation) IDs(ctx context.Context) ([]int, error) {
+func (m *ScheduleVoteMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	switch {
 	case m.op.Is(OpUpdateOne | OpDeleteOne):
 		id, exists := m.ID()
 		if exists {
-			return []int{id}, nil
+			return []uuid.UUID{id}, nil
 		}
 		fallthrough
 	case m.op.Is(OpUpdate | OpDelete):
@@ -4322,12 +4230,12 @@ func (m *ScheduleVoteMutation) IDs(ctx context.Context) ([]int, error) {
 }
 
 // SetShopID sets the "shop_id" field.
-func (m *ScheduleVoteMutation) SetShopID(i int) {
-	m.shop = &i
+func (m *ScheduleVoteMutation) SetShopID(u uuid.UUID) {
+	m.shop = &u
 }
 
 // ShopID returns the value of the "shop_id" field in the mutation.
-func (m *ScheduleVoteMutation) ShopID() (r int, exists bool) {
+func (m *ScheduleVoteMutation) ShopID() (r uuid.UUID, exists bool) {
 	v := m.shop
 	if v == nil {
 		return
@@ -4338,7 +4246,7 @@ func (m *ScheduleVoteMutation) ShopID() (r int, exists bool) {
 // OldShopID returns the old "shop_id" field's value of the ScheduleVote entity.
 // If the ScheduleVote object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ScheduleVoteMutation) OldShopID(ctx context.Context) (v int, err error) {
+func (m *ScheduleVoteMutation) OldShopID(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldShopID is only allowed on UpdateOne operations")
 	}
@@ -4358,12 +4266,12 @@ func (m *ScheduleVoteMutation) ResetShopID() {
 }
 
 // SetScheduleID sets the "schedule_id" field.
-func (m *ScheduleVoteMutation) SetScheduleID(i int) {
-	m.schedule = &i
+func (m *ScheduleVoteMutation) SetScheduleID(u uuid.UUID) {
+	m.schedule = &u
 }
 
 // ScheduleID returns the value of the "schedule_id" field in the mutation.
-func (m *ScheduleVoteMutation) ScheduleID() (r int, exists bool) {
+func (m *ScheduleVoteMutation) ScheduleID() (r uuid.UUID, exists bool) {
 	v := m.schedule
 	if v == nil {
 		return
@@ -4374,7 +4282,7 @@ func (m *ScheduleVoteMutation) ScheduleID() (r int, exists bool) {
 // OldScheduleID returns the old "schedule_id" field's value of the ScheduleVote entity.
 // If the ScheduleVote object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ScheduleVoteMutation) OldScheduleID(ctx context.Context) (v int, err error) {
+func (m *ScheduleVoteMutation) OldScheduleID(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldScheduleID is only allowed on UpdateOne operations")
 	}
@@ -4394,12 +4302,12 @@ func (m *ScheduleVoteMutation) ResetScheduleID() {
 }
 
 // SetEmployeeID sets the "employee_id" field.
-func (m *ScheduleVoteMutation) SetEmployeeID(i int) {
-	m.employee = &i
+func (m *ScheduleVoteMutation) SetEmployeeID(u uuid.UUID) {
+	m.employee = &u
 }
 
 // EmployeeID returns the value of the "employee_id" field in the mutation.
-func (m *ScheduleVoteMutation) EmployeeID() (r int, exists bool) {
+func (m *ScheduleVoteMutation) EmployeeID() (r uuid.UUID, exists bool) {
 	v := m.employee
 	if v == nil {
 		return
@@ -4410,7 +4318,7 @@ func (m *ScheduleVoteMutation) EmployeeID() (r int, exists bool) {
 // OldEmployeeID returns the old "employee_id" field's value of the ScheduleVote entity.
 // If the ScheduleVote object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ScheduleVoteMutation) OldEmployeeID(ctx context.Context) (v int, err error) {
+func (m *ScheduleVoteMutation) OldEmployeeID(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldEmployeeID is only allowed on UpdateOne operations")
 	}
@@ -4427,6 +4335,42 @@ func (m *ScheduleVoteMutation) OldEmployeeID(ctx context.Context) (v int, err er
 // ResetEmployeeID resets all changes to the "employee_id" field.
 func (m *ScheduleVoteMutation) ResetEmployeeID() {
 	m.employee = nil
+}
+
+// SetWeekStart sets the "week_start" field.
+func (m *ScheduleVoteMutation) SetWeekStart(t time.Time) {
+	m.week_start = &t
+}
+
+// WeekStart returns the value of the "week_start" field in the mutation.
+func (m *ScheduleVoteMutation) WeekStart() (r time.Time, exists bool) {
+	v := m.week_start
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWeekStart returns the old "week_start" field's value of the ScheduleVote entity.
+// If the ScheduleVote object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ScheduleVoteMutation) OldWeekStart(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWeekStart is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWeekStart requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWeekStart: %w", err)
+	}
+	return oldValue.WeekStart, nil
+}
+
+// ResetWeekStart resets all changes to the "week_start" field.
+func (m *ScheduleVoteMutation) ResetWeekStart() {
+	m.week_start = nil
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -4479,7 +4423,7 @@ func (m *ScheduleVoteMutation) ShopCleared() bool {
 // ShopIDs returns the "shop" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // ShopID instead. It exists only for internal usage by the builders.
-func (m *ScheduleVoteMutation) ShopIDs() (ids []int) {
+func (m *ScheduleVoteMutation) ShopIDs() (ids []uuid.UUID) {
 	if id := m.shop; id != nil {
 		ids = append(ids, *id)
 	}
@@ -4506,7 +4450,7 @@ func (m *ScheduleVoteMutation) ScheduleCleared() bool {
 // ScheduleIDs returns the "schedule" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // ScheduleID instead. It exists only for internal usage by the builders.
-func (m *ScheduleVoteMutation) ScheduleIDs() (ids []int) {
+func (m *ScheduleVoteMutation) ScheduleIDs() (ids []uuid.UUID) {
 	if id := m.schedule; id != nil {
 		ids = append(ids, *id)
 	}
@@ -4533,7 +4477,7 @@ func (m *ScheduleVoteMutation) EmployeeCleared() bool {
 // EmployeeIDs returns the "employee" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // EmployeeID instead. It exists only for internal usage by the builders.
-func (m *ScheduleVoteMutation) EmployeeIDs() (ids []int) {
+func (m *ScheduleVoteMutation) EmployeeIDs() (ids []uuid.UUID) {
 	if id := m.employee; id != nil {
 		ids = append(ids, *id)
 	}
@@ -4580,7 +4524,7 @@ func (m *ScheduleVoteMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ScheduleVoteMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 5)
 	if m.shop != nil {
 		fields = append(fields, schedulevote.FieldShopID)
 	}
@@ -4589,6 +4533,9 @@ func (m *ScheduleVoteMutation) Fields() []string {
 	}
 	if m.employee != nil {
 		fields = append(fields, schedulevote.FieldEmployeeID)
+	}
+	if m.week_start != nil {
+		fields = append(fields, schedulevote.FieldWeekStart)
 	}
 	if m.created_at != nil {
 		fields = append(fields, schedulevote.FieldCreatedAt)
@@ -4607,6 +4554,8 @@ func (m *ScheduleVoteMutation) Field(name string) (ent.Value, bool) {
 		return m.ScheduleID()
 	case schedulevote.FieldEmployeeID:
 		return m.EmployeeID()
+	case schedulevote.FieldWeekStart:
+		return m.WeekStart()
 	case schedulevote.FieldCreatedAt:
 		return m.CreatedAt()
 	}
@@ -4624,6 +4573,8 @@ func (m *ScheduleVoteMutation) OldField(ctx context.Context, name string) (ent.V
 		return m.OldScheduleID(ctx)
 	case schedulevote.FieldEmployeeID:
 		return m.OldEmployeeID(ctx)
+	case schedulevote.FieldWeekStart:
+		return m.OldWeekStart(ctx)
 	case schedulevote.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	}
@@ -4636,25 +4587,32 @@ func (m *ScheduleVoteMutation) OldField(ctx context.Context, name string) (ent.V
 func (m *ScheduleVoteMutation) SetField(name string, value ent.Value) error {
 	switch name {
 	case schedulevote.FieldShopID:
-		v, ok := value.(int)
+		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetShopID(v)
 		return nil
 	case schedulevote.FieldScheduleID:
-		v, ok := value.(int)
+		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetScheduleID(v)
 		return nil
 	case schedulevote.FieldEmployeeID:
-		v, ok := value.(int)
+		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetEmployeeID(v)
+		return nil
+	case schedulevote.FieldWeekStart:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWeekStart(v)
 		return nil
 	case schedulevote.FieldCreatedAt:
 		v, ok := value.(time.Time)
@@ -4670,16 +4628,13 @@ func (m *ScheduleVoteMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *ScheduleVoteMutation) AddedFields() []string {
-	var fields []string
-	return fields
+	return nil
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *ScheduleVoteMutation) AddedField(name string) (ent.Value, bool) {
-	switch name {
-	}
 	return nil, false
 }
 
@@ -4723,6 +4678,9 @@ func (m *ScheduleVoteMutation) ResetField(name string) error {
 		return nil
 	case schedulevote.FieldEmployeeID:
 		m.ResetEmployeeID()
+		return nil
+	case schedulevote.FieldWeekStart:
+		m.ResetWeekStart()
 		return nil
 	case schedulevote.FieldCreatedAt:
 		m.ResetCreatedAt()
@@ -4846,20 +4804,21 @@ type ShiftMutation struct {
 	config
 	op                 Op
 	typ                string
-	id                 *int
-	role               *string
-	starts_at          *time.Time
-	ends_at            *time.Time
+	id                 *uuid.UUID
+	name               *string
+	weekday            *int
+	addweekday         *int
+	start_time         *string
+	end_time           *string
 	min_staff          *int
 	addmin_staff       *int
 	max_staff          *int
 	addmax_staff       *int
-	created_at         *time.Time
 	clearedFields      map[string]struct{}
-	shop               *int
+	shop               *uuid.UUID
 	clearedshop        bool
-	assignments        map[int]struct{}
-	removedassignments map[int]struct{}
+	assignments        map[uuid.UUID]struct{}
+	removedassignments map[uuid.UUID]struct{}
 	clearedassignments bool
 	done               bool
 	oldValue           func(context.Context) (*Shift, error)
@@ -4886,7 +4845,7 @@ func newShiftMutation(c config, op Op, opts ...shiftOption) *ShiftMutation {
 }
 
 // withShiftID sets the ID field of the mutation.
-func withShiftID(id int) shiftOption {
+func withShiftID(id uuid.UUID) shiftOption {
 	return func(m *ShiftMutation) {
 		var (
 			err   error
@@ -4936,9 +4895,15 @@ func (m ShiftMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Shift entities.
+func (m *ShiftMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
 // ID returns the ID value in the mutation. Note that the ID is only available
 // if it was provided to the builder or after it was returned from the database.
-func (m *ShiftMutation) ID() (id int, exists bool) {
+func (m *ShiftMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -4949,12 +4914,12 @@ func (m *ShiftMutation) ID() (id int, exists bool) {
 // That means, if the mutation is applied within a transaction with an isolation level such
 // as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
 // or updated by the mutation.
-func (m *ShiftMutation) IDs(ctx context.Context) ([]int, error) {
+func (m *ShiftMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	switch {
 	case m.op.Is(OpUpdateOne | OpDeleteOne):
 		id, exists := m.ID()
 		if exists {
-			return []int{id}, nil
+			return []uuid.UUID{id}, nil
 		}
 		fallthrough
 	case m.op.Is(OpUpdate | OpDelete):
@@ -4965,12 +4930,12 @@ func (m *ShiftMutation) IDs(ctx context.Context) ([]int, error) {
 }
 
 // SetShopID sets the "shop_id" field.
-func (m *ShiftMutation) SetShopID(i int) {
-	m.shop = &i
+func (m *ShiftMutation) SetShopID(u uuid.UUID) {
+	m.shop = &u
 }
 
 // ShopID returns the value of the "shop_id" field in the mutation.
-func (m *ShiftMutation) ShopID() (r int, exists bool) {
+func (m *ShiftMutation) ShopID() (r uuid.UUID, exists bool) {
 	v := m.shop
 	if v == nil {
 		return
@@ -4981,7 +4946,7 @@ func (m *ShiftMutation) ShopID() (r int, exists bool) {
 // OldShopID returns the old "shop_id" field's value of the Shift entity.
 // If the Shift object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ShiftMutation) OldShopID(ctx context.Context) (v int, err error) {
+func (m *ShiftMutation) OldShopID(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldShopID is only allowed on UpdateOne operations")
 	}
@@ -5000,112 +4965,168 @@ func (m *ShiftMutation) ResetShopID() {
 	m.shop = nil
 }
 
-// SetRole sets the "role" field.
-func (m *ShiftMutation) SetRole(s string) {
-	m.role = &s
+// SetName sets the "name" field.
+func (m *ShiftMutation) SetName(s string) {
+	m.name = &s
 }
 
-// Role returns the value of the "role" field in the mutation.
-func (m *ShiftMutation) Role() (r string, exists bool) {
-	v := m.role
+// Name returns the value of the "name" field in the mutation.
+func (m *ShiftMutation) Name() (r string, exists bool) {
+	v := m.name
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldRole returns the old "role" field's value of the Shift entity.
+// OldName returns the old "name" field's value of the Shift entity.
 // If the Shift object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ShiftMutation) OldRole(ctx context.Context) (v string, err error) {
+func (m *ShiftMutation) OldName(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldRole is only allowed on UpdateOne operations")
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldRole requires an ID field in the mutation")
+		return v, errors.New("OldName requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldRole: %w", err)
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
 	}
-	return oldValue.Role, nil
+	return oldValue.Name, nil
 }
 
-// ResetRole resets all changes to the "role" field.
-func (m *ShiftMutation) ResetRole() {
-	m.role = nil
+// ResetName resets all changes to the "name" field.
+func (m *ShiftMutation) ResetName() {
+	m.name = nil
 }
 
-// SetStartsAt sets the "starts_at" field.
-func (m *ShiftMutation) SetStartsAt(t time.Time) {
-	m.starts_at = &t
+// SetWeekday sets the "weekday" field.
+func (m *ShiftMutation) SetWeekday(i int) {
+	m.weekday = &i
+	m.addweekday = nil
 }
 
-// StartsAt returns the value of the "starts_at" field in the mutation.
-func (m *ShiftMutation) StartsAt() (r time.Time, exists bool) {
-	v := m.starts_at
+// Weekday returns the value of the "weekday" field in the mutation.
+func (m *ShiftMutation) Weekday() (r int, exists bool) {
+	v := m.weekday
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldStartsAt returns the old "starts_at" field's value of the Shift entity.
+// OldWeekday returns the old "weekday" field's value of the Shift entity.
 // If the Shift object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ShiftMutation) OldStartsAt(ctx context.Context) (v time.Time, err error) {
+func (m *ShiftMutation) OldWeekday(ctx context.Context) (v int, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldStartsAt is only allowed on UpdateOne operations")
+		return v, errors.New("OldWeekday is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldStartsAt requires an ID field in the mutation")
+		return v, errors.New("OldWeekday requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldStartsAt: %w", err)
+		return v, fmt.Errorf("querying old value for OldWeekday: %w", err)
 	}
-	return oldValue.StartsAt, nil
+	return oldValue.Weekday, nil
 }
 
-// ResetStartsAt resets all changes to the "starts_at" field.
-func (m *ShiftMutation) ResetStartsAt() {
-	m.starts_at = nil
+// AddWeekday adds i to the "weekday" field.
+func (m *ShiftMutation) AddWeekday(i int) {
+	if m.addweekday != nil {
+		*m.addweekday += i
+	} else {
+		m.addweekday = &i
+	}
 }
 
-// SetEndsAt sets the "ends_at" field.
-func (m *ShiftMutation) SetEndsAt(t time.Time) {
-	m.ends_at = &t
-}
-
-// EndsAt returns the value of the "ends_at" field in the mutation.
-func (m *ShiftMutation) EndsAt() (r time.Time, exists bool) {
-	v := m.ends_at
+// AddedWeekday returns the value that was added to the "weekday" field in this mutation.
+func (m *ShiftMutation) AddedWeekday() (r int, exists bool) {
+	v := m.addweekday
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldEndsAt returns the old "ends_at" field's value of the Shift entity.
+// ResetWeekday resets all changes to the "weekday" field.
+func (m *ShiftMutation) ResetWeekday() {
+	m.weekday = nil
+	m.addweekday = nil
+}
+
+// SetStartTime sets the "start_time" field.
+func (m *ShiftMutation) SetStartTime(s string) {
+	m.start_time = &s
+}
+
+// StartTime returns the value of the "start_time" field in the mutation.
+func (m *ShiftMutation) StartTime() (r string, exists bool) {
+	v := m.start_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStartTime returns the old "start_time" field's value of the Shift entity.
 // If the Shift object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ShiftMutation) OldEndsAt(ctx context.Context) (v time.Time, err error) {
+func (m *ShiftMutation) OldStartTime(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldEndsAt is only allowed on UpdateOne operations")
+		return v, errors.New("OldStartTime is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldEndsAt requires an ID field in the mutation")
+		return v, errors.New("OldStartTime requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldEndsAt: %w", err)
+		return v, fmt.Errorf("querying old value for OldStartTime: %w", err)
 	}
-	return oldValue.EndsAt, nil
+	return oldValue.StartTime, nil
 }
 
-// ResetEndsAt resets all changes to the "ends_at" field.
-func (m *ShiftMutation) ResetEndsAt() {
-	m.ends_at = nil
+// ResetStartTime resets all changes to the "start_time" field.
+func (m *ShiftMutation) ResetStartTime() {
+	m.start_time = nil
+}
+
+// SetEndTime sets the "end_time" field.
+func (m *ShiftMutation) SetEndTime(s string) {
+	m.end_time = &s
+}
+
+// EndTime returns the value of the "end_time" field in the mutation.
+func (m *ShiftMutation) EndTime() (r string, exists bool) {
+	v := m.end_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEndTime returns the old "end_time" field's value of the Shift entity.
+// If the Shift object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ShiftMutation) OldEndTime(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEndTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEndTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEndTime: %w", err)
+	}
+	return oldValue.EndTime, nil
+}
+
+// ResetEndTime resets all changes to the "end_time" field.
+func (m *ShiftMutation) ResetEndTime() {
+	m.end_time = nil
 }
 
 // SetMinStaff sets the "min_staff" field.
@@ -5220,42 +5241,6 @@ func (m *ShiftMutation) ResetMaxStaff() {
 	m.addmax_staff = nil
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (m *ShiftMutation) SetCreatedAt(t time.Time) {
-	m.created_at = &t
-}
-
-// CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *ShiftMutation) CreatedAt() (r time.Time, exists bool) {
-	v := m.created_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedAt returns the old "created_at" field's value of the Shift entity.
-// If the Shift object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ShiftMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
-	}
-	return oldValue.CreatedAt, nil
-}
-
-// ResetCreatedAt resets all changes to the "created_at" field.
-func (m *ShiftMutation) ResetCreatedAt() {
-	m.created_at = nil
-}
-
 // ClearShop clears the "shop" edge to the Shop entity.
 func (m *ShiftMutation) ClearShop() {
 	m.clearedshop = true
@@ -5270,7 +5255,7 @@ func (m *ShiftMutation) ShopCleared() bool {
 // ShopIDs returns the "shop" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // ShopID instead. It exists only for internal usage by the builders.
-func (m *ShiftMutation) ShopIDs() (ids []int) {
+func (m *ShiftMutation) ShopIDs() (ids []uuid.UUID) {
 	if id := m.shop; id != nil {
 		ids = append(ids, *id)
 	}
@@ -5284,9 +5269,9 @@ func (m *ShiftMutation) ResetShop() {
 }
 
 // AddAssignmentIDs adds the "assignments" edge to the ScheduleAssignment entity by ids.
-func (m *ShiftMutation) AddAssignmentIDs(ids ...int) {
+func (m *ShiftMutation) AddAssignmentIDs(ids ...uuid.UUID) {
 	if m.assignments == nil {
-		m.assignments = make(map[int]struct{})
+		m.assignments = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.assignments[ids[i]] = struct{}{}
@@ -5304,9 +5289,9 @@ func (m *ShiftMutation) AssignmentsCleared() bool {
 }
 
 // RemoveAssignmentIDs removes the "assignments" edge to the ScheduleAssignment entity by IDs.
-func (m *ShiftMutation) RemoveAssignmentIDs(ids ...int) {
+func (m *ShiftMutation) RemoveAssignmentIDs(ids ...uuid.UUID) {
 	if m.removedassignments == nil {
-		m.removedassignments = make(map[int]struct{})
+		m.removedassignments = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		delete(m.assignments, ids[i])
@@ -5315,7 +5300,7 @@ func (m *ShiftMutation) RemoveAssignmentIDs(ids ...int) {
 }
 
 // RemovedAssignments returns the removed IDs of the "assignments" edge to the ScheduleAssignment entity.
-func (m *ShiftMutation) RemovedAssignmentsIDs() (ids []int) {
+func (m *ShiftMutation) RemovedAssignmentsIDs() (ids []uuid.UUID) {
 	for id := range m.removedassignments {
 		ids = append(ids, id)
 	}
@@ -5323,7 +5308,7 @@ func (m *ShiftMutation) RemovedAssignmentsIDs() (ids []int) {
 }
 
 // AssignmentsIDs returns the "assignments" edge IDs in the mutation.
-func (m *ShiftMutation) AssignmentsIDs() (ids []int) {
+func (m *ShiftMutation) AssignmentsIDs() (ids []uuid.UUID) {
 	for id := range m.assignments {
 		ids = append(ids, id)
 	}
@@ -5375,23 +5360,23 @@ func (m *ShiftMutation) Fields() []string {
 	if m.shop != nil {
 		fields = append(fields, shift.FieldShopID)
 	}
-	if m.role != nil {
-		fields = append(fields, shift.FieldRole)
+	if m.name != nil {
+		fields = append(fields, shift.FieldName)
 	}
-	if m.starts_at != nil {
-		fields = append(fields, shift.FieldStartsAt)
+	if m.weekday != nil {
+		fields = append(fields, shift.FieldWeekday)
 	}
-	if m.ends_at != nil {
-		fields = append(fields, shift.FieldEndsAt)
+	if m.start_time != nil {
+		fields = append(fields, shift.FieldStartTime)
+	}
+	if m.end_time != nil {
+		fields = append(fields, shift.FieldEndTime)
 	}
 	if m.min_staff != nil {
 		fields = append(fields, shift.FieldMinStaff)
 	}
 	if m.max_staff != nil {
 		fields = append(fields, shift.FieldMaxStaff)
-	}
-	if m.created_at != nil {
-		fields = append(fields, shift.FieldCreatedAt)
 	}
 	return fields
 }
@@ -5403,18 +5388,18 @@ func (m *ShiftMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case shift.FieldShopID:
 		return m.ShopID()
-	case shift.FieldRole:
-		return m.Role()
-	case shift.FieldStartsAt:
-		return m.StartsAt()
-	case shift.FieldEndsAt:
-		return m.EndsAt()
+	case shift.FieldName:
+		return m.Name()
+	case shift.FieldWeekday:
+		return m.Weekday()
+	case shift.FieldStartTime:
+		return m.StartTime()
+	case shift.FieldEndTime:
+		return m.EndTime()
 	case shift.FieldMinStaff:
 		return m.MinStaff()
 	case shift.FieldMaxStaff:
 		return m.MaxStaff()
-	case shift.FieldCreatedAt:
-		return m.CreatedAt()
 	}
 	return nil, false
 }
@@ -5426,18 +5411,18 @@ func (m *ShiftMutation) OldField(ctx context.Context, name string) (ent.Value, e
 	switch name {
 	case shift.FieldShopID:
 		return m.OldShopID(ctx)
-	case shift.FieldRole:
-		return m.OldRole(ctx)
-	case shift.FieldStartsAt:
-		return m.OldStartsAt(ctx)
-	case shift.FieldEndsAt:
-		return m.OldEndsAt(ctx)
+	case shift.FieldName:
+		return m.OldName(ctx)
+	case shift.FieldWeekday:
+		return m.OldWeekday(ctx)
+	case shift.FieldStartTime:
+		return m.OldStartTime(ctx)
+	case shift.FieldEndTime:
+		return m.OldEndTime(ctx)
 	case shift.FieldMinStaff:
 		return m.OldMinStaff(ctx)
 	case shift.FieldMaxStaff:
 		return m.OldMaxStaff(ctx)
-	case shift.FieldCreatedAt:
-		return m.OldCreatedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown Shift field %s", name)
 }
@@ -5448,32 +5433,39 @@ func (m *ShiftMutation) OldField(ctx context.Context, name string) (ent.Value, e
 func (m *ShiftMutation) SetField(name string, value ent.Value) error {
 	switch name {
 	case shift.FieldShopID:
-		v, ok := value.(int)
+		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetShopID(v)
 		return nil
-	case shift.FieldRole:
+	case shift.FieldName:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetRole(v)
+		m.SetName(v)
 		return nil
-	case shift.FieldStartsAt:
-		v, ok := value.(time.Time)
+	case shift.FieldWeekday:
+		v, ok := value.(int)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetStartsAt(v)
+		m.SetWeekday(v)
 		return nil
-	case shift.FieldEndsAt:
-		v, ok := value.(time.Time)
+	case shift.FieldStartTime:
+		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetEndsAt(v)
+		m.SetStartTime(v)
+		return nil
+	case shift.FieldEndTime:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEndTime(v)
 		return nil
 	case shift.FieldMinStaff:
 		v, ok := value.(int)
@@ -5489,13 +5481,6 @@ func (m *ShiftMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetMaxStaff(v)
 		return nil
-	case shift.FieldCreatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedAt(v)
-		return nil
 	}
 	return fmt.Errorf("unknown Shift field %s", name)
 }
@@ -5504,6 +5489,9 @@ func (m *ShiftMutation) SetField(name string, value ent.Value) error {
 // this mutation.
 func (m *ShiftMutation) AddedFields() []string {
 	var fields []string
+	if m.addweekday != nil {
+		fields = append(fields, shift.FieldWeekday)
+	}
 	if m.addmin_staff != nil {
 		fields = append(fields, shift.FieldMinStaff)
 	}
@@ -5518,6 +5506,8 @@ func (m *ShiftMutation) AddedFields() []string {
 // was not set, or was not defined in the schema.
 func (m *ShiftMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
+	case shift.FieldWeekday:
+		return m.AddedWeekday()
 	case shift.FieldMinStaff:
 		return m.AddedMinStaff()
 	case shift.FieldMaxStaff:
@@ -5531,6 +5521,13 @@ func (m *ShiftMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *ShiftMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case shift.FieldWeekday:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddWeekday(v)
+		return nil
 	case shift.FieldMinStaff:
 		v, ok := value.(int)
 		if !ok {
@@ -5575,23 +5572,23 @@ func (m *ShiftMutation) ResetField(name string) error {
 	case shift.FieldShopID:
 		m.ResetShopID()
 		return nil
-	case shift.FieldRole:
-		m.ResetRole()
+	case shift.FieldName:
+		m.ResetName()
 		return nil
-	case shift.FieldStartsAt:
-		m.ResetStartsAt()
+	case shift.FieldWeekday:
+		m.ResetWeekday()
 		return nil
-	case shift.FieldEndsAt:
-		m.ResetEndsAt()
+	case shift.FieldStartTime:
+		m.ResetStartTime()
+		return nil
+	case shift.FieldEndTime:
+		m.ResetEndTime()
 		return nil
 	case shift.FieldMinStaff:
 		m.ResetMinStaff()
 		return nil
 	case shift.FieldMaxStaff:
 		m.ResetMaxStaff()
-		return nil
-	case shift.FieldCreatedAt:
-		m.ResetCreatedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown Shift field %s", name)
@@ -5702,40 +5699,35 @@ func (m *ShiftMutation) ResetEdge(name string) error {
 // ShopMutation represents an operation that mutates the Shop nodes in the graph.
 type ShopMutation struct {
 	config
-	op                   Op
-	typ                  string
-	id                   *int
-	name                 *string
-	timezone             *string
-	invite_code          *string
-	owner_telegram_id    *int64
-	addowner_telegram_id *int64
-	created_at           *time.Time
-	clearedFields        map[string]struct{}
-	employees            map[int]struct{}
-	removedemployees     map[int]struct{}
-	clearedemployees     bool
-	availability         map[int]struct{}
-	removedavailability  map[int]struct{}
-	clearedavailability  bool
-	shifts               map[int]struct{}
-	removedshifts        map[int]struct{}
-	clearedshifts        bool
-	schedules            map[int]struct{}
-	removedschedules     map[int]struct{}
-	clearedschedules     bool
-	assignments          map[int]struct{}
-	removedassignments   map[int]struct{}
-	clearedassignments   bool
-	votes                map[int]struct{}
-	removedvotes         map[int]struct{}
-	clearedvotes         bool
-	rules                map[int]struct{}
-	removedrules         map[int]struct{}
-	clearedrules         bool
-	done                 bool
-	oldValue             func(context.Context) (*Shop, error)
-	predicates           []predicate.Shop
+	op                    Op
+	typ                   string
+	id                    *uuid.UUID
+	name                  *string
+	timezone              *string
+	invite_code           *string
+	telegram_group_id     *int64
+	addtelegram_group_id  *int64
+	plan                  *string
+	created_at            *time.Time
+	clearedFields         map[string]struct{}
+	employees             map[uuid.UUID]struct{}
+	removedemployees      map[uuid.UUID]struct{}
+	clearedemployees      bool
+	shifts                map[uuid.UUID]struct{}
+	removedshifts         map[uuid.UUID]struct{}
+	clearedshifts         bool
+	schedules             map[uuid.UUID]struct{}
+	removedschedules      map[uuid.UUID]struct{}
+	clearedschedules      bool
+	rules                 map[uuid.UUID]struct{}
+	removedrules          map[uuid.UUID]struct{}
+	clearedrules          bool
+	availabilities        map[uuid.UUID]struct{}
+	removedavailabilities map[uuid.UUID]struct{}
+	clearedavailabilities bool
+	done                  bool
+	oldValue              func(context.Context) (*Shop, error)
+	predicates            []predicate.Shop
 }
 
 var _ ent.Mutation = (*ShopMutation)(nil)
@@ -5758,7 +5750,7 @@ func newShopMutation(c config, op Op, opts ...shopOption) *ShopMutation {
 }
 
 // withShopID sets the ID field of the mutation.
-func withShopID(id int) shopOption {
+func withShopID(id uuid.UUID) shopOption {
 	return func(m *ShopMutation) {
 		var (
 			err   error
@@ -5808,9 +5800,15 @@ func (m ShopMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Shop entities.
+func (m *ShopMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
 // ID returns the ID value in the mutation. Note that the ID is only available
 // if it was provided to the builder or after it was returned from the database.
-func (m *ShopMutation) ID() (id int, exists bool) {
+func (m *ShopMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -5821,12 +5819,12 @@ func (m *ShopMutation) ID() (id int, exists bool) {
 // That means, if the mutation is applied within a transaction with an isolation level such
 // as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
 // or updated by the mutation.
-func (m *ShopMutation) IDs(ctx context.Context) ([]int, error) {
+func (m *ShopMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	switch {
 	case m.op.Is(OpUpdateOne | OpDeleteOne):
 		id, exists := m.ID()
 		if exists {
-			return []int{id}, nil
+			return []uuid.UUID{id}, nil
 		}
 		fallthrough
 	case m.op.Is(OpUpdate | OpDelete):
@@ -5944,60 +5942,96 @@ func (m *ShopMutation) ResetInviteCode() {
 	m.invite_code = nil
 }
 
-// SetOwnerTelegramID sets the "owner_telegram_id" field.
-func (m *ShopMutation) SetOwnerTelegramID(i int64) {
-	m.owner_telegram_id = &i
-	m.addowner_telegram_id = nil
+// SetTelegramGroupID sets the "telegram_group_id" field.
+func (m *ShopMutation) SetTelegramGroupID(i int64) {
+	m.telegram_group_id = &i
+	m.addtelegram_group_id = nil
 }
 
-// OwnerTelegramID returns the value of the "owner_telegram_id" field in the mutation.
-func (m *ShopMutation) OwnerTelegramID() (r int64, exists bool) {
-	v := m.owner_telegram_id
+// TelegramGroupID returns the value of the "telegram_group_id" field in the mutation.
+func (m *ShopMutation) TelegramGroupID() (r int64, exists bool) {
+	v := m.telegram_group_id
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldOwnerTelegramID returns the old "owner_telegram_id" field's value of the Shop entity.
+// OldTelegramGroupID returns the old "telegram_group_id" field's value of the Shop entity.
 // If the Shop object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ShopMutation) OldOwnerTelegramID(ctx context.Context) (v int64, err error) {
+func (m *ShopMutation) OldTelegramGroupID(ctx context.Context) (v int64, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldOwnerTelegramID is only allowed on UpdateOne operations")
+		return v, errors.New("OldTelegramGroupID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldOwnerTelegramID requires an ID field in the mutation")
+		return v, errors.New("OldTelegramGroupID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldOwnerTelegramID: %w", err)
+		return v, fmt.Errorf("querying old value for OldTelegramGroupID: %w", err)
 	}
-	return oldValue.OwnerTelegramID, nil
+	return oldValue.TelegramGroupID, nil
 }
 
-// AddOwnerTelegramID adds i to the "owner_telegram_id" field.
-func (m *ShopMutation) AddOwnerTelegramID(i int64) {
-	if m.addowner_telegram_id != nil {
-		*m.addowner_telegram_id += i
+// AddTelegramGroupID adds i to the "telegram_group_id" field.
+func (m *ShopMutation) AddTelegramGroupID(i int64) {
+	if m.addtelegram_group_id != nil {
+		*m.addtelegram_group_id += i
 	} else {
-		m.addowner_telegram_id = &i
+		m.addtelegram_group_id = &i
 	}
 }
 
-// AddedOwnerTelegramID returns the value that was added to the "owner_telegram_id" field in this mutation.
-func (m *ShopMutation) AddedOwnerTelegramID() (r int64, exists bool) {
-	v := m.addowner_telegram_id
+// AddedTelegramGroupID returns the value that was added to the "telegram_group_id" field in this mutation.
+func (m *ShopMutation) AddedTelegramGroupID() (r int64, exists bool) {
+	v := m.addtelegram_group_id
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// ResetOwnerTelegramID resets all changes to the "owner_telegram_id" field.
-func (m *ShopMutation) ResetOwnerTelegramID() {
-	m.owner_telegram_id = nil
-	m.addowner_telegram_id = nil
+// ResetTelegramGroupID resets all changes to the "telegram_group_id" field.
+func (m *ShopMutation) ResetTelegramGroupID() {
+	m.telegram_group_id = nil
+	m.addtelegram_group_id = nil
+}
+
+// SetPlan sets the "plan" field.
+func (m *ShopMutation) SetPlan(s string) {
+	m.plan = &s
+}
+
+// Plan returns the value of the "plan" field in the mutation.
+func (m *ShopMutation) Plan() (r string, exists bool) {
+	v := m.plan
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPlan returns the old "plan" field's value of the Shop entity.
+// If the Shop object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ShopMutation) OldPlan(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPlan is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPlan requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPlan: %w", err)
+	}
+	return oldValue.Plan, nil
+}
+
+// ResetPlan resets all changes to the "plan" field.
+func (m *ShopMutation) ResetPlan() {
+	m.plan = nil
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -6037,9 +6071,9 @@ func (m *ShopMutation) ResetCreatedAt() {
 }
 
 // AddEmployeeIDs adds the "employees" edge to the Employee entity by ids.
-func (m *ShopMutation) AddEmployeeIDs(ids ...int) {
+func (m *ShopMutation) AddEmployeeIDs(ids ...uuid.UUID) {
 	if m.employees == nil {
-		m.employees = make(map[int]struct{})
+		m.employees = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.employees[ids[i]] = struct{}{}
@@ -6057,9 +6091,9 @@ func (m *ShopMutation) EmployeesCleared() bool {
 }
 
 // RemoveEmployeeIDs removes the "employees" edge to the Employee entity by IDs.
-func (m *ShopMutation) RemoveEmployeeIDs(ids ...int) {
+func (m *ShopMutation) RemoveEmployeeIDs(ids ...uuid.UUID) {
 	if m.removedemployees == nil {
-		m.removedemployees = make(map[int]struct{})
+		m.removedemployees = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		delete(m.employees, ids[i])
@@ -6068,7 +6102,7 @@ func (m *ShopMutation) RemoveEmployeeIDs(ids ...int) {
 }
 
 // RemovedEmployees returns the removed IDs of the "employees" edge to the Employee entity.
-func (m *ShopMutation) RemovedEmployeesIDs() (ids []int) {
+func (m *ShopMutation) RemovedEmployeesIDs() (ids []uuid.UUID) {
 	for id := range m.removedemployees {
 		ids = append(ids, id)
 	}
@@ -6076,7 +6110,7 @@ func (m *ShopMutation) RemovedEmployeesIDs() (ids []int) {
 }
 
 // EmployeesIDs returns the "employees" edge IDs in the mutation.
-func (m *ShopMutation) EmployeesIDs() (ids []int) {
+func (m *ShopMutation) EmployeesIDs() (ids []uuid.UUID) {
 	for id := range m.employees {
 		ids = append(ids, id)
 	}
@@ -6090,64 +6124,10 @@ func (m *ShopMutation) ResetEmployees() {
 	m.removedemployees = nil
 }
 
-// AddAvailabilityIDs adds the "availability" edge to the Availability entity by ids.
-func (m *ShopMutation) AddAvailabilityIDs(ids ...int) {
-	if m.availability == nil {
-		m.availability = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.availability[ids[i]] = struct{}{}
-	}
-}
-
-// ClearAvailability clears the "availability" edge to the Availability entity.
-func (m *ShopMutation) ClearAvailability() {
-	m.clearedavailability = true
-}
-
-// AvailabilityCleared reports if the "availability" edge to the Availability entity was cleared.
-func (m *ShopMutation) AvailabilityCleared() bool {
-	return m.clearedavailability
-}
-
-// RemoveAvailabilityIDs removes the "availability" edge to the Availability entity by IDs.
-func (m *ShopMutation) RemoveAvailabilityIDs(ids ...int) {
-	if m.removedavailability == nil {
-		m.removedavailability = make(map[int]struct{})
-	}
-	for i := range ids {
-		delete(m.availability, ids[i])
-		m.removedavailability[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedAvailability returns the removed IDs of the "availability" edge to the Availability entity.
-func (m *ShopMutation) RemovedAvailabilityIDs() (ids []int) {
-	for id := range m.removedavailability {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// AvailabilityIDs returns the "availability" edge IDs in the mutation.
-func (m *ShopMutation) AvailabilityIDs() (ids []int) {
-	for id := range m.availability {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetAvailability resets all changes to the "availability" edge.
-func (m *ShopMutation) ResetAvailability() {
-	m.availability = nil
-	m.clearedavailability = false
-	m.removedavailability = nil
-}
-
 // AddShiftIDs adds the "shifts" edge to the Shift entity by ids.
-func (m *ShopMutation) AddShiftIDs(ids ...int) {
+func (m *ShopMutation) AddShiftIDs(ids ...uuid.UUID) {
 	if m.shifts == nil {
-		m.shifts = make(map[int]struct{})
+		m.shifts = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.shifts[ids[i]] = struct{}{}
@@ -6165,9 +6145,9 @@ func (m *ShopMutation) ShiftsCleared() bool {
 }
 
 // RemoveShiftIDs removes the "shifts" edge to the Shift entity by IDs.
-func (m *ShopMutation) RemoveShiftIDs(ids ...int) {
+func (m *ShopMutation) RemoveShiftIDs(ids ...uuid.UUID) {
 	if m.removedshifts == nil {
-		m.removedshifts = make(map[int]struct{})
+		m.removedshifts = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		delete(m.shifts, ids[i])
@@ -6176,7 +6156,7 @@ func (m *ShopMutation) RemoveShiftIDs(ids ...int) {
 }
 
 // RemovedShifts returns the removed IDs of the "shifts" edge to the Shift entity.
-func (m *ShopMutation) RemovedShiftsIDs() (ids []int) {
+func (m *ShopMutation) RemovedShiftsIDs() (ids []uuid.UUID) {
 	for id := range m.removedshifts {
 		ids = append(ids, id)
 	}
@@ -6184,7 +6164,7 @@ func (m *ShopMutation) RemovedShiftsIDs() (ids []int) {
 }
 
 // ShiftsIDs returns the "shifts" edge IDs in the mutation.
-func (m *ShopMutation) ShiftsIDs() (ids []int) {
+func (m *ShopMutation) ShiftsIDs() (ids []uuid.UUID) {
 	for id := range m.shifts {
 		ids = append(ids, id)
 	}
@@ -6199,9 +6179,9 @@ func (m *ShopMutation) ResetShifts() {
 }
 
 // AddScheduleIDs adds the "schedules" edge to the Schedule entity by ids.
-func (m *ShopMutation) AddScheduleIDs(ids ...int) {
+func (m *ShopMutation) AddScheduleIDs(ids ...uuid.UUID) {
 	if m.schedules == nil {
-		m.schedules = make(map[int]struct{})
+		m.schedules = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.schedules[ids[i]] = struct{}{}
@@ -6219,9 +6199,9 @@ func (m *ShopMutation) SchedulesCleared() bool {
 }
 
 // RemoveScheduleIDs removes the "schedules" edge to the Schedule entity by IDs.
-func (m *ShopMutation) RemoveScheduleIDs(ids ...int) {
+func (m *ShopMutation) RemoveScheduleIDs(ids ...uuid.UUID) {
 	if m.removedschedules == nil {
-		m.removedschedules = make(map[int]struct{})
+		m.removedschedules = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		delete(m.schedules, ids[i])
@@ -6230,7 +6210,7 @@ func (m *ShopMutation) RemoveScheduleIDs(ids ...int) {
 }
 
 // RemovedSchedules returns the removed IDs of the "schedules" edge to the Schedule entity.
-func (m *ShopMutation) RemovedSchedulesIDs() (ids []int) {
+func (m *ShopMutation) RemovedSchedulesIDs() (ids []uuid.UUID) {
 	for id := range m.removedschedules {
 		ids = append(ids, id)
 	}
@@ -6238,7 +6218,7 @@ func (m *ShopMutation) RemovedSchedulesIDs() (ids []int) {
 }
 
 // SchedulesIDs returns the "schedules" edge IDs in the mutation.
-func (m *ShopMutation) SchedulesIDs() (ids []int) {
+func (m *ShopMutation) SchedulesIDs() (ids []uuid.UUID) {
 	for id := range m.schedules {
 		ids = append(ids, id)
 	}
@@ -6252,118 +6232,10 @@ func (m *ShopMutation) ResetSchedules() {
 	m.removedschedules = nil
 }
 
-// AddAssignmentIDs adds the "assignments" edge to the ScheduleAssignment entity by ids.
-func (m *ShopMutation) AddAssignmentIDs(ids ...int) {
-	if m.assignments == nil {
-		m.assignments = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.assignments[ids[i]] = struct{}{}
-	}
-}
-
-// ClearAssignments clears the "assignments" edge to the ScheduleAssignment entity.
-func (m *ShopMutation) ClearAssignments() {
-	m.clearedassignments = true
-}
-
-// AssignmentsCleared reports if the "assignments" edge to the ScheduleAssignment entity was cleared.
-func (m *ShopMutation) AssignmentsCleared() bool {
-	return m.clearedassignments
-}
-
-// RemoveAssignmentIDs removes the "assignments" edge to the ScheduleAssignment entity by IDs.
-func (m *ShopMutation) RemoveAssignmentIDs(ids ...int) {
-	if m.removedassignments == nil {
-		m.removedassignments = make(map[int]struct{})
-	}
-	for i := range ids {
-		delete(m.assignments, ids[i])
-		m.removedassignments[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedAssignments returns the removed IDs of the "assignments" edge to the ScheduleAssignment entity.
-func (m *ShopMutation) RemovedAssignmentsIDs() (ids []int) {
-	for id := range m.removedassignments {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// AssignmentsIDs returns the "assignments" edge IDs in the mutation.
-func (m *ShopMutation) AssignmentsIDs() (ids []int) {
-	for id := range m.assignments {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetAssignments resets all changes to the "assignments" edge.
-func (m *ShopMutation) ResetAssignments() {
-	m.assignments = nil
-	m.clearedassignments = false
-	m.removedassignments = nil
-}
-
-// AddVoteIDs adds the "votes" edge to the ScheduleVote entity by ids.
-func (m *ShopMutation) AddVoteIDs(ids ...int) {
-	if m.votes == nil {
-		m.votes = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.votes[ids[i]] = struct{}{}
-	}
-}
-
-// ClearVotes clears the "votes" edge to the ScheduleVote entity.
-func (m *ShopMutation) ClearVotes() {
-	m.clearedvotes = true
-}
-
-// VotesCleared reports if the "votes" edge to the ScheduleVote entity was cleared.
-func (m *ShopMutation) VotesCleared() bool {
-	return m.clearedvotes
-}
-
-// RemoveVoteIDs removes the "votes" edge to the ScheduleVote entity by IDs.
-func (m *ShopMutation) RemoveVoteIDs(ids ...int) {
-	if m.removedvotes == nil {
-		m.removedvotes = make(map[int]struct{})
-	}
-	for i := range ids {
-		delete(m.votes, ids[i])
-		m.removedvotes[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedVotes returns the removed IDs of the "votes" edge to the ScheduleVote entity.
-func (m *ShopMutation) RemovedVotesIDs() (ids []int) {
-	for id := range m.removedvotes {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// VotesIDs returns the "votes" edge IDs in the mutation.
-func (m *ShopMutation) VotesIDs() (ids []int) {
-	for id := range m.votes {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetVotes resets all changes to the "votes" edge.
-func (m *ShopMutation) ResetVotes() {
-	m.votes = nil
-	m.clearedvotes = false
-	m.removedvotes = nil
-}
-
 // AddRuleIDs adds the "rules" edge to the Rule entity by ids.
-func (m *ShopMutation) AddRuleIDs(ids ...int) {
+func (m *ShopMutation) AddRuleIDs(ids ...uuid.UUID) {
 	if m.rules == nil {
-		m.rules = make(map[int]struct{})
+		m.rules = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.rules[ids[i]] = struct{}{}
@@ -6381,9 +6253,9 @@ func (m *ShopMutation) RulesCleared() bool {
 }
 
 // RemoveRuleIDs removes the "rules" edge to the Rule entity by IDs.
-func (m *ShopMutation) RemoveRuleIDs(ids ...int) {
+func (m *ShopMutation) RemoveRuleIDs(ids ...uuid.UUID) {
 	if m.removedrules == nil {
-		m.removedrules = make(map[int]struct{})
+		m.removedrules = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		delete(m.rules, ids[i])
@@ -6392,7 +6264,7 @@ func (m *ShopMutation) RemoveRuleIDs(ids ...int) {
 }
 
 // RemovedRules returns the removed IDs of the "rules" edge to the Rule entity.
-func (m *ShopMutation) RemovedRulesIDs() (ids []int) {
+func (m *ShopMutation) RemovedRulesIDs() (ids []uuid.UUID) {
 	for id := range m.removedrules {
 		ids = append(ids, id)
 	}
@@ -6400,7 +6272,7 @@ func (m *ShopMutation) RemovedRulesIDs() (ids []int) {
 }
 
 // RulesIDs returns the "rules" edge IDs in the mutation.
-func (m *ShopMutation) RulesIDs() (ids []int) {
+func (m *ShopMutation) RulesIDs() (ids []uuid.UUID) {
 	for id := range m.rules {
 		ids = append(ids, id)
 	}
@@ -6412,6 +6284,60 @@ func (m *ShopMutation) ResetRules() {
 	m.rules = nil
 	m.clearedrules = false
 	m.removedrules = nil
+}
+
+// AddAvailabilityIDs adds the "availabilities" edge to the Availability entity by ids.
+func (m *ShopMutation) AddAvailabilityIDs(ids ...uuid.UUID) {
+	if m.availabilities == nil {
+		m.availabilities = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.availabilities[ids[i]] = struct{}{}
+	}
+}
+
+// ClearAvailabilities clears the "availabilities" edge to the Availability entity.
+func (m *ShopMutation) ClearAvailabilities() {
+	m.clearedavailabilities = true
+}
+
+// AvailabilitiesCleared reports if the "availabilities" edge to the Availability entity was cleared.
+func (m *ShopMutation) AvailabilitiesCleared() bool {
+	return m.clearedavailabilities
+}
+
+// RemoveAvailabilityIDs removes the "availabilities" edge to the Availability entity by IDs.
+func (m *ShopMutation) RemoveAvailabilityIDs(ids ...uuid.UUID) {
+	if m.removedavailabilities == nil {
+		m.removedavailabilities = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.availabilities, ids[i])
+		m.removedavailabilities[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedAvailabilities returns the removed IDs of the "availabilities" edge to the Availability entity.
+func (m *ShopMutation) RemovedAvailabilitiesIDs() (ids []uuid.UUID) {
+	for id := range m.removedavailabilities {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// AvailabilitiesIDs returns the "availabilities" edge IDs in the mutation.
+func (m *ShopMutation) AvailabilitiesIDs() (ids []uuid.UUID) {
+	for id := range m.availabilities {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetAvailabilities resets all changes to the "availabilities" edge.
+func (m *ShopMutation) ResetAvailabilities() {
+	m.availabilities = nil
+	m.clearedavailabilities = false
+	m.removedavailabilities = nil
 }
 
 // Where appends a list predicates to the ShopMutation builder.
@@ -6448,7 +6374,7 @@ func (m *ShopMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ShopMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 6)
 	if m.name != nil {
 		fields = append(fields, shop.FieldName)
 	}
@@ -6458,8 +6384,11 @@ func (m *ShopMutation) Fields() []string {
 	if m.invite_code != nil {
 		fields = append(fields, shop.FieldInviteCode)
 	}
-	if m.owner_telegram_id != nil {
-		fields = append(fields, shop.FieldOwnerTelegramID)
+	if m.telegram_group_id != nil {
+		fields = append(fields, shop.FieldTelegramGroupID)
+	}
+	if m.plan != nil {
+		fields = append(fields, shop.FieldPlan)
 	}
 	if m.created_at != nil {
 		fields = append(fields, shop.FieldCreatedAt)
@@ -6478,8 +6407,10 @@ func (m *ShopMutation) Field(name string) (ent.Value, bool) {
 		return m.Timezone()
 	case shop.FieldInviteCode:
 		return m.InviteCode()
-	case shop.FieldOwnerTelegramID:
-		return m.OwnerTelegramID()
+	case shop.FieldTelegramGroupID:
+		return m.TelegramGroupID()
+	case shop.FieldPlan:
+		return m.Plan()
 	case shop.FieldCreatedAt:
 		return m.CreatedAt()
 	}
@@ -6497,8 +6428,10 @@ func (m *ShopMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldTimezone(ctx)
 	case shop.FieldInviteCode:
 		return m.OldInviteCode(ctx)
-	case shop.FieldOwnerTelegramID:
-		return m.OldOwnerTelegramID(ctx)
+	case shop.FieldTelegramGroupID:
+		return m.OldTelegramGroupID(ctx)
+	case shop.FieldPlan:
+		return m.OldPlan(ctx)
 	case shop.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	}
@@ -6531,12 +6464,19 @@ func (m *ShopMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetInviteCode(v)
 		return nil
-	case shop.FieldOwnerTelegramID:
+	case shop.FieldTelegramGroupID:
 		v, ok := value.(int64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetOwnerTelegramID(v)
+		m.SetTelegramGroupID(v)
+		return nil
+	case shop.FieldPlan:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPlan(v)
 		return nil
 	case shop.FieldCreatedAt:
 		v, ok := value.(time.Time)
@@ -6553,8 +6493,8 @@ func (m *ShopMutation) SetField(name string, value ent.Value) error {
 // this mutation.
 func (m *ShopMutation) AddedFields() []string {
 	var fields []string
-	if m.addowner_telegram_id != nil {
-		fields = append(fields, shop.FieldOwnerTelegramID)
+	if m.addtelegram_group_id != nil {
+		fields = append(fields, shop.FieldTelegramGroupID)
 	}
 	return fields
 }
@@ -6564,8 +6504,8 @@ func (m *ShopMutation) AddedFields() []string {
 // was not set, or was not defined in the schema.
 func (m *ShopMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
-	case shop.FieldOwnerTelegramID:
-		return m.AddedOwnerTelegramID()
+	case shop.FieldTelegramGroupID:
+		return m.AddedTelegramGroupID()
 	}
 	return nil, false
 }
@@ -6575,12 +6515,12 @@ func (m *ShopMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *ShopMutation) AddField(name string, value ent.Value) error {
 	switch name {
-	case shop.FieldOwnerTelegramID:
+	case shop.FieldTelegramGroupID:
 		v, ok := value.(int64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.AddOwnerTelegramID(v)
+		m.AddTelegramGroupID(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Shop numeric field %s", name)
@@ -6618,8 +6558,11 @@ func (m *ShopMutation) ResetField(name string) error {
 	case shop.FieldInviteCode:
 		m.ResetInviteCode()
 		return nil
-	case shop.FieldOwnerTelegramID:
-		m.ResetOwnerTelegramID()
+	case shop.FieldTelegramGroupID:
+		m.ResetTelegramGroupID()
+		return nil
+	case shop.FieldPlan:
+		m.ResetPlan()
 		return nil
 	case shop.FieldCreatedAt:
 		m.ResetCreatedAt()
@@ -6630,12 +6573,9 @@ func (m *ShopMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ShopMutation) AddedEdges() []string {
-	edges := make([]string, 0, 7)
+	edges := make([]string, 0, 5)
 	if m.employees != nil {
 		edges = append(edges, shop.EdgeEmployees)
-	}
-	if m.availability != nil {
-		edges = append(edges, shop.EdgeAvailability)
 	}
 	if m.shifts != nil {
 		edges = append(edges, shop.EdgeShifts)
@@ -6643,14 +6583,11 @@ func (m *ShopMutation) AddedEdges() []string {
 	if m.schedules != nil {
 		edges = append(edges, shop.EdgeSchedules)
 	}
-	if m.assignments != nil {
-		edges = append(edges, shop.EdgeAssignments)
-	}
-	if m.votes != nil {
-		edges = append(edges, shop.EdgeVotes)
-	}
 	if m.rules != nil {
 		edges = append(edges, shop.EdgeRules)
+	}
+	if m.availabilities != nil {
+		edges = append(edges, shop.EdgeAvailabilities)
 	}
 	return edges
 }
@@ -6662,12 +6599,6 @@ func (m *ShopMutation) AddedIDs(name string) []ent.Value {
 	case shop.EdgeEmployees:
 		ids := make([]ent.Value, 0, len(m.employees))
 		for id := range m.employees {
-			ids = append(ids, id)
-		}
-		return ids
-	case shop.EdgeAvailability:
-		ids := make([]ent.Value, 0, len(m.availability))
-		for id := range m.availability {
 			ids = append(ids, id)
 		}
 		return ids
@@ -6683,21 +6614,15 @@ func (m *ShopMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case shop.EdgeAssignments:
-		ids := make([]ent.Value, 0, len(m.assignments))
-		for id := range m.assignments {
-			ids = append(ids, id)
-		}
-		return ids
-	case shop.EdgeVotes:
-		ids := make([]ent.Value, 0, len(m.votes))
-		for id := range m.votes {
-			ids = append(ids, id)
-		}
-		return ids
 	case shop.EdgeRules:
 		ids := make([]ent.Value, 0, len(m.rules))
 		for id := range m.rules {
+			ids = append(ids, id)
+		}
+		return ids
+	case shop.EdgeAvailabilities:
+		ids := make([]ent.Value, 0, len(m.availabilities))
+		for id := range m.availabilities {
 			ids = append(ids, id)
 		}
 		return ids
@@ -6707,12 +6632,9 @@ func (m *ShopMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ShopMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 7)
+	edges := make([]string, 0, 5)
 	if m.removedemployees != nil {
 		edges = append(edges, shop.EdgeEmployees)
-	}
-	if m.removedavailability != nil {
-		edges = append(edges, shop.EdgeAvailability)
 	}
 	if m.removedshifts != nil {
 		edges = append(edges, shop.EdgeShifts)
@@ -6720,14 +6642,11 @@ func (m *ShopMutation) RemovedEdges() []string {
 	if m.removedschedules != nil {
 		edges = append(edges, shop.EdgeSchedules)
 	}
-	if m.removedassignments != nil {
-		edges = append(edges, shop.EdgeAssignments)
-	}
-	if m.removedvotes != nil {
-		edges = append(edges, shop.EdgeVotes)
-	}
 	if m.removedrules != nil {
 		edges = append(edges, shop.EdgeRules)
+	}
+	if m.removedavailabilities != nil {
+		edges = append(edges, shop.EdgeAvailabilities)
 	}
 	return edges
 }
@@ -6739,12 +6658,6 @@ func (m *ShopMutation) RemovedIDs(name string) []ent.Value {
 	case shop.EdgeEmployees:
 		ids := make([]ent.Value, 0, len(m.removedemployees))
 		for id := range m.removedemployees {
-			ids = append(ids, id)
-		}
-		return ids
-	case shop.EdgeAvailability:
-		ids := make([]ent.Value, 0, len(m.removedavailability))
-		for id := range m.removedavailability {
 			ids = append(ids, id)
 		}
 		return ids
@@ -6760,21 +6673,15 @@ func (m *ShopMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case shop.EdgeAssignments:
-		ids := make([]ent.Value, 0, len(m.removedassignments))
-		for id := range m.removedassignments {
-			ids = append(ids, id)
-		}
-		return ids
-	case shop.EdgeVotes:
-		ids := make([]ent.Value, 0, len(m.removedvotes))
-		for id := range m.removedvotes {
-			ids = append(ids, id)
-		}
-		return ids
 	case shop.EdgeRules:
 		ids := make([]ent.Value, 0, len(m.removedrules))
 		for id := range m.removedrules {
+			ids = append(ids, id)
+		}
+		return ids
+	case shop.EdgeAvailabilities:
+		ids := make([]ent.Value, 0, len(m.removedavailabilities))
+		for id := range m.removedavailabilities {
 			ids = append(ids, id)
 		}
 		return ids
@@ -6784,12 +6691,9 @@ func (m *ShopMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ShopMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 7)
+	edges := make([]string, 0, 5)
 	if m.clearedemployees {
 		edges = append(edges, shop.EdgeEmployees)
-	}
-	if m.clearedavailability {
-		edges = append(edges, shop.EdgeAvailability)
 	}
 	if m.clearedshifts {
 		edges = append(edges, shop.EdgeShifts)
@@ -6797,14 +6701,11 @@ func (m *ShopMutation) ClearedEdges() []string {
 	if m.clearedschedules {
 		edges = append(edges, shop.EdgeSchedules)
 	}
-	if m.clearedassignments {
-		edges = append(edges, shop.EdgeAssignments)
-	}
-	if m.clearedvotes {
-		edges = append(edges, shop.EdgeVotes)
-	}
 	if m.clearedrules {
 		edges = append(edges, shop.EdgeRules)
+	}
+	if m.clearedavailabilities {
+		edges = append(edges, shop.EdgeAvailabilities)
 	}
 	return edges
 }
@@ -6815,18 +6716,14 @@ func (m *ShopMutation) EdgeCleared(name string) bool {
 	switch name {
 	case shop.EdgeEmployees:
 		return m.clearedemployees
-	case shop.EdgeAvailability:
-		return m.clearedavailability
 	case shop.EdgeShifts:
 		return m.clearedshifts
 	case shop.EdgeSchedules:
 		return m.clearedschedules
-	case shop.EdgeAssignments:
-		return m.clearedassignments
-	case shop.EdgeVotes:
-		return m.clearedvotes
 	case shop.EdgeRules:
 		return m.clearedrules
+	case shop.EdgeAvailabilities:
+		return m.clearedavailabilities
 	}
 	return false
 }
@@ -6846,23 +6743,17 @@ func (m *ShopMutation) ResetEdge(name string) error {
 	case shop.EdgeEmployees:
 		m.ResetEmployees()
 		return nil
-	case shop.EdgeAvailability:
-		m.ResetAvailability()
-		return nil
 	case shop.EdgeShifts:
 		m.ResetShifts()
 		return nil
 	case shop.EdgeSchedules:
 		m.ResetSchedules()
 		return nil
-	case shop.EdgeAssignments:
-		m.ResetAssignments()
-		return nil
-	case shop.EdgeVotes:
-		m.ResetVotes()
-		return nil
 	case shop.EdgeRules:
 		m.ResetRules()
+		return nil
+	case shop.EdgeAvailabilities:
+		m.ResetAvailabilities()
 		return nil
 	}
 	return fmt.Errorf("unknown Shop edge %s", name)

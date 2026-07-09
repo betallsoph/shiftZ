@@ -17,26 +17,23 @@ import (
 	"github.com/betallsoph/shiftz/internal/ent/predicate"
 	"github.com/betallsoph/shiftz/internal/ent/rule"
 	"github.com/betallsoph/shiftz/internal/ent/schedule"
-	"github.com/betallsoph/shiftz/internal/ent/scheduleassignment"
-	"github.com/betallsoph/shiftz/internal/ent/schedulevote"
 	"github.com/betallsoph/shiftz/internal/ent/shift"
 	"github.com/betallsoph/shiftz/internal/ent/shop"
+	"github.com/google/uuid"
 )
 
 // ShopQuery is the builder for querying Shop entities.
 type ShopQuery struct {
 	config
-	ctx              *QueryContext
-	order            []shop.OrderOption
-	inters           []Interceptor
-	predicates       []predicate.Shop
-	withEmployees    *EmployeeQuery
-	withAvailability *AvailabilityQuery
-	withShifts       *ShiftQuery
-	withSchedules    *ScheduleQuery
-	withAssignments  *ScheduleAssignmentQuery
-	withVotes        *ScheduleVoteQuery
-	withRules        *RuleQuery
+	ctx                *QueryContext
+	order              []shop.OrderOption
+	inters             []Interceptor
+	predicates         []predicate.Shop
+	withEmployees      *EmployeeQuery
+	withShifts         *ShiftQuery
+	withSchedules      *ScheduleQuery
+	withRules          *RuleQuery
+	withAvailabilities *AvailabilityQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -95,28 +92,6 @@ func (_q *ShopQuery) QueryEmployees() *EmployeeQuery {
 	return query
 }
 
-// QueryAvailability chains the current query on the "availability" edge.
-func (_q *ShopQuery) QueryAvailability() *AvailabilityQuery {
-	query := (&AvailabilityClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(shop.Table, shop.FieldID, selector),
-			sqlgraph.To(availability.Table, availability.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, shop.AvailabilityTable, shop.AvailabilityColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
 // QueryShifts chains the current query on the "shifts" edge.
 func (_q *ShopQuery) QueryShifts() *ShiftQuery {
 	query := (&ShiftClient{config: _q.config}).Query()
@@ -161,50 +136,6 @@ func (_q *ShopQuery) QuerySchedules() *ScheduleQuery {
 	return query
 }
 
-// QueryAssignments chains the current query on the "assignments" edge.
-func (_q *ShopQuery) QueryAssignments() *ScheduleAssignmentQuery {
-	query := (&ScheduleAssignmentClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(shop.Table, shop.FieldID, selector),
-			sqlgraph.To(scheduleassignment.Table, scheduleassignment.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, shop.AssignmentsTable, shop.AssignmentsColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryVotes chains the current query on the "votes" edge.
-func (_q *ShopQuery) QueryVotes() *ScheduleVoteQuery {
-	query := (&ScheduleVoteClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(shop.Table, shop.FieldID, selector),
-			sqlgraph.To(schedulevote.Table, schedulevote.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, shop.VotesTable, shop.VotesColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
 // QueryRules chains the current query on the "rules" edge.
 func (_q *ShopQuery) QueryRules() *RuleQuery {
 	query := (&RuleClient{config: _q.config}).Query()
@@ -220,6 +151,28 @@ func (_q *ShopQuery) QueryRules() *RuleQuery {
 			sqlgraph.From(shop.Table, shop.FieldID, selector),
 			sqlgraph.To(rule.Table, rule.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, shop.RulesTable, shop.RulesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryAvailabilities chains the current query on the "availabilities" edge.
+func (_q *ShopQuery) QueryAvailabilities() *AvailabilityQuery {
+	query := (&AvailabilityClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(shop.Table, shop.FieldID, selector),
+			sqlgraph.To(availability.Table, availability.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, shop.AvailabilitiesTable, shop.AvailabilitiesColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -251,8 +204,8 @@ func (_q *ShopQuery) FirstX(ctx context.Context) *Shop {
 
 // FirstID returns the first Shop ID from the query.
 // Returns a *NotFoundError when no Shop ID was found.
-func (_q *ShopQuery) FirstID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (_q *ShopQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
@@ -264,7 +217,7 @@ func (_q *ShopQuery) FirstID(ctx context.Context) (id int, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (_q *ShopQuery) FirstIDX(ctx context.Context) int {
+func (_q *ShopQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -302,8 +255,8 @@ func (_q *ShopQuery) OnlyX(ctx context.Context) *Shop {
 // OnlyID is like Only, but returns the only Shop ID in the query.
 // Returns a *NotSingularError when more than one Shop ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (_q *ShopQuery) OnlyID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (_q *ShopQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
@@ -319,7 +272,7 @@ func (_q *ShopQuery) OnlyID(ctx context.Context) (id int, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (_q *ShopQuery) OnlyIDX(ctx context.Context) int {
+func (_q *ShopQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -347,7 +300,7 @@ func (_q *ShopQuery) AllX(ctx context.Context) []*Shop {
 }
 
 // IDs executes the query and returns a list of Shop IDs.
-func (_q *ShopQuery) IDs(ctx context.Context) (ids []int, err error) {
+func (_q *ShopQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
 	if _q.ctx.Unique == nil && _q.path != nil {
 		_q.Unique(true)
 	}
@@ -359,7 +312,7 @@ func (_q *ShopQuery) IDs(ctx context.Context) (ids []int, err error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (_q *ShopQuery) IDsX(ctx context.Context) []int {
+func (_q *ShopQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -414,18 +367,16 @@ func (_q *ShopQuery) Clone() *ShopQuery {
 		return nil
 	}
 	return &ShopQuery{
-		config:           _q.config,
-		ctx:              _q.ctx.Clone(),
-		order:            append([]shop.OrderOption{}, _q.order...),
-		inters:           append([]Interceptor{}, _q.inters...),
-		predicates:       append([]predicate.Shop{}, _q.predicates...),
-		withEmployees:    _q.withEmployees.Clone(),
-		withAvailability: _q.withAvailability.Clone(),
-		withShifts:       _q.withShifts.Clone(),
-		withSchedules:    _q.withSchedules.Clone(),
-		withAssignments:  _q.withAssignments.Clone(),
-		withVotes:        _q.withVotes.Clone(),
-		withRules:        _q.withRules.Clone(),
+		config:             _q.config,
+		ctx:                _q.ctx.Clone(),
+		order:              append([]shop.OrderOption{}, _q.order...),
+		inters:             append([]Interceptor{}, _q.inters...),
+		predicates:         append([]predicate.Shop{}, _q.predicates...),
+		withEmployees:      _q.withEmployees.Clone(),
+		withShifts:         _q.withShifts.Clone(),
+		withSchedules:      _q.withSchedules.Clone(),
+		withRules:          _q.withRules.Clone(),
+		withAvailabilities: _q.withAvailabilities.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -440,17 +391,6 @@ func (_q *ShopQuery) WithEmployees(opts ...func(*EmployeeQuery)) *ShopQuery {
 		opt(query)
 	}
 	_q.withEmployees = query
-	return _q
-}
-
-// WithAvailability tells the query-builder to eager-load the nodes that are connected to
-// the "availability" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *ShopQuery) WithAvailability(opts ...func(*AvailabilityQuery)) *ShopQuery {
-	query := (&AvailabilityClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withAvailability = query
 	return _q
 }
 
@@ -476,28 +416,6 @@ func (_q *ShopQuery) WithSchedules(opts ...func(*ScheduleQuery)) *ShopQuery {
 	return _q
 }
 
-// WithAssignments tells the query-builder to eager-load the nodes that are connected to
-// the "assignments" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *ShopQuery) WithAssignments(opts ...func(*ScheduleAssignmentQuery)) *ShopQuery {
-	query := (&ScheduleAssignmentClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withAssignments = query
-	return _q
-}
-
-// WithVotes tells the query-builder to eager-load the nodes that are connected to
-// the "votes" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *ShopQuery) WithVotes(opts ...func(*ScheduleVoteQuery)) *ShopQuery {
-	query := (&ScheduleVoteClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withVotes = query
-	return _q
-}
-
 // WithRules tells the query-builder to eager-load the nodes that are connected to
 // the "rules" edge. The optional arguments are used to configure the query builder of the edge.
 func (_q *ShopQuery) WithRules(opts ...func(*RuleQuery)) *ShopQuery {
@@ -506,6 +424,17 @@ func (_q *ShopQuery) WithRules(opts ...func(*RuleQuery)) *ShopQuery {
 		opt(query)
 	}
 	_q.withRules = query
+	return _q
+}
+
+// WithAvailabilities tells the query-builder to eager-load the nodes that are connected to
+// the "availabilities" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *ShopQuery) WithAvailabilities(opts ...func(*AvailabilityQuery)) *ShopQuery {
+	query := (&AvailabilityClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withAvailabilities = query
 	return _q
 }
 
@@ -587,14 +516,12 @@ func (_q *ShopQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Shop, e
 	var (
 		nodes       = []*Shop{}
 		_spec       = _q.querySpec()
-		loadedTypes = [7]bool{
+		loadedTypes = [5]bool{
 			_q.withEmployees != nil,
-			_q.withAvailability != nil,
 			_q.withShifts != nil,
 			_q.withSchedules != nil,
-			_q.withAssignments != nil,
-			_q.withVotes != nil,
 			_q.withRules != nil,
+			_q.withAvailabilities != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -622,13 +549,6 @@ func (_q *ShopQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Shop, e
 			return nil, err
 		}
 	}
-	if query := _q.withAvailability; query != nil {
-		if err := _q.loadAvailability(ctx, query, nodes,
-			func(n *Shop) { n.Edges.Availability = []*Availability{} },
-			func(n *Shop, e *Availability) { n.Edges.Availability = append(n.Edges.Availability, e) }); err != nil {
-			return nil, err
-		}
-	}
 	if query := _q.withShifts; query != nil {
 		if err := _q.loadShifts(ctx, query, nodes,
 			func(n *Shop) { n.Edges.Shifts = []*Shift{} },
@@ -643,24 +563,17 @@ func (_q *ShopQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Shop, e
 			return nil, err
 		}
 	}
-	if query := _q.withAssignments; query != nil {
-		if err := _q.loadAssignments(ctx, query, nodes,
-			func(n *Shop) { n.Edges.Assignments = []*ScheduleAssignment{} },
-			func(n *Shop, e *ScheduleAssignment) { n.Edges.Assignments = append(n.Edges.Assignments, e) }); err != nil {
-			return nil, err
-		}
-	}
-	if query := _q.withVotes; query != nil {
-		if err := _q.loadVotes(ctx, query, nodes,
-			func(n *Shop) { n.Edges.Votes = []*ScheduleVote{} },
-			func(n *Shop, e *ScheduleVote) { n.Edges.Votes = append(n.Edges.Votes, e) }); err != nil {
-			return nil, err
-		}
-	}
 	if query := _q.withRules; query != nil {
 		if err := _q.loadRules(ctx, query, nodes,
 			func(n *Shop) { n.Edges.Rules = []*Rule{} },
 			func(n *Shop, e *Rule) { n.Edges.Rules = append(n.Edges.Rules, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withAvailabilities; query != nil {
+		if err := _q.loadAvailabilities(ctx, query, nodes,
+			func(n *Shop) { n.Edges.Availabilities = []*Availability{} },
+			func(n *Shop, e *Availability) { n.Edges.Availabilities = append(n.Edges.Availabilities, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -669,7 +582,7 @@ func (_q *ShopQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Shop, e
 
 func (_q *ShopQuery) loadEmployees(ctx context.Context, query *EmployeeQuery, nodes []*Shop, init func(*Shop), assign func(*Shop, *Employee)) error {
 	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[int]*Shop)
+	nodeids := make(map[uuid.UUID]*Shop)
 	for i := range nodes {
 		fks = append(fks, nodes[i].ID)
 		nodeids[nodes[i].ID] = nodes[i]
@@ -697,39 +610,9 @@ func (_q *ShopQuery) loadEmployees(ctx context.Context, query *EmployeeQuery, no
 	}
 	return nil
 }
-func (_q *ShopQuery) loadAvailability(ctx context.Context, query *AvailabilityQuery, nodes []*Shop, init func(*Shop), assign func(*Shop, *Availability)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[int]*Shop)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(availability.FieldShopID)
-	}
-	query.Where(predicate.Availability(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(shop.AvailabilityColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.ShopID
-		node, ok := nodeids[fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "shop_id" returned %v for node %v`, fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
 func (_q *ShopQuery) loadShifts(ctx context.Context, query *ShiftQuery, nodes []*Shop, init func(*Shop), assign func(*Shop, *Shift)) error {
 	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[int]*Shop)
+	nodeids := make(map[uuid.UUID]*Shop)
 	for i := range nodes {
 		fks = append(fks, nodes[i].ID)
 		nodeids[nodes[i].ID] = nodes[i]
@@ -759,7 +642,7 @@ func (_q *ShopQuery) loadShifts(ctx context.Context, query *ShiftQuery, nodes []
 }
 func (_q *ShopQuery) loadSchedules(ctx context.Context, query *ScheduleQuery, nodes []*Shop, init func(*Shop), assign func(*Shop, *Schedule)) error {
 	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[int]*Shop)
+	nodeids := make(map[uuid.UUID]*Shop)
 	for i := range nodes {
 		fks = append(fks, nodes[i].ID)
 		nodeids[nodes[i].ID] = nodes[i]
@@ -787,69 +670,9 @@ func (_q *ShopQuery) loadSchedules(ctx context.Context, query *ScheduleQuery, no
 	}
 	return nil
 }
-func (_q *ShopQuery) loadAssignments(ctx context.Context, query *ScheduleAssignmentQuery, nodes []*Shop, init func(*Shop), assign func(*Shop, *ScheduleAssignment)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[int]*Shop)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(scheduleassignment.FieldShopID)
-	}
-	query.Where(predicate.ScheduleAssignment(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(shop.AssignmentsColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.ShopID
-		node, ok := nodeids[fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "shop_id" returned %v for node %v`, fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
-func (_q *ShopQuery) loadVotes(ctx context.Context, query *ScheduleVoteQuery, nodes []*Shop, init func(*Shop), assign func(*Shop, *ScheduleVote)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[int]*Shop)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(schedulevote.FieldShopID)
-	}
-	query.Where(predicate.ScheduleVote(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(shop.VotesColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.ShopID
-		node, ok := nodeids[fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "shop_id" returned %v for node %v`, fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
 func (_q *ShopQuery) loadRules(ctx context.Context, query *RuleQuery, nodes []*Shop, init func(*Shop), assign func(*Shop, *Rule)) error {
 	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[int]*Shop)
+	nodeids := make(map[uuid.UUID]*Shop)
 	for i := range nodes {
 		fks = append(fks, nodes[i].ID)
 		nodeids[nodes[i].ID] = nodes[i]
@@ -877,6 +700,36 @@ func (_q *ShopQuery) loadRules(ctx context.Context, query *RuleQuery, nodes []*S
 	}
 	return nil
 }
+func (_q *ShopQuery) loadAvailabilities(ctx context.Context, query *AvailabilityQuery, nodes []*Shop, init func(*Shop), assign func(*Shop, *Availability)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Shop)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(availability.FieldShopID)
+	}
+	query.Where(predicate.Availability(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(shop.AvailabilitiesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.ShopID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "shop_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
 
 func (_q *ShopQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
@@ -888,7 +741,7 @@ func (_q *ShopQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (_q *ShopQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := sqlgraph.NewQuerySpec(shop.Table, shop.Columns, sqlgraph.NewFieldSpec(shop.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewQuerySpec(shop.Table, shop.Columns, sqlgraph.NewFieldSpec(shop.FieldID, field.TypeUUID))
 	_spec.From = _q.sql
 	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique

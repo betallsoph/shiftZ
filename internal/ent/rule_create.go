@@ -8,11 +8,13 @@ import (
 	"fmt"
 	"time"
 
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/betallsoph/shiftz/internal/ent/rule"
 	"github.com/betallsoph/shiftz/internal/ent/shop"
+	"github.com/google/uuid"
 )
 
 // RuleCreate is the builder for creating a Rule entity.
@@ -24,20 +26,28 @@ type RuleCreate struct {
 }
 
 // SetShopID sets the "shop_id" field.
-func (_c *RuleCreate) SetShopID(v int) *RuleCreate {
+func (_c *RuleCreate) SetShopID(v uuid.UUID) *RuleCreate {
 	_c.mutation.SetShopID(v)
 	return _c
 }
 
-// SetKind sets the "kind" field.
-func (_c *RuleCreate) SetKind(v string) *RuleCreate {
-	_c.mutation.SetKind(v)
+// SetDescription sets the "description" field.
+func (_c *RuleCreate) SetDescription(v string) *RuleCreate {
+	_c.mutation.SetDescription(v)
 	return _c
 }
 
-// SetParams sets the "params" field.
-func (_c *RuleCreate) SetParams(v map[string]interface{}) *RuleCreate {
-	_c.mutation.SetParams(v)
+// SetNillableDescription sets the "description" field if the given value is not nil.
+func (_c *RuleCreate) SetNillableDescription(v *string) *RuleCreate {
+	if v != nil {
+		_c.SetDescription(*v)
+	}
+	return _c
+}
+
+// SetRuleJSON sets the "rule_json" field.
+func (_c *RuleCreate) SetRuleJSON(v map[string]interface{}) *RuleCreate {
+	_c.mutation.SetRuleJSON(v)
 	return _c
 }
 
@@ -55,30 +65,16 @@ func (_c *RuleCreate) SetNillableWeight(v *float64) *RuleCreate {
 	return _c
 }
 
-// SetSourceText sets the "source_text" field.
-func (_c *RuleCreate) SetSourceText(v string) *RuleCreate {
-	_c.mutation.SetSourceText(v)
+// SetIsActive sets the "is_active" field.
+func (_c *RuleCreate) SetIsActive(v bool) *RuleCreate {
+	_c.mutation.SetIsActive(v)
 	return _c
 }
 
-// SetNillableSourceText sets the "source_text" field if the given value is not nil.
-func (_c *RuleCreate) SetNillableSourceText(v *string) *RuleCreate {
+// SetNillableIsActive sets the "is_active" field if the given value is not nil.
+func (_c *RuleCreate) SetNillableIsActive(v *bool) *RuleCreate {
 	if v != nil {
-		_c.SetSourceText(*v)
-	}
-	return _c
-}
-
-// SetActive sets the "active" field.
-func (_c *RuleCreate) SetActive(v bool) *RuleCreate {
-	_c.mutation.SetActive(v)
-	return _c
-}
-
-// SetNillableActive sets the "active" field if the given value is not nil.
-func (_c *RuleCreate) SetNillableActive(v *bool) *RuleCreate {
-	if v != nil {
-		_c.SetActive(*v)
+		_c.SetIsActive(*v)
 	}
 	return _c
 }
@@ -93,6 +89,20 @@ func (_c *RuleCreate) SetCreatedAt(v time.Time) *RuleCreate {
 func (_c *RuleCreate) SetNillableCreatedAt(v *time.Time) *RuleCreate {
 	if v != nil {
 		_c.SetCreatedAt(*v)
+	}
+	return _c
+}
+
+// SetID sets the "id" field.
+func (_c *RuleCreate) SetID(v uuid.UUID) *RuleCreate {
+	_c.mutation.SetID(v)
+	return _c
+}
+
+// SetNillableID sets the "id" field if the given value is not nil.
+func (_c *RuleCreate) SetNillableID(v *uuid.UUID) *RuleCreate {
+	if v != nil {
+		_c.SetID(*v)
 	}
 	return _c
 }
@@ -137,21 +147,25 @@ func (_c *RuleCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (_c *RuleCreate) defaults() {
+	if _, ok := _c.mutation.Description(); !ok {
+		v := rule.DefaultDescription
+		_c.mutation.SetDescription(v)
+	}
 	if _, ok := _c.mutation.Weight(); !ok {
 		v := rule.DefaultWeight
 		_c.mutation.SetWeight(v)
 	}
-	if _, ok := _c.mutation.SourceText(); !ok {
-		v := rule.DefaultSourceText
-		_c.mutation.SetSourceText(v)
-	}
-	if _, ok := _c.mutation.Active(); !ok {
-		v := rule.DefaultActive
-		_c.mutation.SetActive(v)
+	if _, ok := _c.mutation.IsActive(); !ok {
+		v := rule.DefaultIsActive
+		_c.mutation.SetIsActive(v)
 	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		v := rule.DefaultCreatedAt()
 		_c.mutation.SetCreatedAt(v)
+	}
+	if _, ok := _c.mutation.ID(); !ok {
+		v := rule.DefaultID()
+		_c.mutation.SetID(v)
 	}
 }
 
@@ -160,17 +174,14 @@ func (_c *RuleCreate) check() error {
 	if _, ok := _c.mutation.ShopID(); !ok {
 		return &ValidationError{Name: "shop_id", err: errors.New(`ent: missing required field "Rule.shop_id"`)}
 	}
-	if _, ok := _c.mutation.Kind(); !ok {
-		return &ValidationError{Name: "kind", err: errors.New(`ent: missing required field "Rule.kind"`)}
+	if _, ok := _c.mutation.Description(); !ok {
+		return &ValidationError{Name: "description", err: errors.New(`ent: missing required field "Rule.description"`)}
 	}
 	if _, ok := _c.mutation.Weight(); !ok {
 		return &ValidationError{Name: "weight", err: errors.New(`ent: missing required field "Rule.weight"`)}
 	}
-	if _, ok := _c.mutation.SourceText(); !ok {
-		return &ValidationError{Name: "source_text", err: errors.New(`ent: missing required field "Rule.source_text"`)}
-	}
-	if _, ok := _c.mutation.Active(); !ok {
-		return &ValidationError{Name: "active", err: errors.New(`ent: missing required field "Rule.active"`)}
+	if _, ok := _c.mutation.IsActive(); !ok {
+		return &ValidationError{Name: "is_active", err: errors.New(`ent: missing required field "Rule.is_active"`)}
 	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Rule.created_at"`)}
@@ -192,8 +203,13 @@ func (_c *RuleCreate) sqlSave(ctx context.Context) (*Rule, error) {
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
+	if _spec.ID.Value != nil {
+		if id, ok := _spec.ID.Value.(*uuid.UUID); ok {
+			_node.ID = *id
+		} else if err := _node.ID.Scan(_spec.ID.Value); err != nil {
+			return nil, err
+		}
+	}
 	_c.mutation.id = &_node.ID
 	_c.mutation.done = true
 	return _node, nil
@@ -202,28 +218,28 @@ func (_c *RuleCreate) sqlSave(ctx context.Context) (*Rule, error) {
 func (_c *RuleCreate) createSpec() (*Rule, *sqlgraph.CreateSpec) {
 	var (
 		_node = &Rule{config: _c.config}
-		_spec = sqlgraph.NewCreateSpec(rule.Table, sqlgraph.NewFieldSpec(rule.FieldID, field.TypeInt))
+		_spec = sqlgraph.NewCreateSpec(rule.Table, sqlgraph.NewFieldSpec(rule.FieldID, field.TypeUUID))
 	)
 	_spec.OnConflict = _c.conflict
-	if value, ok := _c.mutation.Kind(); ok {
-		_spec.SetField(rule.FieldKind, field.TypeString, value)
-		_node.Kind = value
+	if id, ok := _c.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = &id
 	}
-	if value, ok := _c.mutation.Params(); ok {
-		_spec.SetField(rule.FieldParams, field.TypeJSON, value)
-		_node.Params = value
+	if value, ok := _c.mutation.Description(); ok {
+		_spec.SetField(rule.FieldDescription, field.TypeString, value)
+		_node.Description = value
+	}
+	if value, ok := _c.mutation.RuleJSON(); ok {
+		_spec.SetField(rule.FieldRuleJSON, field.TypeJSON, value)
+		_node.RuleJSON = value
 	}
 	if value, ok := _c.mutation.Weight(); ok {
 		_spec.SetField(rule.FieldWeight, field.TypeFloat64, value)
 		_node.Weight = value
 	}
-	if value, ok := _c.mutation.SourceText(); ok {
-		_spec.SetField(rule.FieldSourceText, field.TypeString, value)
-		_node.SourceText = value
-	}
-	if value, ok := _c.mutation.Active(); ok {
-		_spec.SetField(rule.FieldActive, field.TypeBool, value)
-		_node.Active = value
+	if value, ok := _c.mutation.IsActive(); ok {
+		_spec.SetField(rule.FieldIsActive, field.TypeBool, value)
+		_node.IsActive = value
 	}
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(rule.FieldCreatedAt, field.TypeTime, value)
@@ -237,7 +253,7 @@ func (_c *RuleCreate) createSpec() (*Rule, *sqlgraph.CreateSpec) {
 			Columns: []string{rule.ShopColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -299,7 +315,7 @@ type (
 )
 
 // SetShopID sets the "shop_id" field.
-func (u *RuleUpsert) SetShopID(v int) *RuleUpsert {
+func (u *RuleUpsert) SetShopID(v uuid.UUID) *RuleUpsert {
 	u.Set(rule.FieldShopID, v)
 	return u
 }
@@ -310,33 +326,33 @@ func (u *RuleUpsert) UpdateShopID() *RuleUpsert {
 	return u
 }
 
-// SetKind sets the "kind" field.
-func (u *RuleUpsert) SetKind(v string) *RuleUpsert {
-	u.Set(rule.FieldKind, v)
+// SetDescription sets the "description" field.
+func (u *RuleUpsert) SetDescription(v string) *RuleUpsert {
+	u.Set(rule.FieldDescription, v)
 	return u
 }
 
-// UpdateKind sets the "kind" field to the value that was provided on create.
-func (u *RuleUpsert) UpdateKind() *RuleUpsert {
-	u.SetExcluded(rule.FieldKind)
+// UpdateDescription sets the "description" field to the value that was provided on create.
+func (u *RuleUpsert) UpdateDescription() *RuleUpsert {
+	u.SetExcluded(rule.FieldDescription)
 	return u
 }
 
-// SetParams sets the "params" field.
-func (u *RuleUpsert) SetParams(v map[string]interface{}) *RuleUpsert {
-	u.Set(rule.FieldParams, v)
+// SetRuleJSON sets the "rule_json" field.
+func (u *RuleUpsert) SetRuleJSON(v map[string]interface{}) *RuleUpsert {
+	u.Set(rule.FieldRuleJSON, v)
 	return u
 }
 
-// UpdateParams sets the "params" field to the value that was provided on create.
-func (u *RuleUpsert) UpdateParams() *RuleUpsert {
-	u.SetExcluded(rule.FieldParams)
+// UpdateRuleJSON sets the "rule_json" field to the value that was provided on create.
+func (u *RuleUpsert) UpdateRuleJSON() *RuleUpsert {
+	u.SetExcluded(rule.FieldRuleJSON)
 	return u
 }
 
-// ClearParams clears the value of the "params" field.
-func (u *RuleUpsert) ClearParams() *RuleUpsert {
-	u.SetNull(rule.FieldParams)
+// ClearRuleJSON clears the value of the "rule_json" field.
+func (u *RuleUpsert) ClearRuleJSON() *RuleUpsert {
+	u.SetNull(rule.FieldRuleJSON)
 	return u
 }
 
@@ -358,41 +374,35 @@ func (u *RuleUpsert) AddWeight(v float64) *RuleUpsert {
 	return u
 }
 
-// SetSourceText sets the "source_text" field.
-func (u *RuleUpsert) SetSourceText(v string) *RuleUpsert {
-	u.Set(rule.FieldSourceText, v)
+// SetIsActive sets the "is_active" field.
+func (u *RuleUpsert) SetIsActive(v bool) *RuleUpsert {
+	u.Set(rule.FieldIsActive, v)
 	return u
 }
 
-// UpdateSourceText sets the "source_text" field to the value that was provided on create.
-func (u *RuleUpsert) UpdateSourceText() *RuleUpsert {
-	u.SetExcluded(rule.FieldSourceText)
+// UpdateIsActive sets the "is_active" field to the value that was provided on create.
+func (u *RuleUpsert) UpdateIsActive() *RuleUpsert {
+	u.SetExcluded(rule.FieldIsActive)
 	return u
 }
 
-// SetActive sets the "active" field.
-func (u *RuleUpsert) SetActive(v bool) *RuleUpsert {
-	u.Set(rule.FieldActive, v)
-	return u
-}
-
-// UpdateActive sets the "active" field to the value that was provided on create.
-func (u *RuleUpsert) UpdateActive() *RuleUpsert {
-	u.SetExcluded(rule.FieldActive)
-	return u
-}
-
-// UpdateNewValues updates the mutable fields using the new values that were set on create.
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
 //	client.Rule.Create().
 //		OnConflict(
 //			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(rule.FieldID)
+//			}),
 //		).
 //		Exec(ctx)
 func (u *RuleUpsertOne) UpdateNewValues() *RuleUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(rule.FieldID)
+		}
 		if _, exists := u.create.mutation.CreatedAt(); exists {
 			s.SetIgnore(rule.FieldCreatedAt)
 		}
@@ -428,7 +438,7 @@ func (u *RuleUpsertOne) Update(set func(*RuleUpsert)) *RuleUpsertOne {
 }
 
 // SetShopID sets the "shop_id" field.
-func (u *RuleUpsertOne) SetShopID(v int) *RuleUpsertOne {
+func (u *RuleUpsertOne) SetShopID(v uuid.UUID) *RuleUpsertOne {
 	return u.Update(func(s *RuleUpsert) {
 		s.SetShopID(v)
 	})
@@ -441,38 +451,38 @@ func (u *RuleUpsertOne) UpdateShopID() *RuleUpsertOne {
 	})
 }
 
-// SetKind sets the "kind" field.
-func (u *RuleUpsertOne) SetKind(v string) *RuleUpsertOne {
+// SetDescription sets the "description" field.
+func (u *RuleUpsertOne) SetDescription(v string) *RuleUpsertOne {
 	return u.Update(func(s *RuleUpsert) {
-		s.SetKind(v)
+		s.SetDescription(v)
 	})
 }
 
-// UpdateKind sets the "kind" field to the value that was provided on create.
-func (u *RuleUpsertOne) UpdateKind() *RuleUpsertOne {
+// UpdateDescription sets the "description" field to the value that was provided on create.
+func (u *RuleUpsertOne) UpdateDescription() *RuleUpsertOne {
 	return u.Update(func(s *RuleUpsert) {
-		s.UpdateKind()
+		s.UpdateDescription()
 	})
 }
 
-// SetParams sets the "params" field.
-func (u *RuleUpsertOne) SetParams(v map[string]interface{}) *RuleUpsertOne {
+// SetRuleJSON sets the "rule_json" field.
+func (u *RuleUpsertOne) SetRuleJSON(v map[string]interface{}) *RuleUpsertOne {
 	return u.Update(func(s *RuleUpsert) {
-		s.SetParams(v)
+		s.SetRuleJSON(v)
 	})
 }
 
-// UpdateParams sets the "params" field to the value that was provided on create.
-func (u *RuleUpsertOne) UpdateParams() *RuleUpsertOne {
+// UpdateRuleJSON sets the "rule_json" field to the value that was provided on create.
+func (u *RuleUpsertOne) UpdateRuleJSON() *RuleUpsertOne {
 	return u.Update(func(s *RuleUpsert) {
-		s.UpdateParams()
+		s.UpdateRuleJSON()
 	})
 }
 
-// ClearParams clears the value of the "params" field.
-func (u *RuleUpsertOne) ClearParams() *RuleUpsertOne {
+// ClearRuleJSON clears the value of the "rule_json" field.
+func (u *RuleUpsertOne) ClearRuleJSON() *RuleUpsertOne {
 	return u.Update(func(s *RuleUpsert) {
-		s.ClearParams()
+		s.ClearRuleJSON()
 	})
 }
 
@@ -497,31 +507,17 @@ func (u *RuleUpsertOne) UpdateWeight() *RuleUpsertOne {
 	})
 }
 
-// SetSourceText sets the "source_text" field.
-func (u *RuleUpsertOne) SetSourceText(v string) *RuleUpsertOne {
+// SetIsActive sets the "is_active" field.
+func (u *RuleUpsertOne) SetIsActive(v bool) *RuleUpsertOne {
 	return u.Update(func(s *RuleUpsert) {
-		s.SetSourceText(v)
+		s.SetIsActive(v)
 	})
 }
 
-// UpdateSourceText sets the "source_text" field to the value that was provided on create.
-func (u *RuleUpsertOne) UpdateSourceText() *RuleUpsertOne {
+// UpdateIsActive sets the "is_active" field to the value that was provided on create.
+func (u *RuleUpsertOne) UpdateIsActive() *RuleUpsertOne {
 	return u.Update(func(s *RuleUpsert) {
-		s.UpdateSourceText()
-	})
-}
-
-// SetActive sets the "active" field.
-func (u *RuleUpsertOne) SetActive(v bool) *RuleUpsertOne {
-	return u.Update(func(s *RuleUpsert) {
-		s.SetActive(v)
-	})
-}
-
-// UpdateActive sets the "active" field to the value that was provided on create.
-func (u *RuleUpsertOne) UpdateActive() *RuleUpsertOne {
-	return u.Update(func(s *RuleUpsert) {
-		s.UpdateActive()
+		s.UpdateIsActive()
 	})
 }
 
@@ -541,7 +537,12 @@ func (u *RuleUpsertOne) ExecX(ctx context.Context) {
 }
 
 // Exec executes the UPSERT query and returns the inserted/updated ID.
-func (u *RuleUpsertOne) ID(ctx context.Context) (id int, err error) {
+func (u *RuleUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
+	if u.create.driver.Dialect() == dialect.MySQL {
+		// In case of "ON CONFLICT", there is no way to get back non-numeric ID
+		// fields from the database since MySQL does not support the RETURNING clause.
+		return id, errors.New("ent: RuleUpsertOne.ID is not supported by MySQL driver. Use RuleUpsertOne.Exec instead")
+	}
 	node, err := u.create.Save(ctx)
 	if err != nil {
 		return id, err
@@ -550,7 +551,7 @@ func (u *RuleUpsertOne) ID(ctx context.Context) (id int, err error) {
 }
 
 // IDX is like ID, but panics if an error occurs.
-func (u *RuleUpsertOne) IDX(ctx context.Context) int {
+func (u *RuleUpsertOne) IDX(ctx context.Context) uuid.UUID {
 	id, err := u.ID(ctx)
 	if err != nil {
 		panic(err)
@@ -605,10 +606,6 @@ func (_c *RuleCreateBulk) Save(ctx context.Context) ([]*Rule, error) {
 					return nil, err
 				}
 				mutation.id = &nodes[i].ID
-				if specs[i].ID.Value != nil {
-					id := specs[i].ID.Value.(int64)
-					nodes[i].ID = int(id)
-				}
 				mutation.done = true
 				return nodes[i], nil
 			})
@@ -695,12 +692,18 @@ type RuleUpsertBulk struct {
 //	client.Rule.Create().
 //		OnConflict(
 //			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(rule.FieldID)
+//			}),
 //		).
 //		Exec(ctx)
 func (u *RuleUpsertBulk) UpdateNewValues() *RuleUpsertBulk {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(rule.FieldID)
+			}
 			if _, exists := b.mutation.CreatedAt(); exists {
 				s.SetIgnore(rule.FieldCreatedAt)
 			}
@@ -737,7 +740,7 @@ func (u *RuleUpsertBulk) Update(set func(*RuleUpsert)) *RuleUpsertBulk {
 }
 
 // SetShopID sets the "shop_id" field.
-func (u *RuleUpsertBulk) SetShopID(v int) *RuleUpsertBulk {
+func (u *RuleUpsertBulk) SetShopID(v uuid.UUID) *RuleUpsertBulk {
 	return u.Update(func(s *RuleUpsert) {
 		s.SetShopID(v)
 	})
@@ -750,38 +753,38 @@ func (u *RuleUpsertBulk) UpdateShopID() *RuleUpsertBulk {
 	})
 }
 
-// SetKind sets the "kind" field.
-func (u *RuleUpsertBulk) SetKind(v string) *RuleUpsertBulk {
+// SetDescription sets the "description" field.
+func (u *RuleUpsertBulk) SetDescription(v string) *RuleUpsertBulk {
 	return u.Update(func(s *RuleUpsert) {
-		s.SetKind(v)
+		s.SetDescription(v)
 	})
 }
 
-// UpdateKind sets the "kind" field to the value that was provided on create.
-func (u *RuleUpsertBulk) UpdateKind() *RuleUpsertBulk {
+// UpdateDescription sets the "description" field to the value that was provided on create.
+func (u *RuleUpsertBulk) UpdateDescription() *RuleUpsertBulk {
 	return u.Update(func(s *RuleUpsert) {
-		s.UpdateKind()
+		s.UpdateDescription()
 	})
 }
 
-// SetParams sets the "params" field.
-func (u *RuleUpsertBulk) SetParams(v map[string]interface{}) *RuleUpsertBulk {
+// SetRuleJSON sets the "rule_json" field.
+func (u *RuleUpsertBulk) SetRuleJSON(v map[string]interface{}) *RuleUpsertBulk {
 	return u.Update(func(s *RuleUpsert) {
-		s.SetParams(v)
+		s.SetRuleJSON(v)
 	})
 }
 
-// UpdateParams sets the "params" field to the value that was provided on create.
-func (u *RuleUpsertBulk) UpdateParams() *RuleUpsertBulk {
+// UpdateRuleJSON sets the "rule_json" field to the value that was provided on create.
+func (u *RuleUpsertBulk) UpdateRuleJSON() *RuleUpsertBulk {
 	return u.Update(func(s *RuleUpsert) {
-		s.UpdateParams()
+		s.UpdateRuleJSON()
 	})
 }
 
-// ClearParams clears the value of the "params" field.
-func (u *RuleUpsertBulk) ClearParams() *RuleUpsertBulk {
+// ClearRuleJSON clears the value of the "rule_json" field.
+func (u *RuleUpsertBulk) ClearRuleJSON() *RuleUpsertBulk {
 	return u.Update(func(s *RuleUpsert) {
-		s.ClearParams()
+		s.ClearRuleJSON()
 	})
 }
 
@@ -806,31 +809,17 @@ func (u *RuleUpsertBulk) UpdateWeight() *RuleUpsertBulk {
 	})
 }
 
-// SetSourceText sets the "source_text" field.
-func (u *RuleUpsertBulk) SetSourceText(v string) *RuleUpsertBulk {
+// SetIsActive sets the "is_active" field.
+func (u *RuleUpsertBulk) SetIsActive(v bool) *RuleUpsertBulk {
 	return u.Update(func(s *RuleUpsert) {
-		s.SetSourceText(v)
+		s.SetIsActive(v)
 	})
 }
 
-// UpdateSourceText sets the "source_text" field to the value that was provided on create.
-func (u *RuleUpsertBulk) UpdateSourceText() *RuleUpsertBulk {
+// UpdateIsActive sets the "is_active" field to the value that was provided on create.
+func (u *RuleUpsertBulk) UpdateIsActive() *RuleUpsertBulk {
 	return u.Update(func(s *RuleUpsert) {
-		s.UpdateSourceText()
-	})
-}
-
-// SetActive sets the "active" field.
-func (u *RuleUpsertBulk) SetActive(v bool) *RuleUpsertBulk {
-	return u.Update(func(s *RuleUpsert) {
-		s.SetActive(v)
-	})
-}
-
-// UpdateActive sets the "active" field to the value that was provided on create.
-func (u *RuleUpsertBulk) UpdateActive() *RuleUpsertBulk {
-	return u.Update(func(s *RuleUpsert) {
-		s.UpdateActive()
+		s.UpdateIsActive()
 	})
 }
 

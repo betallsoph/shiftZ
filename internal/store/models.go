@@ -3,33 +3,37 @@ package store
 import (
 	"time"
 
+	"github.com/google/uuid"
+
 	"github.com/betallsoph/shiftz/internal/ent"
 )
 
 // Shop is a tenant: one restaurant or cafe.
 type Shop struct {
-	ID              int64
+	ID              uuid.UUID
 	Name            string
 	Timezone        string
 	InviteCode      string
-	OwnerTelegramID int64
+	TelegramGroupID int64
+	Plan            string
 	CreatedAt       time.Time
 }
 
 // Employee is a staff member of one shop, linked to a Telegram account.
 type Employee struct {
-	ID              int64
-	ShopID          int64
+	ID              uuid.UUID
+	ShopID          uuid.UUID
 	TelegramUserID  int64
 	DisplayName     string
+	Role            string
 	MaxHoursPerWeek float64
-	Active          bool
+	IsActive        bool
 	CreatedAt       time.Time
 }
 
-// AvailabilitySlot is one stored span of (un)availability for an employee.
-// It mirrors the shape the llm package produces, but is defined here so the
-// store stays independent of llm.
+// AvailabilitySlot is one parsed span of (un)availability inside a weekly
+// submission. It mirrors the shape the llm package produces, but is defined
+// here so the store stays independent of llm.
 type AvailabilitySlot struct {
 	Start      time.Time
 	End        time.Time
@@ -42,23 +46,25 @@ type AvailabilitySlot struct {
 
 func shopFromEnt(m *ent.Shop) *Shop {
 	return &Shop{
-		ID:              int64(m.ID),
+		ID:              m.ID,
 		Name:            m.Name,
 		Timezone:        m.Timezone,
 		InviteCode:      m.InviteCode,
-		OwnerTelegramID: m.OwnerTelegramID,
+		TelegramGroupID: m.TelegramGroupID,
+		Plan:            m.Plan,
 		CreatedAt:       m.CreatedAt,
 	}
 }
 
 func employeeFromEnt(m *ent.Employee) *Employee {
 	return &Employee{
-		ID:              int64(m.ID),
-		ShopID:          int64(m.ShopID),
+		ID:              m.ID,
+		ShopID:          m.ShopID,
 		TelegramUserID:  m.TelegramUserID,
 		DisplayName:     m.DisplayName,
+		Role:            m.Role,
 		MaxHoursPerWeek: m.MaxHoursPerWeek,
-		Active:          m.Active,
+		IsActive:        m.IsActive,
 		CreatedAt:       m.CreatedAt,
 	}
 }

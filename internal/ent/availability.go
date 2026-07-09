@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -11,30 +12,26 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/betallsoph/shiftz/internal/ent/availability"
 	"github.com/betallsoph/shiftz/internal/ent/employee"
+	"github.com/betallsoph/shiftz/internal/ent/schema"
 	"github.com/betallsoph/shiftz/internal/ent/shop"
+	"github.com/google/uuid"
 )
 
 // Availability is the model entity for the Availability schema.
 type Availability struct {
 	config `json:"-"`
 	// ID of the ent.
-	ID int `json:"id,omitempty"`
+	ID uuid.UUID `json:"id,omitempty"`
 	// ShopID holds the value of the "shop_id" field.
-	ShopID int `json:"shop_id,omitempty"`
+	ShopID uuid.UUID `json:"shop_id,omitempty"`
 	// EmployeeID holds the value of the "employee_id" field.
-	EmployeeID int `json:"employee_id,omitempty"`
+	EmployeeID uuid.UUID `json:"employee_id,omitempty"`
 	// WeekStart holds the value of the "week_start" field.
 	WeekStart time.Time `json:"week_start,omitempty"`
-	// StartsAt holds the value of the "starts_at" field.
-	StartsAt time.Time `json:"starts_at,omitempty"`
-	// EndsAt holds the value of the "ends_at" field.
-	EndsAt time.Time `json:"ends_at,omitempty"`
-	// Preference holds the value of the "preference" field.
-	Preference int `json:"preference,omitempty"`
-	// Note holds the value of the "note" field.
-	Note string `json:"note,omitempty"`
-	// RawText holds the value of the "raw_text" field.
-	RawText string `json:"raw_text,omitempty"`
+	// Slots holds the value of the "slots" field.
+	Slots []schema.AvailabilitySlot `json:"slots,omitempty"`
+	// RawMessage holds the value of the "raw_message" field.
+	RawMessage string `json:"raw_message,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -81,12 +78,14 @@ func (*Availability) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case availability.FieldID, availability.FieldShopID, availability.FieldEmployeeID, availability.FieldPreference:
-			values[i] = new(sql.NullInt64)
-		case availability.FieldNote, availability.FieldRawText:
+		case availability.FieldSlots:
+			values[i] = new([]byte)
+		case availability.FieldRawMessage:
 			values[i] = new(sql.NullString)
-		case availability.FieldWeekStart, availability.FieldStartsAt, availability.FieldEndsAt, availability.FieldCreatedAt:
+		case availability.FieldWeekStart, availability.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
+		case availability.FieldID, availability.FieldShopID, availability.FieldEmployeeID:
+			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -103,22 +102,22 @@ func (_m *Availability) assignValues(columns []string, values []any) error {
 	for i := range columns {
 		switch columns[i] {
 		case availability.FieldID:
-			value, ok := values[i].(*sql.NullInt64)
-			if !ok {
-				return fmt.Errorf("unexpected type %T for field id", value)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field id", values[i])
+			} else if value != nil {
+				_m.ID = *value
 			}
-			_m.ID = int(value.Int64)
 		case availability.FieldShopID:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
+			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field shop_id", values[i])
-			} else if value.Valid {
-				_m.ShopID = int(value.Int64)
+			} else if value != nil {
+				_m.ShopID = *value
 			}
 		case availability.FieldEmployeeID:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
+			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field employee_id", values[i])
-			} else if value.Valid {
-				_m.EmployeeID = int(value.Int64)
+			} else if value != nil {
+				_m.EmployeeID = *value
 			}
 		case availability.FieldWeekStart:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -126,35 +125,19 @@ func (_m *Availability) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.WeekStart = value.Time
 			}
-		case availability.FieldStartsAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field starts_at", values[i])
-			} else if value.Valid {
-				_m.StartsAt = value.Time
+		case availability.FieldSlots:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field slots", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &_m.Slots); err != nil {
+					return fmt.Errorf("unmarshal field slots: %w", err)
+				}
 			}
-		case availability.FieldEndsAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field ends_at", values[i])
-			} else if value.Valid {
-				_m.EndsAt = value.Time
-			}
-		case availability.FieldPreference:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field preference", values[i])
-			} else if value.Valid {
-				_m.Preference = int(value.Int64)
-			}
-		case availability.FieldNote:
+		case availability.FieldRawMessage:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field note", values[i])
+				return fmt.Errorf("unexpected type %T for field raw_message", values[i])
 			} else if value.Valid {
-				_m.Note = value.String
-			}
-		case availability.FieldRawText:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field raw_text", values[i])
-			} else if value.Valid {
-				_m.RawText = value.String
+				_m.RawMessage = value.String
 			}
 		case availability.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -217,20 +200,11 @@ func (_m *Availability) String() string {
 	builder.WriteString("week_start=")
 	builder.WriteString(_m.WeekStart.Format(time.ANSIC))
 	builder.WriteString(", ")
-	builder.WriteString("starts_at=")
-	builder.WriteString(_m.StartsAt.Format(time.ANSIC))
+	builder.WriteString("slots=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Slots))
 	builder.WriteString(", ")
-	builder.WriteString("ends_at=")
-	builder.WriteString(_m.EndsAt.Format(time.ANSIC))
-	builder.WriteString(", ")
-	builder.WriteString("preference=")
-	builder.WriteString(fmt.Sprintf("%v", _m.Preference))
-	builder.WriteString(", ")
-	builder.WriteString("note=")
-	builder.WriteString(_m.Note)
-	builder.WriteString(", ")
-	builder.WriteString("raw_text=")
-	builder.WriteString(_m.RawText)
+	builder.WriteString("raw_message=")
+	builder.WriteString(_m.RawMessage)
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))

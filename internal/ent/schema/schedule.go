@@ -9,24 +9,26 @@ import (
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
+	"github.com/google/uuid"
 )
 
-// Schedule is one solver-generated schedule candidate for a week; status
-// tracks the voting flow.
+// Schedule is one solver-generated schedule variant for a week; status
+// tracks the vote-then-approve flow.
 type Schedule struct {
 	ent.Schema
 }
 
 func (Schedule) Fields() []ent.Field {
 	return []ent.Field{
-		field.Int("shop_id"),
+		field.UUID("id", uuid.UUID{}).Default(uuid.New),
+		field.UUID("shop_id", uuid.UUID{}),
 		field.Time("week_start").
 			SchemaType(map[string]string{dialect.Postgres: "date"}),
-		// e.g. "balanced", "fairness-first", "preference-first".
-		field.String("label").Default(""),
 		field.Enum("status").
-			Values("draft", "voting", "final", "vetoed").
+			Values("draft", "voting", "approved", "published").
 			Default("draft"),
+		// Which variant this is in the vote, e.g. "A", "B", "C".
+		field.String("variant_label").Default(""),
 		field.Float("score").Default(0),
 		field.Time("created_at").Default(time.Now).Immutable(),
 	}
@@ -42,6 +44,7 @@ func (Schedule) Edges() []ent.Edge {
 
 func (Schedule) Indexes() []ent.Index {
 	return []ent.Index{
+		// Voting flow: "this shop's variants for this week".
 		index.Fields("shop_id", "week_start"),
 	}
 }

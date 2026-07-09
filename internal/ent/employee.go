@@ -11,23 +11,26 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/betallsoph/shiftz/internal/ent/employee"
 	"github.com/betallsoph/shiftz/internal/ent/shop"
+	"github.com/google/uuid"
 )
 
 // Employee is the model entity for the Employee schema.
 type Employee struct {
 	config `json:"-"`
 	// ID of the ent.
-	ID int `json:"id,omitempty"`
+	ID uuid.UUID `json:"id,omitempty"`
 	// ShopID holds the value of the "shop_id" field.
-	ShopID int `json:"shop_id,omitempty"`
+	ShopID uuid.UUID `json:"shop_id,omitempty"`
 	// TelegramUserID holds the value of the "telegram_user_id" field.
 	TelegramUserID int64 `json:"telegram_user_id,omitempty"`
 	// DisplayName holds the value of the "display_name" field.
 	DisplayName string `json:"display_name,omitempty"`
+	// Role holds the value of the "role" field.
+	Role string `json:"role,omitempty"`
 	// MaxHoursPerWeek holds the value of the "max_hours_per_week" field.
 	MaxHoursPerWeek float64 `json:"max_hours_per_week,omitempty"`
-	// Active holds the value of the "active" field.
-	Active bool `json:"active,omitempty"`
+	// IsActive holds the value of the "is_active" field.
+	IsActive bool `json:"is_active,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -40,8 +43,8 @@ type Employee struct {
 type EmployeeEdges struct {
 	// Shop holds the value of the shop edge.
 	Shop *Shop `json:"shop,omitempty"`
-	// Availability holds the value of the availability edge.
-	Availability []*Availability `json:"availability,omitempty"`
+	// Availabilities holds the value of the availabilities edge.
+	Availabilities []*Availability `json:"availabilities,omitempty"`
 	// Assignments holds the value of the assignments edge.
 	Assignments []*ScheduleAssignment `json:"assignments,omitempty"`
 	// Votes holds the value of the votes edge.
@@ -62,13 +65,13 @@ func (e EmployeeEdges) ShopOrErr() (*Shop, error) {
 	return nil, &NotLoadedError{edge: "shop"}
 }
 
-// AvailabilityOrErr returns the Availability value or an error if the edge
+// AvailabilitiesOrErr returns the Availabilities value or an error if the edge
 // was not loaded in eager-loading.
-func (e EmployeeEdges) AvailabilityOrErr() ([]*Availability, error) {
+func (e EmployeeEdges) AvailabilitiesOrErr() ([]*Availability, error) {
 	if e.loadedTypes[1] {
-		return e.Availability, nil
+		return e.Availabilities, nil
 	}
-	return nil, &NotLoadedError{edge: "availability"}
+	return nil, &NotLoadedError{edge: "availabilities"}
 }
 
 // AssignmentsOrErr returns the Assignments value or an error if the edge
@@ -94,16 +97,18 @@ func (*Employee) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case employee.FieldActive:
+		case employee.FieldIsActive:
 			values[i] = new(sql.NullBool)
 		case employee.FieldMaxHoursPerWeek:
 			values[i] = new(sql.NullFloat64)
-		case employee.FieldID, employee.FieldShopID, employee.FieldTelegramUserID:
+		case employee.FieldTelegramUserID:
 			values[i] = new(sql.NullInt64)
-		case employee.FieldDisplayName:
+		case employee.FieldDisplayName, employee.FieldRole:
 			values[i] = new(sql.NullString)
 		case employee.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
+		case employee.FieldID, employee.FieldShopID:
+			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -120,16 +125,16 @@ func (_m *Employee) assignValues(columns []string, values []any) error {
 	for i := range columns {
 		switch columns[i] {
 		case employee.FieldID:
-			value, ok := values[i].(*sql.NullInt64)
-			if !ok {
-				return fmt.Errorf("unexpected type %T for field id", value)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field id", values[i])
+			} else if value != nil {
+				_m.ID = *value
 			}
-			_m.ID = int(value.Int64)
 		case employee.FieldShopID:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
+			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field shop_id", values[i])
-			} else if value.Valid {
-				_m.ShopID = int(value.Int64)
+			} else if value != nil {
+				_m.ShopID = *value
 			}
 		case employee.FieldTelegramUserID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -143,17 +148,23 @@ func (_m *Employee) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.DisplayName = value.String
 			}
+		case employee.FieldRole:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field role", values[i])
+			} else if value.Valid {
+				_m.Role = value.String
+			}
 		case employee.FieldMaxHoursPerWeek:
 			if value, ok := values[i].(*sql.NullFloat64); !ok {
 				return fmt.Errorf("unexpected type %T for field max_hours_per_week", values[i])
 			} else if value.Valid {
 				_m.MaxHoursPerWeek = value.Float64
 			}
-		case employee.FieldActive:
+		case employee.FieldIsActive:
 			if value, ok := values[i].(*sql.NullBool); !ok {
-				return fmt.Errorf("unexpected type %T for field active", values[i])
+				return fmt.Errorf("unexpected type %T for field is_active", values[i])
 			} else if value.Valid {
-				_m.Active = value.Bool
+				_m.IsActive = value.Bool
 			}
 		case employee.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -179,9 +190,9 @@ func (_m *Employee) QueryShop() *ShopQuery {
 	return NewEmployeeClient(_m.config).QueryShop(_m)
 }
 
-// QueryAvailability queries the "availability" edge of the Employee entity.
-func (_m *Employee) QueryAvailability() *AvailabilityQuery {
-	return NewEmployeeClient(_m.config).QueryAvailability(_m)
+// QueryAvailabilities queries the "availabilities" edge of the Employee entity.
+func (_m *Employee) QueryAvailabilities() *AvailabilityQuery {
+	return NewEmployeeClient(_m.config).QueryAvailabilities(_m)
 }
 
 // QueryAssignments queries the "assignments" edge of the Employee entity.
@@ -226,11 +237,14 @@ func (_m *Employee) String() string {
 	builder.WriteString("display_name=")
 	builder.WriteString(_m.DisplayName)
 	builder.WriteString(", ")
+	builder.WriteString("role=")
+	builder.WriteString(_m.Role)
+	builder.WriteString(", ")
 	builder.WriteString("max_hours_per_week=")
 	builder.WriteString(fmt.Sprintf("%v", _m.MaxHoursPerWeek))
 	builder.WriteString(", ")
-	builder.WriteString("active=")
-	builder.WriteString(fmt.Sprintf("%v", _m.Active))
+	builder.WriteString("is_active=")
+	builder.WriteString(fmt.Sprintf("%v", _m.IsActive))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))

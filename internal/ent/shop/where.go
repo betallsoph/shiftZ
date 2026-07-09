@@ -8,50 +8,51 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/betallsoph/shiftz/internal/ent/predicate"
+	"github.com/google/uuid"
 )
 
 // ID filters vertices based on their ID field.
-func ID(id int) predicate.Shop {
+func ID(id uuid.UUID) predicate.Shop {
 	return predicate.Shop(sql.FieldEQ(FieldID, id))
 }
 
 // IDEQ applies the EQ predicate on the ID field.
-func IDEQ(id int) predicate.Shop {
+func IDEQ(id uuid.UUID) predicate.Shop {
 	return predicate.Shop(sql.FieldEQ(FieldID, id))
 }
 
 // IDNEQ applies the NEQ predicate on the ID field.
-func IDNEQ(id int) predicate.Shop {
+func IDNEQ(id uuid.UUID) predicate.Shop {
 	return predicate.Shop(sql.FieldNEQ(FieldID, id))
 }
 
 // IDIn applies the In predicate on the ID field.
-func IDIn(ids ...int) predicate.Shop {
+func IDIn(ids ...uuid.UUID) predicate.Shop {
 	return predicate.Shop(sql.FieldIn(FieldID, ids...))
 }
 
 // IDNotIn applies the NotIn predicate on the ID field.
-func IDNotIn(ids ...int) predicate.Shop {
+func IDNotIn(ids ...uuid.UUID) predicate.Shop {
 	return predicate.Shop(sql.FieldNotIn(FieldID, ids...))
 }
 
 // IDGT applies the GT predicate on the ID field.
-func IDGT(id int) predicate.Shop {
+func IDGT(id uuid.UUID) predicate.Shop {
 	return predicate.Shop(sql.FieldGT(FieldID, id))
 }
 
 // IDGTE applies the GTE predicate on the ID field.
-func IDGTE(id int) predicate.Shop {
+func IDGTE(id uuid.UUID) predicate.Shop {
 	return predicate.Shop(sql.FieldGTE(FieldID, id))
 }
 
 // IDLT applies the LT predicate on the ID field.
-func IDLT(id int) predicate.Shop {
+func IDLT(id uuid.UUID) predicate.Shop {
 	return predicate.Shop(sql.FieldLT(FieldID, id))
 }
 
 // IDLTE applies the LTE predicate on the ID field.
-func IDLTE(id int) predicate.Shop {
+func IDLTE(id uuid.UUID) predicate.Shop {
 	return predicate.Shop(sql.FieldLTE(FieldID, id))
 }
 
@@ -70,9 +71,14 @@ func InviteCode(v string) predicate.Shop {
 	return predicate.Shop(sql.FieldEQ(FieldInviteCode, v))
 }
 
-// OwnerTelegramID applies equality check predicate on the "owner_telegram_id" field. It's identical to OwnerTelegramIDEQ.
-func OwnerTelegramID(v int64) predicate.Shop {
-	return predicate.Shop(sql.FieldEQ(FieldOwnerTelegramID, v))
+// TelegramGroupID applies equality check predicate on the "telegram_group_id" field. It's identical to TelegramGroupIDEQ.
+func TelegramGroupID(v int64) predicate.Shop {
+	return predicate.Shop(sql.FieldEQ(FieldTelegramGroupID, v))
+}
+
+// Plan applies equality check predicate on the "plan" field. It's identical to PlanEQ.
+func Plan(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldEQ(FieldPlan, v))
 }
 
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
@@ -275,44 +281,109 @@ func InviteCodeContainsFold(v string) predicate.Shop {
 	return predicate.Shop(sql.FieldContainsFold(FieldInviteCode, v))
 }
 
-// OwnerTelegramIDEQ applies the EQ predicate on the "owner_telegram_id" field.
-func OwnerTelegramIDEQ(v int64) predicate.Shop {
-	return predicate.Shop(sql.FieldEQ(FieldOwnerTelegramID, v))
+// TelegramGroupIDEQ applies the EQ predicate on the "telegram_group_id" field.
+func TelegramGroupIDEQ(v int64) predicate.Shop {
+	return predicate.Shop(sql.FieldEQ(FieldTelegramGroupID, v))
 }
 
-// OwnerTelegramIDNEQ applies the NEQ predicate on the "owner_telegram_id" field.
-func OwnerTelegramIDNEQ(v int64) predicate.Shop {
-	return predicate.Shop(sql.FieldNEQ(FieldOwnerTelegramID, v))
+// TelegramGroupIDNEQ applies the NEQ predicate on the "telegram_group_id" field.
+func TelegramGroupIDNEQ(v int64) predicate.Shop {
+	return predicate.Shop(sql.FieldNEQ(FieldTelegramGroupID, v))
 }
 
-// OwnerTelegramIDIn applies the In predicate on the "owner_telegram_id" field.
-func OwnerTelegramIDIn(vs ...int64) predicate.Shop {
-	return predicate.Shop(sql.FieldIn(FieldOwnerTelegramID, vs...))
+// TelegramGroupIDIn applies the In predicate on the "telegram_group_id" field.
+func TelegramGroupIDIn(vs ...int64) predicate.Shop {
+	return predicate.Shop(sql.FieldIn(FieldTelegramGroupID, vs...))
 }
 
-// OwnerTelegramIDNotIn applies the NotIn predicate on the "owner_telegram_id" field.
-func OwnerTelegramIDNotIn(vs ...int64) predicate.Shop {
-	return predicate.Shop(sql.FieldNotIn(FieldOwnerTelegramID, vs...))
+// TelegramGroupIDNotIn applies the NotIn predicate on the "telegram_group_id" field.
+func TelegramGroupIDNotIn(vs ...int64) predicate.Shop {
+	return predicate.Shop(sql.FieldNotIn(FieldTelegramGroupID, vs...))
 }
 
-// OwnerTelegramIDGT applies the GT predicate on the "owner_telegram_id" field.
-func OwnerTelegramIDGT(v int64) predicate.Shop {
-	return predicate.Shop(sql.FieldGT(FieldOwnerTelegramID, v))
+// TelegramGroupIDGT applies the GT predicate on the "telegram_group_id" field.
+func TelegramGroupIDGT(v int64) predicate.Shop {
+	return predicate.Shop(sql.FieldGT(FieldTelegramGroupID, v))
 }
 
-// OwnerTelegramIDGTE applies the GTE predicate on the "owner_telegram_id" field.
-func OwnerTelegramIDGTE(v int64) predicate.Shop {
-	return predicate.Shop(sql.FieldGTE(FieldOwnerTelegramID, v))
+// TelegramGroupIDGTE applies the GTE predicate on the "telegram_group_id" field.
+func TelegramGroupIDGTE(v int64) predicate.Shop {
+	return predicate.Shop(sql.FieldGTE(FieldTelegramGroupID, v))
 }
 
-// OwnerTelegramIDLT applies the LT predicate on the "owner_telegram_id" field.
-func OwnerTelegramIDLT(v int64) predicate.Shop {
-	return predicate.Shop(sql.FieldLT(FieldOwnerTelegramID, v))
+// TelegramGroupIDLT applies the LT predicate on the "telegram_group_id" field.
+func TelegramGroupIDLT(v int64) predicate.Shop {
+	return predicate.Shop(sql.FieldLT(FieldTelegramGroupID, v))
 }
 
-// OwnerTelegramIDLTE applies the LTE predicate on the "owner_telegram_id" field.
-func OwnerTelegramIDLTE(v int64) predicate.Shop {
-	return predicate.Shop(sql.FieldLTE(FieldOwnerTelegramID, v))
+// TelegramGroupIDLTE applies the LTE predicate on the "telegram_group_id" field.
+func TelegramGroupIDLTE(v int64) predicate.Shop {
+	return predicate.Shop(sql.FieldLTE(FieldTelegramGroupID, v))
+}
+
+// PlanEQ applies the EQ predicate on the "plan" field.
+func PlanEQ(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldEQ(FieldPlan, v))
+}
+
+// PlanNEQ applies the NEQ predicate on the "plan" field.
+func PlanNEQ(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldNEQ(FieldPlan, v))
+}
+
+// PlanIn applies the In predicate on the "plan" field.
+func PlanIn(vs ...string) predicate.Shop {
+	return predicate.Shop(sql.FieldIn(FieldPlan, vs...))
+}
+
+// PlanNotIn applies the NotIn predicate on the "plan" field.
+func PlanNotIn(vs ...string) predicate.Shop {
+	return predicate.Shop(sql.FieldNotIn(FieldPlan, vs...))
+}
+
+// PlanGT applies the GT predicate on the "plan" field.
+func PlanGT(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldGT(FieldPlan, v))
+}
+
+// PlanGTE applies the GTE predicate on the "plan" field.
+func PlanGTE(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldGTE(FieldPlan, v))
+}
+
+// PlanLT applies the LT predicate on the "plan" field.
+func PlanLT(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldLT(FieldPlan, v))
+}
+
+// PlanLTE applies the LTE predicate on the "plan" field.
+func PlanLTE(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldLTE(FieldPlan, v))
+}
+
+// PlanContains applies the Contains predicate on the "plan" field.
+func PlanContains(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldContains(FieldPlan, v))
+}
+
+// PlanHasPrefix applies the HasPrefix predicate on the "plan" field.
+func PlanHasPrefix(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldHasPrefix(FieldPlan, v))
+}
+
+// PlanHasSuffix applies the HasSuffix predicate on the "plan" field.
+func PlanHasSuffix(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldHasSuffix(FieldPlan, v))
+}
+
+// PlanEqualFold applies the EqualFold predicate on the "plan" field.
+func PlanEqualFold(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldEqualFold(FieldPlan, v))
+}
+
+// PlanContainsFold applies the ContainsFold predicate on the "plan" field.
+func PlanContainsFold(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldContainsFold(FieldPlan, v))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
@@ -378,29 +449,6 @@ func HasEmployeesWith(preds ...predicate.Employee) predicate.Shop {
 	})
 }
 
-// HasAvailability applies the HasEdge predicate on the "availability" edge.
-func HasAvailability() predicate.Shop {
-	return predicate.Shop(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, AvailabilityTable, AvailabilityColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasAvailabilityWith applies the HasEdge predicate on the "availability" edge with a given conditions (other predicates).
-func HasAvailabilityWith(preds ...predicate.Availability) predicate.Shop {
-	return predicate.Shop(func(s *sql.Selector) {
-		step := newAvailabilityStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasShifts applies the HasEdge predicate on the "shifts" edge.
 func HasShifts() predicate.Shop {
 	return predicate.Shop(func(s *sql.Selector) {
@@ -447,52 +495,6 @@ func HasSchedulesWith(preds ...predicate.Schedule) predicate.Shop {
 	})
 }
 
-// HasAssignments applies the HasEdge predicate on the "assignments" edge.
-func HasAssignments() predicate.Shop {
-	return predicate.Shop(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, AssignmentsTable, AssignmentsColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasAssignmentsWith applies the HasEdge predicate on the "assignments" edge with a given conditions (other predicates).
-func HasAssignmentsWith(preds ...predicate.ScheduleAssignment) predicate.Shop {
-	return predicate.Shop(func(s *sql.Selector) {
-		step := newAssignmentsStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasVotes applies the HasEdge predicate on the "votes" edge.
-func HasVotes() predicate.Shop {
-	return predicate.Shop(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, VotesTable, VotesColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasVotesWith applies the HasEdge predicate on the "votes" edge with a given conditions (other predicates).
-func HasVotesWith(preds ...predicate.ScheduleVote) predicate.Shop {
-	return predicate.Shop(func(s *sql.Selector) {
-		step := newVotesStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasRules applies the HasEdge predicate on the "rules" edge.
 func HasRules() predicate.Shop {
 	return predicate.Shop(func(s *sql.Selector) {
@@ -508,6 +510,29 @@ func HasRules() predicate.Shop {
 func HasRulesWith(preds ...predicate.Rule) predicate.Shop {
 	return predicate.Shop(func(s *sql.Selector) {
 		step := newRulesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasAvailabilities applies the HasEdge predicate on the "availabilities" edge.
+func HasAvailabilities() predicate.Shop {
+	return predicate.Shop(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, AvailabilitiesTable, AvailabilitiesColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasAvailabilitiesWith applies the HasEdge predicate on the "availabilities" edge with a given conditions (other predicates).
+func HasAvailabilitiesWith(preds ...predicate.Availability) predicate.Shop {
+	return predicate.Shop(func(s *sql.Selector) {
+		step := newAvailabilitiesStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

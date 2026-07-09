@@ -5,9 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"strconv"
 	"strings"
 	"time"
+
+	"github.com/google/uuid"
 
 	"github.com/betallsoph/shiftz/internal/llm"
 	"github.com/betallsoph/shiftz/internal/store"
@@ -29,12 +30,12 @@ type EmployeeDirectory interface {
 // AvailabilityStore persists parsed availability. Satisfied by
 // *store.AvailabilityRepo.
 type AvailabilityStore interface {
-	ReplaceWeek(ctx context.Context, shopID, employeeID int64, weekStart time.Time, slots []store.AvailabilitySlot, rawText string) error
+	ReplaceWeek(ctx context.Context, shopID, employeeID uuid.UUID, weekStart time.Time, slots []store.AvailabilitySlot, rawMessage string) error
 }
 
 // VoteStore records schedule votes. Satisfied by *store.VoteRepo.
 type VoteStore interface {
-	Record(ctx context.Context, shopID, scheduleID, employeeID int64) error
+	Record(ctx context.Context, shopID, scheduleID, employeeID uuid.UUID) error
 }
 
 // Bot routes Telegram updates to handlers.
@@ -135,13 +136,13 @@ func (b *Bot) handleAvailabilityText(ctx context.Context, m *Message, text strin
 }
 
 // handleCallback processes inline-button presses. Voting buttons carry data
-// of the form "vote:<scheduleID>".
+// of the form "vote:<schedule-uuid>".
 func (b *Bot) handleCallback(ctx context.Context, q *CallbackQuery) error {
 	const votePrefix = "vote:"
 	if !strings.HasPrefix(q.Data, votePrefix) {
 		return b.api.AnswerCallbackQuery(ctx, q.ID, "")
 	}
-	scheduleID, err := strconv.ParseInt(strings.TrimPrefix(q.Data, votePrefix), 10, 64)
+	scheduleID, err := uuid.Parse(strings.TrimPrefix(q.Data, votePrefix))
 	if err != nil {
 		return b.api.AnswerCallbackQuery(ctx, q.ID, "Invalid vote.")
 	}
@@ -159,13 +160,13 @@ func (b *Bot) handleCallback(ctx context.Context, q *CallbackQuery) error {
 }
 
 // VoteKeyboard builds the inline keyboard for choosing between schedule
-// candidates.
-func VoteKeyboard(labels []string, scheduleIDs []int64) *InlineKeyboardMarkup {
+// variants.
+func VoteKeyboard(labels []string, scheduleIDs []uuid.UUID) *InlineKeyboardMarkup {
 	rows := make([][]InlineKeyboardButton, 0, len(labels))
 	for i, label := range labels {
 		rows = append(rows, []InlineKeyboardButton{{
 			Text: label,
-			Data: fmt.Sprintf("vote:%d", scheduleIDs[i]),
+			Data: fmt.Sprintf("vote:%s", scheduleIDs[i]),
 		}})
 	}
 	return &InlineKeyboardMarkup{InlineKeyboard: rows}

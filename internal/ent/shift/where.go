@@ -3,76 +3,80 @@
 package shift
 
 import (
-	"time"
-
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/betallsoph/shiftz/internal/ent/predicate"
+	"github.com/google/uuid"
 )
 
 // ID filters vertices based on their ID field.
-func ID(id int) predicate.Shift {
+func ID(id uuid.UUID) predicate.Shift {
 	return predicate.Shift(sql.FieldEQ(FieldID, id))
 }
 
 // IDEQ applies the EQ predicate on the ID field.
-func IDEQ(id int) predicate.Shift {
+func IDEQ(id uuid.UUID) predicate.Shift {
 	return predicate.Shift(sql.FieldEQ(FieldID, id))
 }
 
 // IDNEQ applies the NEQ predicate on the ID field.
-func IDNEQ(id int) predicate.Shift {
+func IDNEQ(id uuid.UUID) predicate.Shift {
 	return predicate.Shift(sql.FieldNEQ(FieldID, id))
 }
 
 // IDIn applies the In predicate on the ID field.
-func IDIn(ids ...int) predicate.Shift {
+func IDIn(ids ...uuid.UUID) predicate.Shift {
 	return predicate.Shift(sql.FieldIn(FieldID, ids...))
 }
 
 // IDNotIn applies the NotIn predicate on the ID field.
-func IDNotIn(ids ...int) predicate.Shift {
+func IDNotIn(ids ...uuid.UUID) predicate.Shift {
 	return predicate.Shift(sql.FieldNotIn(FieldID, ids...))
 }
 
 // IDGT applies the GT predicate on the ID field.
-func IDGT(id int) predicate.Shift {
+func IDGT(id uuid.UUID) predicate.Shift {
 	return predicate.Shift(sql.FieldGT(FieldID, id))
 }
 
 // IDGTE applies the GTE predicate on the ID field.
-func IDGTE(id int) predicate.Shift {
+func IDGTE(id uuid.UUID) predicate.Shift {
 	return predicate.Shift(sql.FieldGTE(FieldID, id))
 }
 
 // IDLT applies the LT predicate on the ID field.
-func IDLT(id int) predicate.Shift {
+func IDLT(id uuid.UUID) predicate.Shift {
 	return predicate.Shift(sql.FieldLT(FieldID, id))
 }
 
 // IDLTE applies the LTE predicate on the ID field.
-func IDLTE(id int) predicate.Shift {
+func IDLTE(id uuid.UUID) predicate.Shift {
 	return predicate.Shift(sql.FieldLTE(FieldID, id))
 }
 
 // ShopID applies equality check predicate on the "shop_id" field. It's identical to ShopIDEQ.
-func ShopID(v int) predicate.Shift {
+func ShopID(v uuid.UUID) predicate.Shift {
 	return predicate.Shift(sql.FieldEQ(FieldShopID, v))
 }
 
-// Role applies equality check predicate on the "role" field. It's identical to RoleEQ.
-func Role(v string) predicate.Shift {
-	return predicate.Shift(sql.FieldEQ(FieldRole, v))
+// Name applies equality check predicate on the "name" field. It's identical to NameEQ.
+func Name(v string) predicate.Shift {
+	return predicate.Shift(sql.FieldEQ(FieldName, v))
 }
 
-// StartsAt applies equality check predicate on the "starts_at" field. It's identical to StartsAtEQ.
-func StartsAt(v time.Time) predicate.Shift {
-	return predicate.Shift(sql.FieldEQ(FieldStartsAt, v))
+// Weekday applies equality check predicate on the "weekday" field. It's identical to WeekdayEQ.
+func Weekday(v int) predicate.Shift {
+	return predicate.Shift(sql.FieldEQ(FieldWeekday, v))
 }
 
-// EndsAt applies equality check predicate on the "ends_at" field. It's identical to EndsAtEQ.
-func EndsAt(v time.Time) predicate.Shift {
-	return predicate.Shift(sql.FieldEQ(FieldEndsAt, v))
+// StartTime applies equality check predicate on the "start_time" field. It's identical to StartTimeEQ.
+func StartTime(v string) predicate.Shift {
+	return predicate.Shift(sql.FieldEQ(FieldStartTime, v))
+}
+
+// EndTime applies equality check predicate on the "end_time" field. It's identical to EndTimeEQ.
+func EndTime(v string) predicate.Shift {
+	return predicate.Shift(sql.FieldEQ(FieldEndTime, v))
 }
 
 // MinStaff applies equality check predicate on the "min_staff" field. It's identical to MinStaffEQ.
@@ -85,174 +89,259 @@ func MaxStaff(v int) predicate.Shift {
 	return predicate.Shift(sql.FieldEQ(FieldMaxStaff, v))
 }
 
-// CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
-func CreatedAt(v time.Time) predicate.Shift {
-	return predicate.Shift(sql.FieldEQ(FieldCreatedAt, v))
-}
-
 // ShopIDEQ applies the EQ predicate on the "shop_id" field.
-func ShopIDEQ(v int) predicate.Shift {
+func ShopIDEQ(v uuid.UUID) predicate.Shift {
 	return predicate.Shift(sql.FieldEQ(FieldShopID, v))
 }
 
 // ShopIDNEQ applies the NEQ predicate on the "shop_id" field.
-func ShopIDNEQ(v int) predicate.Shift {
+func ShopIDNEQ(v uuid.UUID) predicate.Shift {
 	return predicate.Shift(sql.FieldNEQ(FieldShopID, v))
 }
 
 // ShopIDIn applies the In predicate on the "shop_id" field.
-func ShopIDIn(vs ...int) predicate.Shift {
+func ShopIDIn(vs ...uuid.UUID) predicate.Shift {
 	return predicate.Shift(sql.FieldIn(FieldShopID, vs...))
 }
 
 // ShopIDNotIn applies the NotIn predicate on the "shop_id" field.
-func ShopIDNotIn(vs ...int) predicate.Shift {
+func ShopIDNotIn(vs ...uuid.UUID) predicate.Shift {
 	return predicate.Shift(sql.FieldNotIn(FieldShopID, vs...))
 }
 
-// RoleEQ applies the EQ predicate on the "role" field.
-func RoleEQ(v string) predicate.Shift {
-	return predicate.Shift(sql.FieldEQ(FieldRole, v))
+// NameEQ applies the EQ predicate on the "name" field.
+func NameEQ(v string) predicate.Shift {
+	return predicate.Shift(sql.FieldEQ(FieldName, v))
 }
 
-// RoleNEQ applies the NEQ predicate on the "role" field.
-func RoleNEQ(v string) predicate.Shift {
-	return predicate.Shift(sql.FieldNEQ(FieldRole, v))
+// NameNEQ applies the NEQ predicate on the "name" field.
+func NameNEQ(v string) predicate.Shift {
+	return predicate.Shift(sql.FieldNEQ(FieldName, v))
 }
 
-// RoleIn applies the In predicate on the "role" field.
-func RoleIn(vs ...string) predicate.Shift {
-	return predicate.Shift(sql.FieldIn(FieldRole, vs...))
+// NameIn applies the In predicate on the "name" field.
+func NameIn(vs ...string) predicate.Shift {
+	return predicate.Shift(sql.FieldIn(FieldName, vs...))
 }
 
-// RoleNotIn applies the NotIn predicate on the "role" field.
-func RoleNotIn(vs ...string) predicate.Shift {
-	return predicate.Shift(sql.FieldNotIn(FieldRole, vs...))
+// NameNotIn applies the NotIn predicate on the "name" field.
+func NameNotIn(vs ...string) predicate.Shift {
+	return predicate.Shift(sql.FieldNotIn(FieldName, vs...))
 }
 
-// RoleGT applies the GT predicate on the "role" field.
-func RoleGT(v string) predicate.Shift {
-	return predicate.Shift(sql.FieldGT(FieldRole, v))
+// NameGT applies the GT predicate on the "name" field.
+func NameGT(v string) predicate.Shift {
+	return predicate.Shift(sql.FieldGT(FieldName, v))
 }
 
-// RoleGTE applies the GTE predicate on the "role" field.
-func RoleGTE(v string) predicate.Shift {
-	return predicate.Shift(sql.FieldGTE(FieldRole, v))
+// NameGTE applies the GTE predicate on the "name" field.
+func NameGTE(v string) predicate.Shift {
+	return predicate.Shift(sql.FieldGTE(FieldName, v))
 }
 
-// RoleLT applies the LT predicate on the "role" field.
-func RoleLT(v string) predicate.Shift {
-	return predicate.Shift(sql.FieldLT(FieldRole, v))
+// NameLT applies the LT predicate on the "name" field.
+func NameLT(v string) predicate.Shift {
+	return predicate.Shift(sql.FieldLT(FieldName, v))
 }
 
-// RoleLTE applies the LTE predicate on the "role" field.
-func RoleLTE(v string) predicate.Shift {
-	return predicate.Shift(sql.FieldLTE(FieldRole, v))
+// NameLTE applies the LTE predicate on the "name" field.
+func NameLTE(v string) predicate.Shift {
+	return predicate.Shift(sql.FieldLTE(FieldName, v))
 }
 
-// RoleContains applies the Contains predicate on the "role" field.
-func RoleContains(v string) predicate.Shift {
-	return predicate.Shift(sql.FieldContains(FieldRole, v))
+// NameContains applies the Contains predicate on the "name" field.
+func NameContains(v string) predicate.Shift {
+	return predicate.Shift(sql.FieldContains(FieldName, v))
 }
 
-// RoleHasPrefix applies the HasPrefix predicate on the "role" field.
-func RoleHasPrefix(v string) predicate.Shift {
-	return predicate.Shift(sql.FieldHasPrefix(FieldRole, v))
+// NameHasPrefix applies the HasPrefix predicate on the "name" field.
+func NameHasPrefix(v string) predicate.Shift {
+	return predicate.Shift(sql.FieldHasPrefix(FieldName, v))
 }
 
-// RoleHasSuffix applies the HasSuffix predicate on the "role" field.
-func RoleHasSuffix(v string) predicate.Shift {
-	return predicate.Shift(sql.FieldHasSuffix(FieldRole, v))
+// NameHasSuffix applies the HasSuffix predicate on the "name" field.
+func NameHasSuffix(v string) predicate.Shift {
+	return predicate.Shift(sql.FieldHasSuffix(FieldName, v))
 }
 
-// RoleEqualFold applies the EqualFold predicate on the "role" field.
-func RoleEqualFold(v string) predicate.Shift {
-	return predicate.Shift(sql.FieldEqualFold(FieldRole, v))
+// NameEqualFold applies the EqualFold predicate on the "name" field.
+func NameEqualFold(v string) predicate.Shift {
+	return predicate.Shift(sql.FieldEqualFold(FieldName, v))
 }
 
-// RoleContainsFold applies the ContainsFold predicate on the "role" field.
-func RoleContainsFold(v string) predicate.Shift {
-	return predicate.Shift(sql.FieldContainsFold(FieldRole, v))
+// NameContainsFold applies the ContainsFold predicate on the "name" field.
+func NameContainsFold(v string) predicate.Shift {
+	return predicate.Shift(sql.FieldContainsFold(FieldName, v))
 }
 
-// StartsAtEQ applies the EQ predicate on the "starts_at" field.
-func StartsAtEQ(v time.Time) predicate.Shift {
-	return predicate.Shift(sql.FieldEQ(FieldStartsAt, v))
+// WeekdayEQ applies the EQ predicate on the "weekday" field.
+func WeekdayEQ(v int) predicate.Shift {
+	return predicate.Shift(sql.FieldEQ(FieldWeekday, v))
 }
 
-// StartsAtNEQ applies the NEQ predicate on the "starts_at" field.
-func StartsAtNEQ(v time.Time) predicate.Shift {
-	return predicate.Shift(sql.FieldNEQ(FieldStartsAt, v))
+// WeekdayNEQ applies the NEQ predicate on the "weekday" field.
+func WeekdayNEQ(v int) predicate.Shift {
+	return predicate.Shift(sql.FieldNEQ(FieldWeekday, v))
 }
 
-// StartsAtIn applies the In predicate on the "starts_at" field.
-func StartsAtIn(vs ...time.Time) predicate.Shift {
-	return predicate.Shift(sql.FieldIn(FieldStartsAt, vs...))
+// WeekdayIn applies the In predicate on the "weekday" field.
+func WeekdayIn(vs ...int) predicate.Shift {
+	return predicate.Shift(sql.FieldIn(FieldWeekday, vs...))
 }
 
-// StartsAtNotIn applies the NotIn predicate on the "starts_at" field.
-func StartsAtNotIn(vs ...time.Time) predicate.Shift {
-	return predicate.Shift(sql.FieldNotIn(FieldStartsAt, vs...))
+// WeekdayNotIn applies the NotIn predicate on the "weekday" field.
+func WeekdayNotIn(vs ...int) predicate.Shift {
+	return predicate.Shift(sql.FieldNotIn(FieldWeekday, vs...))
 }
 
-// StartsAtGT applies the GT predicate on the "starts_at" field.
-func StartsAtGT(v time.Time) predicate.Shift {
-	return predicate.Shift(sql.FieldGT(FieldStartsAt, v))
+// WeekdayGT applies the GT predicate on the "weekday" field.
+func WeekdayGT(v int) predicate.Shift {
+	return predicate.Shift(sql.FieldGT(FieldWeekday, v))
 }
 
-// StartsAtGTE applies the GTE predicate on the "starts_at" field.
-func StartsAtGTE(v time.Time) predicate.Shift {
-	return predicate.Shift(sql.FieldGTE(FieldStartsAt, v))
+// WeekdayGTE applies the GTE predicate on the "weekday" field.
+func WeekdayGTE(v int) predicate.Shift {
+	return predicate.Shift(sql.FieldGTE(FieldWeekday, v))
 }
 
-// StartsAtLT applies the LT predicate on the "starts_at" field.
-func StartsAtLT(v time.Time) predicate.Shift {
-	return predicate.Shift(sql.FieldLT(FieldStartsAt, v))
+// WeekdayLT applies the LT predicate on the "weekday" field.
+func WeekdayLT(v int) predicate.Shift {
+	return predicate.Shift(sql.FieldLT(FieldWeekday, v))
 }
 
-// StartsAtLTE applies the LTE predicate on the "starts_at" field.
-func StartsAtLTE(v time.Time) predicate.Shift {
-	return predicate.Shift(sql.FieldLTE(FieldStartsAt, v))
+// WeekdayLTE applies the LTE predicate on the "weekday" field.
+func WeekdayLTE(v int) predicate.Shift {
+	return predicate.Shift(sql.FieldLTE(FieldWeekday, v))
 }
 
-// EndsAtEQ applies the EQ predicate on the "ends_at" field.
-func EndsAtEQ(v time.Time) predicate.Shift {
-	return predicate.Shift(sql.FieldEQ(FieldEndsAt, v))
+// StartTimeEQ applies the EQ predicate on the "start_time" field.
+func StartTimeEQ(v string) predicate.Shift {
+	return predicate.Shift(sql.FieldEQ(FieldStartTime, v))
 }
 
-// EndsAtNEQ applies the NEQ predicate on the "ends_at" field.
-func EndsAtNEQ(v time.Time) predicate.Shift {
-	return predicate.Shift(sql.FieldNEQ(FieldEndsAt, v))
+// StartTimeNEQ applies the NEQ predicate on the "start_time" field.
+func StartTimeNEQ(v string) predicate.Shift {
+	return predicate.Shift(sql.FieldNEQ(FieldStartTime, v))
 }
 
-// EndsAtIn applies the In predicate on the "ends_at" field.
-func EndsAtIn(vs ...time.Time) predicate.Shift {
-	return predicate.Shift(sql.FieldIn(FieldEndsAt, vs...))
+// StartTimeIn applies the In predicate on the "start_time" field.
+func StartTimeIn(vs ...string) predicate.Shift {
+	return predicate.Shift(sql.FieldIn(FieldStartTime, vs...))
 }
 
-// EndsAtNotIn applies the NotIn predicate on the "ends_at" field.
-func EndsAtNotIn(vs ...time.Time) predicate.Shift {
-	return predicate.Shift(sql.FieldNotIn(FieldEndsAt, vs...))
+// StartTimeNotIn applies the NotIn predicate on the "start_time" field.
+func StartTimeNotIn(vs ...string) predicate.Shift {
+	return predicate.Shift(sql.FieldNotIn(FieldStartTime, vs...))
 }
 
-// EndsAtGT applies the GT predicate on the "ends_at" field.
-func EndsAtGT(v time.Time) predicate.Shift {
-	return predicate.Shift(sql.FieldGT(FieldEndsAt, v))
+// StartTimeGT applies the GT predicate on the "start_time" field.
+func StartTimeGT(v string) predicate.Shift {
+	return predicate.Shift(sql.FieldGT(FieldStartTime, v))
 }
 
-// EndsAtGTE applies the GTE predicate on the "ends_at" field.
-func EndsAtGTE(v time.Time) predicate.Shift {
-	return predicate.Shift(sql.FieldGTE(FieldEndsAt, v))
+// StartTimeGTE applies the GTE predicate on the "start_time" field.
+func StartTimeGTE(v string) predicate.Shift {
+	return predicate.Shift(sql.FieldGTE(FieldStartTime, v))
 }
 
-// EndsAtLT applies the LT predicate on the "ends_at" field.
-func EndsAtLT(v time.Time) predicate.Shift {
-	return predicate.Shift(sql.FieldLT(FieldEndsAt, v))
+// StartTimeLT applies the LT predicate on the "start_time" field.
+func StartTimeLT(v string) predicate.Shift {
+	return predicate.Shift(sql.FieldLT(FieldStartTime, v))
 }
 
-// EndsAtLTE applies the LTE predicate on the "ends_at" field.
-func EndsAtLTE(v time.Time) predicate.Shift {
-	return predicate.Shift(sql.FieldLTE(FieldEndsAt, v))
+// StartTimeLTE applies the LTE predicate on the "start_time" field.
+func StartTimeLTE(v string) predicate.Shift {
+	return predicate.Shift(sql.FieldLTE(FieldStartTime, v))
+}
+
+// StartTimeContains applies the Contains predicate on the "start_time" field.
+func StartTimeContains(v string) predicate.Shift {
+	return predicate.Shift(sql.FieldContains(FieldStartTime, v))
+}
+
+// StartTimeHasPrefix applies the HasPrefix predicate on the "start_time" field.
+func StartTimeHasPrefix(v string) predicate.Shift {
+	return predicate.Shift(sql.FieldHasPrefix(FieldStartTime, v))
+}
+
+// StartTimeHasSuffix applies the HasSuffix predicate on the "start_time" field.
+func StartTimeHasSuffix(v string) predicate.Shift {
+	return predicate.Shift(sql.FieldHasSuffix(FieldStartTime, v))
+}
+
+// StartTimeEqualFold applies the EqualFold predicate on the "start_time" field.
+func StartTimeEqualFold(v string) predicate.Shift {
+	return predicate.Shift(sql.FieldEqualFold(FieldStartTime, v))
+}
+
+// StartTimeContainsFold applies the ContainsFold predicate on the "start_time" field.
+func StartTimeContainsFold(v string) predicate.Shift {
+	return predicate.Shift(sql.FieldContainsFold(FieldStartTime, v))
+}
+
+// EndTimeEQ applies the EQ predicate on the "end_time" field.
+func EndTimeEQ(v string) predicate.Shift {
+	return predicate.Shift(sql.FieldEQ(FieldEndTime, v))
+}
+
+// EndTimeNEQ applies the NEQ predicate on the "end_time" field.
+func EndTimeNEQ(v string) predicate.Shift {
+	return predicate.Shift(sql.FieldNEQ(FieldEndTime, v))
+}
+
+// EndTimeIn applies the In predicate on the "end_time" field.
+func EndTimeIn(vs ...string) predicate.Shift {
+	return predicate.Shift(sql.FieldIn(FieldEndTime, vs...))
+}
+
+// EndTimeNotIn applies the NotIn predicate on the "end_time" field.
+func EndTimeNotIn(vs ...string) predicate.Shift {
+	return predicate.Shift(sql.FieldNotIn(FieldEndTime, vs...))
+}
+
+// EndTimeGT applies the GT predicate on the "end_time" field.
+func EndTimeGT(v string) predicate.Shift {
+	return predicate.Shift(sql.FieldGT(FieldEndTime, v))
+}
+
+// EndTimeGTE applies the GTE predicate on the "end_time" field.
+func EndTimeGTE(v string) predicate.Shift {
+	return predicate.Shift(sql.FieldGTE(FieldEndTime, v))
+}
+
+// EndTimeLT applies the LT predicate on the "end_time" field.
+func EndTimeLT(v string) predicate.Shift {
+	return predicate.Shift(sql.FieldLT(FieldEndTime, v))
+}
+
+// EndTimeLTE applies the LTE predicate on the "end_time" field.
+func EndTimeLTE(v string) predicate.Shift {
+	return predicate.Shift(sql.FieldLTE(FieldEndTime, v))
+}
+
+// EndTimeContains applies the Contains predicate on the "end_time" field.
+func EndTimeContains(v string) predicate.Shift {
+	return predicate.Shift(sql.FieldContains(FieldEndTime, v))
+}
+
+// EndTimeHasPrefix applies the HasPrefix predicate on the "end_time" field.
+func EndTimeHasPrefix(v string) predicate.Shift {
+	return predicate.Shift(sql.FieldHasPrefix(FieldEndTime, v))
+}
+
+// EndTimeHasSuffix applies the HasSuffix predicate on the "end_time" field.
+func EndTimeHasSuffix(v string) predicate.Shift {
+	return predicate.Shift(sql.FieldHasSuffix(FieldEndTime, v))
+}
+
+// EndTimeEqualFold applies the EqualFold predicate on the "end_time" field.
+func EndTimeEqualFold(v string) predicate.Shift {
+	return predicate.Shift(sql.FieldEqualFold(FieldEndTime, v))
+}
+
+// EndTimeContainsFold applies the ContainsFold predicate on the "end_time" field.
+func EndTimeContainsFold(v string) predicate.Shift {
+	return predicate.Shift(sql.FieldContainsFold(FieldEndTime, v))
 }
 
 // MinStaffEQ applies the EQ predicate on the "min_staff" field.
@@ -333,46 +422,6 @@ func MaxStaffLT(v int) predicate.Shift {
 // MaxStaffLTE applies the LTE predicate on the "max_staff" field.
 func MaxStaffLTE(v int) predicate.Shift {
 	return predicate.Shift(sql.FieldLTE(FieldMaxStaff, v))
-}
-
-// CreatedAtEQ applies the EQ predicate on the "created_at" field.
-func CreatedAtEQ(v time.Time) predicate.Shift {
-	return predicate.Shift(sql.FieldEQ(FieldCreatedAt, v))
-}
-
-// CreatedAtNEQ applies the NEQ predicate on the "created_at" field.
-func CreatedAtNEQ(v time.Time) predicate.Shift {
-	return predicate.Shift(sql.FieldNEQ(FieldCreatedAt, v))
-}
-
-// CreatedAtIn applies the In predicate on the "created_at" field.
-func CreatedAtIn(vs ...time.Time) predicate.Shift {
-	return predicate.Shift(sql.FieldIn(FieldCreatedAt, vs...))
-}
-
-// CreatedAtNotIn applies the NotIn predicate on the "created_at" field.
-func CreatedAtNotIn(vs ...time.Time) predicate.Shift {
-	return predicate.Shift(sql.FieldNotIn(FieldCreatedAt, vs...))
-}
-
-// CreatedAtGT applies the GT predicate on the "created_at" field.
-func CreatedAtGT(v time.Time) predicate.Shift {
-	return predicate.Shift(sql.FieldGT(FieldCreatedAt, v))
-}
-
-// CreatedAtGTE applies the GTE predicate on the "created_at" field.
-func CreatedAtGTE(v time.Time) predicate.Shift {
-	return predicate.Shift(sql.FieldGTE(FieldCreatedAt, v))
-}
-
-// CreatedAtLT applies the LT predicate on the "created_at" field.
-func CreatedAtLT(v time.Time) predicate.Shift {
-	return predicate.Shift(sql.FieldLT(FieldCreatedAt, v))
-}
-
-// CreatedAtLTE applies the LTE predicate on the "created_at" field.
-func CreatedAtLTE(v time.Time) predicate.Shift {
-	return predicate.Shift(sql.FieldLTE(FieldCreatedAt, v))
 }
 
 // HasShop applies the HasEdge predicate on the "shop" edge.

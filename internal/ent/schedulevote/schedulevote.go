@@ -7,6 +7,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/google/uuid"
 )
 
 const (
@@ -20,6 +21,8 @@ const (
 	FieldScheduleID = "schedule_id"
 	// FieldEmployeeID holds the string denoting the employee_id field in the database.
 	FieldEmployeeID = "employee_id"
+	// FieldWeekStart holds the string denoting the week_start field in the database.
+	FieldWeekStart = "week_start"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// EdgeShop holds the string denoting the shop edge name in mutations.
@@ -59,6 +62,7 @@ var Columns = []string{
 	FieldShopID,
 	FieldScheduleID,
 	FieldEmployeeID,
+	FieldWeekStart,
 	FieldCreatedAt,
 }
 
@@ -75,6 +79,8 @@ func ValidColumn(column string) bool {
 var (
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
+	// DefaultID holds the default value on creation for the "id" field.
+	DefaultID func() uuid.UUID
 )
 
 // OrderOption defines the ordering options for the ScheduleVote queries.
@@ -98,6 +104,11 @@ func ByScheduleID(opts ...sql.OrderTermOption) OrderOption {
 // ByEmployeeID orders the results by the employee_id field.
 func ByEmployeeID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldEmployeeID, opts...).ToFunc()
+}
+
+// ByWeekStart orders the results by the week_start field.
+func ByWeekStart(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldWeekStart, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.
@@ -129,7 +140,7 @@ func newShopStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ShopInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, true, ShopTable, ShopColumn),
+		sqlgraph.Edge(sqlgraph.M2O, false, ShopTable, ShopColumn),
 	)
 }
 func newScheduleStep() *sqlgraph.Step {

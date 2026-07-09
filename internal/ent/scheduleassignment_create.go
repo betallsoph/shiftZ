@@ -6,7 +6,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -15,6 +17,7 @@ import (
 	"github.com/betallsoph/shiftz/internal/ent/scheduleassignment"
 	"github.com/betallsoph/shiftz/internal/ent/shift"
 	"github.com/betallsoph/shiftz/internal/ent/shop"
+	"github.com/google/uuid"
 )
 
 // ScheduleAssignmentCreate is the builder for creating a ScheduleAssignment entity.
@@ -26,26 +29,46 @@ type ScheduleAssignmentCreate struct {
 }
 
 // SetShopID sets the "shop_id" field.
-func (_c *ScheduleAssignmentCreate) SetShopID(v int) *ScheduleAssignmentCreate {
+func (_c *ScheduleAssignmentCreate) SetShopID(v uuid.UUID) *ScheduleAssignmentCreate {
 	_c.mutation.SetShopID(v)
 	return _c
 }
 
 // SetScheduleID sets the "schedule_id" field.
-func (_c *ScheduleAssignmentCreate) SetScheduleID(v int) *ScheduleAssignmentCreate {
+func (_c *ScheduleAssignmentCreate) SetScheduleID(v uuid.UUID) *ScheduleAssignmentCreate {
 	_c.mutation.SetScheduleID(v)
 	return _c
 }
 
 // SetShiftID sets the "shift_id" field.
-func (_c *ScheduleAssignmentCreate) SetShiftID(v int) *ScheduleAssignmentCreate {
+func (_c *ScheduleAssignmentCreate) SetShiftID(v uuid.UUID) *ScheduleAssignmentCreate {
 	_c.mutation.SetShiftID(v)
 	return _c
 }
 
 // SetEmployeeID sets the "employee_id" field.
-func (_c *ScheduleAssignmentCreate) SetEmployeeID(v int) *ScheduleAssignmentCreate {
+func (_c *ScheduleAssignmentCreate) SetEmployeeID(v uuid.UUID) *ScheduleAssignmentCreate {
 	_c.mutation.SetEmployeeID(v)
+	return _c
+}
+
+// SetDate sets the "date" field.
+func (_c *ScheduleAssignmentCreate) SetDate(v time.Time) *ScheduleAssignmentCreate {
+	_c.mutation.SetDate(v)
+	return _c
+}
+
+// SetID sets the "id" field.
+func (_c *ScheduleAssignmentCreate) SetID(v uuid.UUID) *ScheduleAssignmentCreate {
+	_c.mutation.SetID(v)
+	return _c
+}
+
+// SetNillableID sets the "id" field if the given value is not nil.
+func (_c *ScheduleAssignmentCreate) SetNillableID(v *uuid.UUID) *ScheduleAssignmentCreate {
+	if v != nil {
+		_c.SetID(*v)
+	}
 	return _c
 }
 
@@ -76,6 +99,7 @@ func (_c *ScheduleAssignmentCreate) Mutation() *ScheduleAssignmentMutation {
 
 // Save creates the ScheduleAssignment in the database.
 func (_c *ScheduleAssignmentCreate) Save(ctx context.Context) (*ScheduleAssignment, error) {
+	_c.defaults()
 	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
@@ -101,6 +125,14 @@ func (_c *ScheduleAssignmentCreate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (_c *ScheduleAssignmentCreate) defaults() {
+	if _, ok := _c.mutation.ID(); !ok {
+		v := scheduleassignment.DefaultID()
+		_c.mutation.SetID(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (_c *ScheduleAssignmentCreate) check() error {
 	if _, ok := _c.mutation.ShopID(); !ok {
@@ -114,6 +146,9 @@ func (_c *ScheduleAssignmentCreate) check() error {
 	}
 	if _, ok := _c.mutation.EmployeeID(); !ok {
 		return &ValidationError{Name: "employee_id", err: errors.New(`ent: missing required field "ScheduleAssignment.employee_id"`)}
+	}
+	if _, ok := _c.mutation.Date(); !ok {
+		return &ValidationError{Name: "date", err: errors.New(`ent: missing required field "ScheduleAssignment.date"`)}
 	}
 	if len(_c.mutation.ShopIDs()) == 0 {
 		return &ValidationError{Name: "shop", err: errors.New(`ent: missing required edge "ScheduleAssignment.shop"`)}
@@ -141,8 +176,13 @@ func (_c *ScheduleAssignmentCreate) sqlSave(ctx context.Context) (*ScheduleAssig
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
+	if _spec.ID.Value != nil {
+		if id, ok := _spec.ID.Value.(*uuid.UUID); ok {
+			_node.ID = *id
+		} else if err := _node.ID.Scan(_spec.ID.Value); err != nil {
+			return nil, err
+		}
+	}
 	_c.mutation.id = &_node.ID
 	_c.mutation.done = true
 	return _node, nil
@@ -151,18 +191,26 @@ func (_c *ScheduleAssignmentCreate) sqlSave(ctx context.Context) (*ScheduleAssig
 func (_c *ScheduleAssignmentCreate) createSpec() (*ScheduleAssignment, *sqlgraph.CreateSpec) {
 	var (
 		_node = &ScheduleAssignment{config: _c.config}
-		_spec = sqlgraph.NewCreateSpec(scheduleassignment.Table, sqlgraph.NewFieldSpec(scheduleassignment.FieldID, field.TypeInt))
+		_spec = sqlgraph.NewCreateSpec(scheduleassignment.Table, sqlgraph.NewFieldSpec(scheduleassignment.FieldID, field.TypeUUID))
 	)
 	_spec.OnConflict = _c.conflict
+	if id, ok := _c.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = &id
+	}
+	if value, ok := _c.mutation.Date(); ok {
+		_spec.SetField(scheduleassignment.FieldDate, field.TypeTime, value)
+		_node.Date = value
+	}
 	if nodes := _c.mutation.ShopIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: true,
+			Inverse: false,
 			Table:   scheduleassignment.ShopTable,
 			Columns: []string{scheduleassignment.ShopColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(shop.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -179,7 +227,7 @@ func (_c *ScheduleAssignmentCreate) createSpec() (*ScheduleAssignment, *sqlgraph
 			Columns: []string{scheduleassignment.ScheduleColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(schedule.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(schedule.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -196,7 +244,7 @@ func (_c *ScheduleAssignmentCreate) createSpec() (*ScheduleAssignment, *sqlgraph
 			Columns: []string{scheduleassignment.ShiftColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(shift.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(shift.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -213,7 +261,7 @@ func (_c *ScheduleAssignmentCreate) createSpec() (*ScheduleAssignment, *sqlgraph
 			Columns: []string{scheduleassignment.EmployeeColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(employee.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -275,7 +323,7 @@ type (
 )
 
 // SetShopID sets the "shop_id" field.
-func (u *ScheduleAssignmentUpsert) SetShopID(v int) *ScheduleAssignmentUpsert {
+func (u *ScheduleAssignmentUpsert) SetShopID(v uuid.UUID) *ScheduleAssignmentUpsert {
 	u.Set(scheduleassignment.FieldShopID, v)
 	return u
 }
@@ -287,7 +335,7 @@ func (u *ScheduleAssignmentUpsert) UpdateShopID() *ScheduleAssignmentUpsert {
 }
 
 // SetScheduleID sets the "schedule_id" field.
-func (u *ScheduleAssignmentUpsert) SetScheduleID(v int) *ScheduleAssignmentUpsert {
+func (u *ScheduleAssignmentUpsert) SetScheduleID(v uuid.UUID) *ScheduleAssignmentUpsert {
 	u.Set(scheduleassignment.FieldScheduleID, v)
 	return u
 }
@@ -299,7 +347,7 @@ func (u *ScheduleAssignmentUpsert) UpdateScheduleID() *ScheduleAssignmentUpsert 
 }
 
 // SetShiftID sets the "shift_id" field.
-func (u *ScheduleAssignmentUpsert) SetShiftID(v int) *ScheduleAssignmentUpsert {
+func (u *ScheduleAssignmentUpsert) SetShiftID(v uuid.UUID) *ScheduleAssignmentUpsert {
 	u.Set(scheduleassignment.FieldShiftID, v)
 	return u
 }
@@ -311,7 +359,7 @@ func (u *ScheduleAssignmentUpsert) UpdateShiftID() *ScheduleAssignmentUpsert {
 }
 
 // SetEmployeeID sets the "employee_id" field.
-func (u *ScheduleAssignmentUpsert) SetEmployeeID(v int) *ScheduleAssignmentUpsert {
+func (u *ScheduleAssignmentUpsert) SetEmployeeID(v uuid.UUID) *ScheduleAssignmentUpsert {
 	u.Set(scheduleassignment.FieldEmployeeID, v)
 	return u
 }
@@ -322,16 +370,36 @@ func (u *ScheduleAssignmentUpsert) UpdateEmployeeID() *ScheduleAssignmentUpsert 
 	return u
 }
 
-// UpdateNewValues updates the mutable fields using the new values that were set on create.
+// SetDate sets the "date" field.
+func (u *ScheduleAssignmentUpsert) SetDate(v time.Time) *ScheduleAssignmentUpsert {
+	u.Set(scheduleassignment.FieldDate, v)
+	return u
+}
+
+// UpdateDate sets the "date" field to the value that was provided on create.
+func (u *ScheduleAssignmentUpsert) UpdateDate() *ScheduleAssignmentUpsert {
+	u.SetExcluded(scheduleassignment.FieldDate)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
 //	client.ScheduleAssignment.Create().
 //		OnConflict(
 //			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(scheduleassignment.FieldID)
+//			}),
 //		).
 //		Exec(ctx)
 func (u *ScheduleAssignmentUpsertOne) UpdateNewValues() *ScheduleAssignmentUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(scheduleassignment.FieldID)
+		}
+	}))
 	return u
 }
 
@@ -363,7 +431,7 @@ func (u *ScheduleAssignmentUpsertOne) Update(set func(*ScheduleAssignmentUpsert)
 }
 
 // SetShopID sets the "shop_id" field.
-func (u *ScheduleAssignmentUpsertOne) SetShopID(v int) *ScheduleAssignmentUpsertOne {
+func (u *ScheduleAssignmentUpsertOne) SetShopID(v uuid.UUID) *ScheduleAssignmentUpsertOne {
 	return u.Update(func(s *ScheduleAssignmentUpsert) {
 		s.SetShopID(v)
 	})
@@ -377,7 +445,7 @@ func (u *ScheduleAssignmentUpsertOne) UpdateShopID() *ScheduleAssignmentUpsertOn
 }
 
 // SetScheduleID sets the "schedule_id" field.
-func (u *ScheduleAssignmentUpsertOne) SetScheduleID(v int) *ScheduleAssignmentUpsertOne {
+func (u *ScheduleAssignmentUpsertOne) SetScheduleID(v uuid.UUID) *ScheduleAssignmentUpsertOne {
 	return u.Update(func(s *ScheduleAssignmentUpsert) {
 		s.SetScheduleID(v)
 	})
@@ -391,7 +459,7 @@ func (u *ScheduleAssignmentUpsertOne) UpdateScheduleID() *ScheduleAssignmentUpse
 }
 
 // SetShiftID sets the "shift_id" field.
-func (u *ScheduleAssignmentUpsertOne) SetShiftID(v int) *ScheduleAssignmentUpsertOne {
+func (u *ScheduleAssignmentUpsertOne) SetShiftID(v uuid.UUID) *ScheduleAssignmentUpsertOne {
 	return u.Update(func(s *ScheduleAssignmentUpsert) {
 		s.SetShiftID(v)
 	})
@@ -405,7 +473,7 @@ func (u *ScheduleAssignmentUpsertOne) UpdateShiftID() *ScheduleAssignmentUpsertO
 }
 
 // SetEmployeeID sets the "employee_id" field.
-func (u *ScheduleAssignmentUpsertOne) SetEmployeeID(v int) *ScheduleAssignmentUpsertOne {
+func (u *ScheduleAssignmentUpsertOne) SetEmployeeID(v uuid.UUID) *ScheduleAssignmentUpsertOne {
 	return u.Update(func(s *ScheduleAssignmentUpsert) {
 		s.SetEmployeeID(v)
 	})
@@ -415,6 +483,20 @@ func (u *ScheduleAssignmentUpsertOne) SetEmployeeID(v int) *ScheduleAssignmentUp
 func (u *ScheduleAssignmentUpsertOne) UpdateEmployeeID() *ScheduleAssignmentUpsertOne {
 	return u.Update(func(s *ScheduleAssignmentUpsert) {
 		s.UpdateEmployeeID()
+	})
+}
+
+// SetDate sets the "date" field.
+func (u *ScheduleAssignmentUpsertOne) SetDate(v time.Time) *ScheduleAssignmentUpsertOne {
+	return u.Update(func(s *ScheduleAssignmentUpsert) {
+		s.SetDate(v)
+	})
+}
+
+// UpdateDate sets the "date" field to the value that was provided on create.
+func (u *ScheduleAssignmentUpsertOne) UpdateDate() *ScheduleAssignmentUpsertOne {
+	return u.Update(func(s *ScheduleAssignmentUpsert) {
+		s.UpdateDate()
 	})
 }
 
@@ -434,7 +516,12 @@ func (u *ScheduleAssignmentUpsertOne) ExecX(ctx context.Context) {
 }
 
 // Exec executes the UPSERT query and returns the inserted/updated ID.
-func (u *ScheduleAssignmentUpsertOne) ID(ctx context.Context) (id int, err error) {
+func (u *ScheduleAssignmentUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
+	if u.create.driver.Dialect() == dialect.MySQL {
+		// In case of "ON CONFLICT", there is no way to get back non-numeric ID
+		// fields from the database since MySQL does not support the RETURNING clause.
+		return id, errors.New("ent: ScheduleAssignmentUpsertOne.ID is not supported by MySQL driver. Use ScheduleAssignmentUpsertOne.Exec instead")
+	}
 	node, err := u.create.Save(ctx)
 	if err != nil {
 		return id, err
@@ -443,7 +530,7 @@ func (u *ScheduleAssignmentUpsertOne) ID(ctx context.Context) (id int, err error
 }
 
 // IDX is like ID, but panics if an error occurs.
-func (u *ScheduleAssignmentUpsertOne) IDX(ctx context.Context) int {
+func (u *ScheduleAssignmentUpsertOne) IDX(ctx context.Context) uuid.UUID {
 	id, err := u.ID(ctx)
 	if err != nil {
 		panic(err)
@@ -470,6 +557,7 @@ func (_c *ScheduleAssignmentCreateBulk) Save(ctx context.Context) ([]*ScheduleAs
 	for i := range _c.builders {
 		func(i int, root context.Context) {
 			builder := _c.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*ScheduleAssignmentMutation)
 				if !ok {
@@ -497,10 +585,6 @@ func (_c *ScheduleAssignmentCreateBulk) Save(ctx context.Context) ([]*ScheduleAs
 					return nil, err
 				}
 				mutation.id = &nodes[i].ID
-				if specs[i].ID.Value != nil {
-					id := specs[i].ID.Value.(int64)
-					nodes[i].ID = int(id)
-				}
 				mutation.done = true
 				return nodes[i], nil
 			})
@@ -587,10 +671,20 @@ type ScheduleAssignmentUpsertBulk struct {
 //	client.ScheduleAssignment.Create().
 //		OnConflict(
 //			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(scheduleassignment.FieldID)
+//			}),
 //		).
 //		Exec(ctx)
 func (u *ScheduleAssignmentUpsertBulk) UpdateNewValues() *ScheduleAssignmentUpsertBulk {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(scheduleassignment.FieldID)
+			}
+		}
+	}))
 	return u
 }
 
@@ -622,7 +716,7 @@ func (u *ScheduleAssignmentUpsertBulk) Update(set func(*ScheduleAssignmentUpsert
 }
 
 // SetShopID sets the "shop_id" field.
-func (u *ScheduleAssignmentUpsertBulk) SetShopID(v int) *ScheduleAssignmentUpsertBulk {
+func (u *ScheduleAssignmentUpsertBulk) SetShopID(v uuid.UUID) *ScheduleAssignmentUpsertBulk {
 	return u.Update(func(s *ScheduleAssignmentUpsert) {
 		s.SetShopID(v)
 	})
@@ -636,7 +730,7 @@ func (u *ScheduleAssignmentUpsertBulk) UpdateShopID() *ScheduleAssignmentUpsertB
 }
 
 // SetScheduleID sets the "schedule_id" field.
-func (u *ScheduleAssignmentUpsertBulk) SetScheduleID(v int) *ScheduleAssignmentUpsertBulk {
+func (u *ScheduleAssignmentUpsertBulk) SetScheduleID(v uuid.UUID) *ScheduleAssignmentUpsertBulk {
 	return u.Update(func(s *ScheduleAssignmentUpsert) {
 		s.SetScheduleID(v)
 	})
@@ -650,7 +744,7 @@ func (u *ScheduleAssignmentUpsertBulk) UpdateScheduleID() *ScheduleAssignmentUps
 }
 
 // SetShiftID sets the "shift_id" field.
-func (u *ScheduleAssignmentUpsertBulk) SetShiftID(v int) *ScheduleAssignmentUpsertBulk {
+func (u *ScheduleAssignmentUpsertBulk) SetShiftID(v uuid.UUID) *ScheduleAssignmentUpsertBulk {
 	return u.Update(func(s *ScheduleAssignmentUpsert) {
 		s.SetShiftID(v)
 	})
@@ -664,7 +758,7 @@ func (u *ScheduleAssignmentUpsertBulk) UpdateShiftID() *ScheduleAssignmentUpsert
 }
 
 // SetEmployeeID sets the "employee_id" field.
-func (u *ScheduleAssignmentUpsertBulk) SetEmployeeID(v int) *ScheduleAssignmentUpsertBulk {
+func (u *ScheduleAssignmentUpsertBulk) SetEmployeeID(v uuid.UUID) *ScheduleAssignmentUpsertBulk {
 	return u.Update(func(s *ScheduleAssignmentUpsert) {
 		s.SetEmployeeID(v)
 	})
@@ -674,6 +768,20 @@ func (u *ScheduleAssignmentUpsertBulk) SetEmployeeID(v int) *ScheduleAssignmentU
 func (u *ScheduleAssignmentUpsertBulk) UpdateEmployeeID() *ScheduleAssignmentUpsertBulk {
 	return u.Update(func(s *ScheduleAssignmentUpsert) {
 		s.UpdateEmployeeID()
+	})
+}
+
+// SetDate sets the "date" field.
+func (u *ScheduleAssignmentUpsertBulk) SetDate(v time.Time) *ScheduleAssignmentUpsertBulk {
+	return u.Update(func(s *ScheduleAssignmentUpsert) {
+		s.SetDate(v)
+	})
+}
+
+// UpdateDate sets the "date" field to the value that was provided on create.
+func (u *ScheduleAssignmentUpsertBulk) UpdateDate() *ScheduleAssignmentUpsertBulk {
+	return u.Update(func(s *ScheduleAssignmentUpsert) {
+		s.UpdateDate()
 	})
 }
 

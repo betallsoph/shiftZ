@@ -8,61 +8,62 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/betallsoph/shiftz/internal/ent/predicate"
+	"github.com/google/uuid"
 )
 
 // ID filters vertices based on their ID field.
-func ID(id int) predicate.Rule {
+func ID(id uuid.UUID) predicate.Rule {
 	return predicate.Rule(sql.FieldEQ(FieldID, id))
 }
 
 // IDEQ applies the EQ predicate on the ID field.
-func IDEQ(id int) predicate.Rule {
+func IDEQ(id uuid.UUID) predicate.Rule {
 	return predicate.Rule(sql.FieldEQ(FieldID, id))
 }
 
 // IDNEQ applies the NEQ predicate on the ID field.
-func IDNEQ(id int) predicate.Rule {
+func IDNEQ(id uuid.UUID) predicate.Rule {
 	return predicate.Rule(sql.FieldNEQ(FieldID, id))
 }
 
 // IDIn applies the In predicate on the ID field.
-func IDIn(ids ...int) predicate.Rule {
+func IDIn(ids ...uuid.UUID) predicate.Rule {
 	return predicate.Rule(sql.FieldIn(FieldID, ids...))
 }
 
 // IDNotIn applies the NotIn predicate on the ID field.
-func IDNotIn(ids ...int) predicate.Rule {
+func IDNotIn(ids ...uuid.UUID) predicate.Rule {
 	return predicate.Rule(sql.FieldNotIn(FieldID, ids...))
 }
 
 // IDGT applies the GT predicate on the ID field.
-func IDGT(id int) predicate.Rule {
+func IDGT(id uuid.UUID) predicate.Rule {
 	return predicate.Rule(sql.FieldGT(FieldID, id))
 }
 
 // IDGTE applies the GTE predicate on the ID field.
-func IDGTE(id int) predicate.Rule {
+func IDGTE(id uuid.UUID) predicate.Rule {
 	return predicate.Rule(sql.FieldGTE(FieldID, id))
 }
 
 // IDLT applies the LT predicate on the ID field.
-func IDLT(id int) predicate.Rule {
+func IDLT(id uuid.UUID) predicate.Rule {
 	return predicate.Rule(sql.FieldLT(FieldID, id))
 }
 
 // IDLTE applies the LTE predicate on the ID field.
-func IDLTE(id int) predicate.Rule {
+func IDLTE(id uuid.UUID) predicate.Rule {
 	return predicate.Rule(sql.FieldLTE(FieldID, id))
 }
 
 // ShopID applies equality check predicate on the "shop_id" field. It's identical to ShopIDEQ.
-func ShopID(v int) predicate.Rule {
+func ShopID(v uuid.UUID) predicate.Rule {
 	return predicate.Rule(sql.FieldEQ(FieldShopID, v))
 }
 
-// Kind applies equality check predicate on the "kind" field. It's identical to KindEQ.
-func Kind(v string) predicate.Rule {
-	return predicate.Rule(sql.FieldEQ(FieldKind, v))
+// Description applies equality check predicate on the "description" field. It's identical to DescriptionEQ.
+func Description(v string) predicate.Rule {
+	return predicate.Rule(sql.FieldEQ(FieldDescription, v))
 }
 
 // Weight applies equality check predicate on the "weight" field. It's identical to WeightEQ.
@@ -70,14 +71,9 @@ func Weight(v float64) predicate.Rule {
 	return predicate.Rule(sql.FieldEQ(FieldWeight, v))
 }
 
-// SourceText applies equality check predicate on the "source_text" field. It's identical to SourceTextEQ.
-func SourceText(v string) predicate.Rule {
-	return predicate.Rule(sql.FieldEQ(FieldSourceText, v))
-}
-
-// Active applies equality check predicate on the "active" field. It's identical to ActiveEQ.
-func Active(v bool) predicate.Rule {
-	return predicate.Rule(sql.FieldEQ(FieldActive, v))
+// IsActive applies equality check predicate on the "is_active" field. It's identical to IsActiveEQ.
+func IsActive(v bool) predicate.Rule {
+	return predicate.Rule(sql.FieldEQ(FieldIsActive, v))
 }
 
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
@@ -86,98 +82,98 @@ func CreatedAt(v time.Time) predicate.Rule {
 }
 
 // ShopIDEQ applies the EQ predicate on the "shop_id" field.
-func ShopIDEQ(v int) predicate.Rule {
+func ShopIDEQ(v uuid.UUID) predicate.Rule {
 	return predicate.Rule(sql.FieldEQ(FieldShopID, v))
 }
 
 // ShopIDNEQ applies the NEQ predicate on the "shop_id" field.
-func ShopIDNEQ(v int) predicate.Rule {
+func ShopIDNEQ(v uuid.UUID) predicate.Rule {
 	return predicate.Rule(sql.FieldNEQ(FieldShopID, v))
 }
 
 // ShopIDIn applies the In predicate on the "shop_id" field.
-func ShopIDIn(vs ...int) predicate.Rule {
+func ShopIDIn(vs ...uuid.UUID) predicate.Rule {
 	return predicate.Rule(sql.FieldIn(FieldShopID, vs...))
 }
 
 // ShopIDNotIn applies the NotIn predicate on the "shop_id" field.
-func ShopIDNotIn(vs ...int) predicate.Rule {
+func ShopIDNotIn(vs ...uuid.UUID) predicate.Rule {
 	return predicate.Rule(sql.FieldNotIn(FieldShopID, vs...))
 }
 
-// KindEQ applies the EQ predicate on the "kind" field.
-func KindEQ(v string) predicate.Rule {
-	return predicate.Rule(sql.FieldEQ(FieldKind, v))
+// DescriptionEQ applies the EQ predicate on the "description" field.
+func DescriptionEQ(v string) predicate.Rule {
+	return predicate.Rule(sql.FieldEQ(FieldDescription, v))
 }
 
-// KindNEQ applies the NEQ predicate on the "kind" field.
-func KindNEQ(v string) predicate.Rule {
-	return predicate.Rule(sql.FieldNEQ(FieldKind, v))
+// DescriptionNEQ applies the NEQ predicate on the "description" field.
+func DescriptionNEQ(v string) predicate.Rule {
+	return predicate.Rule(sql.FieldNEQ(FieldDescription, v))
 }
 
-// KindIn applies the In predicate on the "kind" field.
-func KindIn(vs ...string) predicate.Rule {
-	return predicate.Rule(sql.FieldIn(FieldKind, vs...))
+// DescriptionIn applies the In predicate on the "description" field.
+func DescriptionIn(vs ...string) predicate.Rule {
+	return predicate.Rule(sql.FieldIn(FieldDescription, vs...))
 }
 
-// KindNotIn applies the NotIn predicate on the "kind" field.
-func KindNotIn(vs ...string) predicate.Rule {
-	return predicate.Rule(sql.FieldNotIn(FieldKind, vs...))
+// DescriptionNotIn applies the NotIn predicate on the "description" field.
+func DescriptionNotIn(vs ...string) predicate.Rule {
+	return predicate.Rule(sql.FieldNotIn(FieldDescription, vs...))
 }
 
-// KindGT applies the GT predicate on the "kind" field.
-func KindGT(v string) predicate.Rule {
-	return predicate.Rule(sql.FieldGT(FieldKind, v))
+// DescriptionGT applies the GT predicate on the "description" field.
+func DescriptionGT(v string) predicate.Rule {
+	return predicate.Rule(sql.FieldGT(FieldDescription, v))
 }
 
-// KindGTE applies the GTE predicate on the "kind" field.
-func KindGTE(v string) predicate.Rule {
-	return predicate.Rule(sql.FieldGTE(FieldKind, v))
+// DescriptionGTE applies the GTE predicate on the "description" field.
+func DescriptionGTE(v string) predicate.Rule {
+	return predicate.Rule(sql.FieldGTE(FieldDescription, v))
 }
 
-// KindLT applies the LT predicate on the "kind" field.
-func KindLT(v string) predicate.Rule {
-	return predicate.Rule(sql.FieldLT(FieldKind, v))
+// DescriptionLT applies the LT predicate on the "description" field.
+func DescriptionLT(v string) predicate.Rule {
+	return predicate.Rule(sql.FieldLT(FieldDescription, v))
 }
 
-// KindLTE applies the LTE predicate on the "kind" field.
-func KindLTE(v string) predicate.Rule {
-	return predicate.Rule(sql.FieldLTE(FieldKind, v))
+// DescriptionLTE applies the LTE predicate on the "description" field.
+func DescriptionLTE(v string) predicate.Rule {
+	return predicate.Rule(sql.FieldLTE(FieldDescription, v))
 }
 
-// KindContains applies the Contains predicate on the "kind" field.
-func KindContains(v string) predicate.Rule {
-	return predicate.Rule(sql.FieldContains(FieldKind, v))
+// DescriptionContains applies the Contains predicate on the "description" field.
+func DescriptionContains(v string) predicate.Rule {
+	return predicate.Rule(sql.FieldContains(FieldDescription, v))
 }
 
-// KindHasPrefix applies the HasPrefix predicate on the "kind" field.
-func KindHasPrefix(v string) predicate.Rule {
-	return predicate.Rule(sql.FieldHasPrefix(FieldKind, v))
+// DescriptionHasPrefix applies the HasPrefix predicate on the "description" field.
+func DescriptionHasPrefix(v string) predicate.Rule {
+	return predicate.Rule(sql.FieldHasPrefix(FieldDescription, v))
 }
 
-// KindHasSuffix applies the HasSuffix predicate on the "kind" field.
-func KindHasSuffix(v string) predicate.Rule {
-	return predicate.Rule(sql.FieldHasSuffix(FieldKind, v))
+// DescriptionHasSuffix applies the HasSuffix predicate on the "description" field.
+func DescriptionHasSuffix(v string) predicate.Rule {
+	return predicate.Rule(sql.FieldHasSuffix(FieldDescription, v))
 }
 
-// KindEqualFold applies the EqualFold predicate on the "kind" field.
-func KindEqualFold(v string) predicate.Rule {
-	return predicate.Rule(sql.FieldEqualFold(FieldKind, v))
+// DescriptionEqualFold applies the EqualFold predicate on the "description" field.
+func DescriptionEqualFold(v string) predicate.Rule {
+	return predicate.Rule(sql.FieldEqualFold(FieldDescription, v))
 }
 
-// KindContainsFold applies the ContainsFold predicate on the "kind" field.
-func KindContainsFold(v string) predicate.Rule {
-	return predicate.Rule(sql.FieldContainsFold(FieldKind, v))
+// DescriptionContainsFold applies the ContainsFold predicate on the "description" field.
+func DescriptionContainsFold(v string) predicate.Rule {
+	return predicate.Rule(sql.FieldContainsFold(FieldDescription, v))
 }
 
-// ParamsIsNil applies the IsNil predicate on the "params" field.
-func ParamsIsNil() predicate.Rule {
-	return predicate.Rule(sql.FieldIsNull(FieldParams))
+// RuleJSONIsNil applies the IsNil predicate on the "rule_json" field.
+func RuleJSONIsNil() predicate.Rule {
+	return predicate.Rule(sql.FieldIsNull(FieldRuleJSON))
 }
 
-// ParamsNotNil applies the NotNil predicate on the "params" field.
-func ParamsNotNil() predicate.Rule {
-	return predicate.Rule(sql.FieldNotNull(FieldParams))
+// RuleJSONNotNil applies the NotNil predicate on the "rule_json" field.
+func RuleJSONNotNil() predicate.Rule {
+	return predicate.Rule(sql.FieldNotNull(FieldRuleJSON))
 }
 
 // WeightEQ applies the EQ predicate on the "weight" field.
@@ -220,79 +216,14 @@ func WeightLTE(v float64) predicate.Rule {
 	return predicate.Rule(sql.FieldLTE(FieldWeight, v))
 }
 
-// SourceTextEQ applies the EQ predicate on the "source_text" field.
-func SourceTextEQ(v string) predicate.Rule {
-	return predicate.Rule(sql.FieldEQ(FieldSourceText, v))
+// IsActiveEQ applies the EQ predicate on the "is_active" field.
+func IsActiveEQ(v bool) predicate.Rule {
+	return predicate.Rule(sql.FieldEQ(FieldIsActive, v))
 }
 
-// SourceTextNEQ applies the NEQ predicate on the "source_text" field.
-func SourceTextNEQ(v string) predicate.Rule {
-	return predicate.Rule(sql.FieldNEQ(FieldSourceText, v))
-}
-
-// SourceTextIn applies the In predicate on the "source_text" field.
-func SourceTextIn(vs ...string) predicate.Rule {
-	return predicate.Rule(sql.FieldIn(FieldSourceText, vs...))
-}
-
-// SourceTextNotIn applies the NotIn predicate on the "source_text" field.
-func SourceTextNotIn(vs ...string) predicate.Rule {
-	return predicate.Rule(sql.FieldNotIn(FieldSourceText, vs...))
-}
-
-// SourceTextGT applies the GT predicate on the "source_text" field.
-func SourceTextGT(v string) predicate.Rule {
-	return predicate.Rule(sql.FieldGT(FieldSourceText, v))
-}
-
-// SourceTextGTE applies the GTE predicate on the "source_text" field.
-func SourceTextGTE(v string) predicate.Rule {
-	return predicate.Rule(sql.FieldGTE(FieldSourceText, v))
-}
-
-// SourceTextLT applies the LT predicate on the "source_text" field.
-func SourceTextLT(v string) predicate.Rule {
-	return predicate.Rule(sql.FieldLT(FieldSourceText, v))
-}
-
-// SourceTextLTE applies the LTE predicate on the "source_text" field.
-func SourceTextLTE(v string) predicate.Rule {
-	return predicate.Rule(sql.FieldLTE(FieldSourceText, v))
-}
-
-// SourceTextContains applies the Contains predicate on the "source_text" field.
-func SourceTextContains(v string) predicate.Rule {
-	return predicate.Rule(sql.FieldContains(FieldSourceText, v))
-}
-
-// SourceTextHasPrefix applies the HasPrefix predicate on the "source_text" field.
-func SourceTextHasPrefix(v string) predicate.Rule {
-	return predicate.Rule(sql.FieldHasPrefix(FieldSourceText, v))
-}
-
-// SourceTextHasSuffix applies the HasSuffix predicate on the "source_text" field.
-func SourceTextHasSuffix(v string) predicate.Rule {
-	return predicate.Rule(sql.FieldHasSuffix(FieldSourceText, v))
-}
-
-// SourceTextEqualFold applies the EqualFold predicate on the "source_text" field.
-func SourceTextEqualFold(v string) predicate.Rule {
-	return predicate.Rule(sql.FieldEqualFold(FieldSourceText, v))
-}
-
-// SourceTextContainsFold applies the ContainsFold predicate on the "source_text" field.
-func SourceTextContainsFold(v string) predicate.Rule {
-	return predicate.Rule(sql.FieldContainsFold(FieldSourceText, v))
-}
-
-// ActiveEQ applies the EQ predicate on the "active" field.
-func ActiveEQ(v bool) predicate.Rule {
-	return predicate.Rule(sql.FieldEQ(FieldActive, v))
-}
-
-// ActiveNEQ applies the NEQ predicate on the "active" field.
-func ActiveNEQ(v bool) predicate.Rule {
-	return predicate.Rule(sql.FieldNEQ(FieldActive, v))
+// IsActiveNEQ applies the NEQ predicate on the "is_active" field.
+func IsActiveNEQ(v bool) predicate.Rule {
+	return predicate.Rule(sql.FieldNEQ(FieldIsActive, v))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.

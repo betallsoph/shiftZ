@@ -16,6 +16,7 @@ import (
 	"github.com/betallsoph/shiftz/internal/ent/schedule"
 	"github.com/betallsoph/shiftz/internal/ent/schedulevote"
 	"github.com/betallsoph/shiftz/internal/ent/shop"
+	"github.com/google/uuid"
 )
 
 // ScheduleVoteQuery is the builder for querying ScheduleVote entities.
@@ -78,7 +79,7 @@ func (_q *ScheduleVoteQuery) QueryShop() *ShopQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(schedulevote.Table, schedulevote.FieldID, selector),
 			sqlgraph.To(shop.Table, shop.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, schedulevote.ShopTable, schedulevote.ShopColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, schedulevote.ShopTable, schedulevote.ShopColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -154,8 +155,8 @@ func (_q *ScheduleVoteQuery) FirstX(ctx context.Context) *ScheduleVote {
 
 // FirstID returns the first ScheduleVote ID from the query.
 // Returns a *NotFoundError when no ScheduleVote ID was found.
-func (_q *ScheduleVoteQuery) FirstID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (_q *ScheduleVoteQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
@@ -167,7 +168,7 @@ func (_q *ScheduleVoteQuery) FirstID(ctx context.Context) (id int, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (_q *ScheduleVoteQuery) FirstIDX(ctx context.Context) int {
+func (_q *ScheduleVoteQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -205,8 +206,8 @@ func (_q *ScheduleVoteQuery) OnlyX(ctx context.Context) *ScheduleVote {
 // OnlyID is like Only, but returns the only ScheduleVote ID in the query.
 // Returns a *NotSingularError when more than one ScheduleVote ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (_q *ScheduleVoteQuery) OnlyID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (_q *ScheduleVoteQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
@@ -222,7 +223,7 @@ func (_q *ScheduleVoteQuery) OnlyID(ctx context.Context) (id int, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (_q *ScheduleVoteQuery) OnlyIDX(ctx context.Context) int {
+func (_q *ScheduleVoteQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -250,7 +251,7 @@ func (_q *ScheduleVoteQuery) AllX(ctx context.Context) []*ScheduleVote {
 }
 
 // IDs executes the query and returns a list of ScheduleVote IDs.
-func (_q *ScheduleVoteQuery) IDs(ctx context.Context) (ids []int, err error) {
+func (_q *ScheduleVoteQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
 	if _q.ctx.Unique == nil && _q.path != nil {
 		_q.Unique(true)
 	}
@@ -262,7 +263,7 @@ func (_q *ScheduleVoteQuery) IDs(ctx context.Context) (ids []int, err error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (_q *ScheduleVoteQuery) IDsX(ctx context.Context) []int {
+func (_q *ScheduleVoteQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -370,7 +371,7 @@ func (_q *ScheduleVoteQuery) WithEmployee(opts ...func(*EmployeeQuery)) *Schedul
 // Example:
 //
 //	var v []struct {
-//		ShopID int `json:"shop_id,omitempty"`
+//		ShopID uuid.UUID `json:"shop_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
@@ -393,7 +394,7 @@ func (_q *ScheduleVoteQuery) GroupBy(field string, fields ...string) *ScheduleVo
 // Example:
 //
 //	var v []struct {
-//		ShopID int `json:"shop_id,omitempty"`
+//		ShopID uuid.UUID `json:"shop_id,omitempty"`
 //	}
 //
 //	client.ScheduleVote.Query().
@@ -488,8 +489,8 @@ func (_q *ScheduleVoteQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 }
 
 func (_q *ScheduleVoteQuery) loadShop(ctx context.Context, query *ShopQuery, nodes []*ScheduleVote, init func(*ScheduleVote), assign func(*ScheduleVote, *Shop)) error {
-	ids := make([]int, 0, len(nodes))
-	nodeids := make(map[int][]*ScheduleVote)
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*ScheduleVote)
 	for i := range nodes {
 		fk := nodes[i].ShopID
 		if _, ok := nodeids[fk]; !ok {
@@ -517,8 +518,8 @@ func (_q *ScheduleVoteQuery) loadShop(ctx context.Context, query *ShopQuery, nod
 	return nil
 }
 func (_q *ScheduleVoteQuery) loadSchedule(ctx context.Context, query *ScheduleQuery, nodes []*ScheduleVote, init func(*ScheduleVote), assign func(*ScheduleVote, *Schedule)) error {
-	ids := make([]int, 0, len(nodes))
-	nodeids := make(map[int][]*ScheduleVote)
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*ScheduleVote)
 	for i := range nodes {
 		fk := nodes[i].ScheduleID
 		if _, ok := nodeids[fk]; !ok {
@@ -546,8 +547,8 @@ func (_q *ScheduleVoteQuery) loadSchedule(ctx context.Context, query *ScheduleQu
 	return nil
 }
 func (_q *ScheduleVoteQuery) loadEmployee(ctx context.Context, query *EmployeeQuery, nodes []*ScheduleVote, init func(*ScheduleVote), assign func(*ScheduleVote, *Employee)) error {
-	ids := make([]int, 0, len(nodes))
-	nodeids := make(map[int][]*ScheduleVote)
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*ScheduleVote)
 	for i := range nodes {
 		fk := nodes[i].EmployeeID
 		if _, ok := nodeids[fk]; !ok {
@@ -585,7 +586,7 @@ func (_q *ScheduleVoteQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (_q *ScheduleVoteQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := sqlgraph.NewQuerySpec(schedulevote.Table, schedulevote.Columns, sqlgraph.NewFieldSpec(schedulevote.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewQuerySpec(schedulevote.Table, schedulevote.Columns, sqlgraph.NewFieldSpec(schedulevote.FieldID, field.TypeUUID))
 	_spec.From = _q.sql
 	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique

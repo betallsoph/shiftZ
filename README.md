@@ -50,7 +50,8 @@ docker compose up -d db
 export DATABASE_URL='postgres://shiftbot:shiftbot@localhost:5432/shiftbot?sslmode=disable'
 atlas migrate apply --dir file://migrations --url "$DATABASE_URL"
 
-# 3. (optional) Seed demo data — prints an invite code for /start
+# 3. (optional) Seed demo data (1 shop, 5 employees, a week of shifts
+#    and availabilities so the solver can run) — prints an invite code
 go run ./cmd/seed
 
 # 4. Build everything / run tests
@@ -87,6 +88,7 @@ curl "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/setWebhook" \
 | `LLM_PROVIDER`            | bot (optional)  | —       | Model backend; empty disables LLM features     |
 | `LLM_API_KEY`             | bot (optional)  | —       | API key for the selected provider              |
 | `LLM_MODEL`               | bot (optional)  | —       | Model id for the selected provider             |
+| `ENT_DEBUG`               | all (optional)  | —       | `1`/`true` logs every generated SQL statement (dev only) |
 
 ## Data layer: ent + Atlas
 

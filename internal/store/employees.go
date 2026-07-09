@@ -37,7 +37,7 @@ func (r *EmployeeRepo) Join(ctx context.Context, inviteCode string, telegramUser
 		).
 		Update(func(u *ent.EmployeeUpsert) {
 			u.UpdateDisplayName()
-			u.SetActive(true)
+			u.SetIsActive(true)
 		}).
 		ID(ctx)
 	if err != nil {
@@ -50,12 +50,14 @@ func (r *EmployeeRepo) Join(ctx context.Context, inviteCode string, telegramUser
 	return employeeFromEnt(row), nil
 }
 
-// ByTelegramID returns the employee linked to a Telegram account.
+// ByTelegramID returns the employee linked to a Telegram account. This is
+// the webhook lookup: the bot resolves the sender before knowing the shop,
+// hence the standalone telegram_user_id index.
 // NOTE: assumes one shop per Telegram user for now; multi-shop membership
 // would return a slice instead.
 func (r *EmployeeRepo) ByTelegramID(ctx context.Context, telegramUserID int64) (*Employee, error) {
 	row, err := r.client.Employee.Query().
-		Where(employee.TelegramUserID(telegramUserID), employee.Active(true)).
+		Where(employee.TelegramUserID(telegramUserID), employee.IsActive(true)).
 		First(ctx)
 	if ent.IsNotFound(err) {
 		return nil, ErrNotFound
@@ -71,7 +73,7 @@ func (r *EmployeeRepo) ByTelegramID(ctx context.Context, telegramUserID int64) (
 func (r *EmployeeRepo) ActiveTelegramIDs(ctx context.Context) ([]int64, error) {
 	var ids []int64
 	err := r.client.Employee.Query().
-		Where(employee.Active(true)).
+		Where(employee.IsActive(true)).
 		Select(employee.FieldTelegramUserID).
 		Scan(ctx, &ids)
 	if err != nil {

@@ -16,6 +16,7 @@ import (
 	"github.com/betallsoph/shiftz/internal/ent/scheduleassignment"
 	"github.com/betallsoph/shiftz/internal/ent/shift"
 	"github.com/betallsoph/shiftz/internal/ent/shop"
+	"github.com/google/uuid"
 )
 
 // ShiftQuery is the builder for querying Shift entities.
@@ -131,8 +132,8 @@ func (_q *ShiftQuery) FirstX(ctx context.Context) *Shift {
 
 // FirstID returns the first Shift ID from the query.
 // Returns a *NotFoundError when no Shift ID was found.
-func (_q *ShiftQuery) FirstID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (_q *ShiftQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
@@ -144,7 +145,7 @@ func (_q *ShiftQuery) FirstID(ctx context.Context) (id int, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (_q *ShiftQuery) FirstIDX(ctx context.Context) int {
+func (_q *ShiftQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -182,8 +183,8 @@ func (_q *ShiftQuery) OnlyX(ctx context.Context) *Shift {
 // OnlyID is like Only, but returns the only Shift ID in the query.
 // Returns a *NotSingularError when more than one Shift ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (_q *ShiftQuery) OnlyID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (_q *ShiftQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
@@ -199,7 +200,7 @@ func (_q *ShiftQuery) OnlyID(ctx context.Context) (id int, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (_q *ShiftQuery) OnlyIDX(ctx context.Context) int {
+func (_q *ShiftQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -227,7 +228,7 @@ func (_q *ShiftQuery) AllX(ctx context.Context) []*Shift {
 }
 
 // IDs executes the query and returns a list of Shift IDs.
-func (_q *ShiftQuery) IDs(ctx context.Context) (ids []int, err error) {
+func (_q *ShiftQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
 	if _q.ctx.Unique == nil && _q.path != nil {
 		_q.Unique(true)
 	}
@@ -239,7 +240,7 @@ func (_q *ShiftQuery) IDs(ctx context.Context) (ids []int, err error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (_q *ShiftQuery) IDsX(ctx context.Context) []int {
+func (_q *ShiftQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -335,7 +336,7 @@ func (_q *ShiftQuery) WithAssignments(opts ...func(*ScheduleAssignmentQuery)) *S
 // Example:
 //
 //	var v []struct {
-//		ShopID int `json:"shop_id,omitempty"`
+//		ShopID uuid.UUID `json:"shop_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
@@ -358,7 +359,7 @@ func (_q *ShiftQuery) GroupBy(field string, fields ...string) *ShiftGroupBy {
 // Example:
 //
 //	var v []struct {
-//		ShopID int `json:"shop_id,omitempty"`
+//		ShopID uuid.UUID `json:"shop_id,omitempty"`
 //	}
 //
 //	client.Shift.Query().
@@ -447,8 +448,8 @@ func (_q *ShiftQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Shift,
 }
 
 func (_q *ShiftQuery) loadShop(ctx context.Context, query *ShopQuery, nodes []*Shift, init func(*Shift), assign func(*Shift, *Shop)) error {
-	ids := make([]int, 0, len(nodes))
-	nodeids := make(map[int][]*Shift)
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Shift)
 	for i := range nodes {
 		fk := nodes[i].ShopID
 		if _, ok := nodeids[fk]; !ok {
@@ -477,7 +478,7 @@ func (_q *ShiftQuery) loadShop(ctx context.Context, query *ShopQuery, nodes []*S
 }
 func (_q *ShiftQuery) loadAssignments(ctx context.Context, query *ScheduleAssignmentQuery, nodes []*Shift, init func(*Shift), assign func(*Shift, *ScheduleAssignment)) error {
 	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[int]*Shift)
+	nodeids := make(map[uuid.UUID]*Shift)
 	for i := range nodes {
 		fks = append(fks, nodes[i].ID)
 		nodeids[nodes[i].ID] = nodes[i]
@@ -516,7 +517,7 @@ func (_q *ShiftQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (_q *ShiftQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := sqlgraph.NewQuerySpec(shift.Table, shift.Columns, sqlgraph.NewFieldSpec(shift.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewQuerySpec(shift.Table, shift.Columns, sqlgraph.NewFieldSpec(shift.FieldID, field.TypeUUID))
 	_spec.From = _q.sql
 	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
