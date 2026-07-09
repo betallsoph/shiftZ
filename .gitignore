@@ -1,0 +1,10 @@
+# Binaries
+/bin/
+*.exe
+
+# Test artifacts
+*.out
+coverage.*
+
+# Local env
+.env
