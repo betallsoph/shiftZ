@@ -37,26 +37,26 @@ func (s *Server) handleGenerate(w http.ResponseWriter, r *http.Request) {
 			schedules, listErr := s.schedules.ListByShopWeek(r.Context(), shopID, weekStart)
 			if listErr != nil {
 				s.log.Error("list schedules after exist", "err", listErr)
-				s.renderWeekView(w, WeekView{Error: "failed to load existing schedules"})
+				s.renderWeekView(w, WeekView{Error: "không tải được lịch hiện có"})
 				return
 			}
 			s.renderWeekView(w, buildWeekView(shop, weekStart, schedules, nil,
-				"Schedules already exist for this week.", nil))
+				"Tuần này đã có lịch.", nil))
 			return
 		}
 		if errors.Is(err, store.ErrNotFound) {
-			s.renderWeekView(w, WeekView{Error: "shop not found"})
+			s.renderWeekView(w, WeekView{Error: "không tìm thấy cửa hàng"})
 			return
 		}
 		s.log.Error("generate week", "err", err)
-		s.renderWeekView(w, WeekView{Error: "generation failed"})
+		s.renderWeekView(w, WeekView{Error: "tạo lịch thất bại"})
 		return
 	}
 
 	schedules, err := s.schedules.ListByShopWeek(r.Context(), shopID, weekStart)
 	if err != nil {
 		s.log.Error("list schedules after generate", "err", err)
-		s.renderWeekView(w, WeekView{Error: "failed to load generated schedules"})
+		s.renderWeekView(w, WeekView{Error: "không tải được lịch vừa tạo"})
 		return
 	}
 	s.renderWeekView(w, buildWeekView(shop, weekStart, schedules, result.Warnings, "", result))
@@ -71,7 +71,7 @@ func (s *Server) handleApprove(w http.ResponseWriter, r *http.Request) {
 
 	scheduleID, err := uuid.Parse(r.PathValue("id"))
 	if err != nil {
-		s.renderWeekView(w, WeekView{Error: "invalid schedule id"})
+		s.renderWeekView(w, WeekView{Error: "mã lịch không hợp lệ"})
 		return
 	}
 
@@ -81,12 +81,12 @@ func (s *Server) handleApprove(w http.ResponseWriter, r *http.Request) {
 				ShopID:    shop.ID.String(),
 				ShopName:  shop.Name,
 				WeekStart: weekStart.Format(dateLayout),
-				Error:     "schedule not found",
+				Error:     "không tìm thấy lịch",
 			})
 			return
 		}
 		s.log.Error("approve schedule", "err", err)
-		s.renderWeekView(w, WeekView{Error: "failed to approve schedule"})
+		s.renderWeekView(w, WeekView{Error: "duyệt lịch thất bại"})
 		return
 	}
 
@@ -103,7 +103,7 @@ func (s *Server) renderWeek(w http.ResponseWriter, r *http.Request, notice strin
 	schedules, err := s.schedules.ListByShopWeek(r.Context(), shopID, weekStart)
 	if err != nil {
 		s.log.Error("list schedules", "err", err)
-		s.renderWeekView(w, WeekView{Error: "failed to load schedules"})
+		s.renderWeekView(w, WeekView{Error: "không tải được lịch"})
 		return
 	}
 
@@ -120,36 +120,36 @@ func (s *Server) renderWeekView(w http.ResponseWriter, view WeekView) {
 
 func (s *Server) parseShopWeekForm(r *http.Request) (*store.Shop, uuid.UUID, time.Time, string) {
 	if err := r.ParseForm(); err != nil {
-		return nil, uuid.Nil, time.Time{}, "invalid form"
+		return nil, uuid.Nil, time.Time{}, "dữ liệu form không hợp lệ"
 	}
 	rawShop := r.FormValue("shop_id")
 	if rawShop == "" {
-		return nil, uuid.Nil, time.Time{}, "missing shop id"
+		return nil, uuid.Nil, time.Time{}, "thiếu mã cửa hàng"
 	}
 	shopID, err := uuid.Parse(rawShop)
 	if err != nil {
-		return nil, uuid.Nil, time.Time{}, "invalid shop id"
+		return nil, uuid.Nil, time.Time{}, "mã cửa hàng không hợp lệ"
 	}
 	shop, err := s.shops.ByID(r.Context(), shopID)
 	if err != nil {
 		if errors.Is(err, store.ErrNotFound) {
-			return nil, uuid.Nil, time.Time{}, "shop not found"
+			return nil, uuid.Nil, time.Time{}, "không tìm thấy cửa hàng"
 		}
 		s.log.Error("load shop", "err", err)
-		return nil, uuid.Nil, time.Time{}, "failed to load shop"
+		return nil, uuid.Nil, time.Time{}, "không tải được cửa hàng"
 	}
 	loc, err := time.LoadLocation(shop.Timezone)
 	if err != nil {
 		s.log.Error("load timezone", "timezone", shop.Timezone, "err", err)
-		return nil, uuid.Nil, time.Time{}, "invalid shop timezone"
+		return nil, uuid.Nil, time.Time{}, "múi giờ cửa hàng không hợp lệ"
 	}
 	rawWeek := r.FormValue("week_start")
 	if rawWeek == "" {
-		return nil, uuid.Nil, time.Time{}, "missing week start"
+		return nil, uuid.Nil, time.Time{}, "thiếu ngày bắt đầu tuần"
 	}
 	parsed, err := time.ParseInLocation(dateLayout, rawWeek, loc)
 	if err != nil {
-		return nil, uuid.Nil, time.Time{}, "invalid date, expected YYYY-MM-DD"
+		return nil, uuid.Nil, time.Time{}, "ngày không hợp lệ (YYYY-MM-DD)"
 	}
 	return shop, shopID, store.WeekStart(parsed, loc), ""
 }

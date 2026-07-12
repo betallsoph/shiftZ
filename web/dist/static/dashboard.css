@@ -248,10 +248,10 @@ body {
 }
 
 .empty-state {
-  padding: 20px;
-  text-align: center;
+  margin: 0;
+  padding: 8px 0;
   font-weight: 600;
-  color: #333;
+  color: #444;
 }
 
 .empty-state p {
@@ -289,11 +289,7 @@ body {
 }
 
 .week-summary {
-  padding: 16px;
-  background: var(--blue-50);
-  border: 2px solid #000;
-  border-radius: 8px;
-  box-shadow: var(--shadow-secondary);
+  margin-bottom: 4px;
 }
 
 .week-summary h2 {
@@ -303,7 +299,7 @@ body {
 }
 
 .meta {
-  margin: 0;
+  margin: 0 0 8px;
   font-size: 0.85rem;
   font-weight: 700;
   color: #333;
@@ -396,38 +392,33 @@ body {
 }
 
 .assignments {
+  margin-top: 8px;
   display: grid;
-  gap: 10px;
+  gap: 12px;
 }
 
-.day-block {
-  padding: 12px;
-  background: var(--blue-50);
-  border: 2px solid #000;
-  border-radius: 8px;
+.day-group {
+  margin: 0;
 }
 
-.day-block h3 {
-  margin: 0 0 8px;
+.day-heading {
+  margin: 0 0 6px;
   font-size: 0.85rem;
   font-weight: 900;
+  color: #111;
 }
 
-.shift-list {
+.shift-lines {
   margin: 0;
-  padding: 0;
-  list-style: none;
-  display: grid;
-  gap: 6px;
+  padding: 0 0 0 16px;
+  list-style: disc;
 }
 
-.shift-list li {
-  padding: 8px 10px;
-  background: #fff;
-  border: 2px solid #000;
-  border-radius: 6px;
-  font-size: 0.85rem;
+.shift-line {
+  margin-bottom: 4px;
+  font-size: 0.875rem;
   font-weight: 600;
+  line-height: 1.45;
 }
 
 .shift-name {

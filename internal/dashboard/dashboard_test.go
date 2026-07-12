@@ -53,7 +53,7 @@ func TestGroupAssignments(t *testing.T) {
 	if len(days) != 1 {
 		t.Fatalf("days = %d, want 1", len(days))
 	}
-	if days[0].Label != "Mon 2026-07-13" {
+	if days[0].Label != "Thứ hai 13/07/2026" {
 		t.Fatalf("label = %q", days[0].Label)
 	}
 	if len(days[0].Shifts) != 2 {
@@ -80,7 +80,7 @@ func TestHandleWeekBadShopID(t *testing.T) {
 		t.Fatalf("status = %d", rec.Code)
 	}
 	body := rec.Body.String()
-	if !strings.Contains(body, "invalid shop id") {
+	if !strings.Contains(body, "mã cửa hàng không hợp lệ") {
 		t.Fatalf("body = %q", body)
 	}
 }
@@ -107,7 +107,7 @@ func TestHandleApproveNotFound(t *testing.T) {
 	mux.ServeHTTP(rec, req)
 
 	body := rec.Body.String()
-	if !strings.Contains(body, "schedule not found") {
+	if !strings.Contains(body, "không tìm thấy lịch") {
 		t.Fatalf("body = %q", body)
 	}
 }

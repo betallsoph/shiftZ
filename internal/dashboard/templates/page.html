@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="vi">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -11,23 +11,23 @@
   <body class="roomio-grid-bg">
     <header class="site-header">
       <h1>shiftZ</h1>
-      <p>Owner schedule dashboard</p>
+      <p>Bảng xếp lịch cho chủ quán</p>
     </header>
     <main class="container">
       <section class="controls card">
         <form id="shop-form" class="control-form">
           <label>
-            Shop ID
+            Mã cửa hàng
             <input
               class="input"
               type="text"
               name="shop_id"
-              placeholder="paste uuid from seed"
+              placeholder="dán uuid từ lệnh seed"
               autocomplete="off"
             />
           </label>
           <label>
-            Week start
+            Tuần bắt đầu
             <input class="input" type="date" name="week_start" value="{{.Today}}" />
           </label>
           <div class="control-actions">
@@ -39,7 +39,7 @@
               hx-target="#week-panel"
               hx-swap="innerHTML"
             >
-              Load
+              Tải lịch
             </button>
             <button
               type="button"
@@ -49,7 +49,7 @@
               hx-target="#week-panel"
               hx-swap="innerHTML"
             >
-              Generate
+              Tạo lịch
             </button>
           </div>
         </form>

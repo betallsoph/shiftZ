@@ -1,13 +1,13 @@
 <div class="week-panel-inner">
   {{if .Error}}
-  <div class="alert alert-error"><strong>Error</strong> — {{.Error}}</div>
+  <div class="alert alert-error"><strong>Lỗi</strong> — {{.Error}}</div>
   {{end}}
   {{if .Notice}}
-  <div class="alert alert-notice"><strong>Note</strong> — {{.Notice}}</div>
+  <div class="alert alert-notice"><strong>Lưu ý</strong> — {{.Notice}}</div>
   {{end}}
   {{if .Warnings}}
   <div class="alert alert-warn">
-    <strong>Warnings</strong>
+    <strong>Cảnh báo</strong>
     <ul>
       {{range .Warnings}}<li>{{.}}</li>{{end}}
     </ul>
@@ -17,13 +17,13 @@
   {{if .ShopName}}
   <div class="week-summary">
     <h2>{{.ShopName}}</h2>
-    <p class="meta">Week of {{.WeekStart}}</p>
+    <p class="meta">Tuần bắt đầu {{.WeekStart}}</p>
   </div>
   {{end}}
 
   {{if not .Schedules}}
-  <div class="empty-state card">
-    <p>No schedules generated yet.</p>
+  <div class="empty-state">
+    <p>Chưa có lịch cho tuần này.</p>
     <form
       hx-post="/dashboard/generate"
       hx-target="#week-panel"
@@ -32,7 +32,7 @@
     >
       <input type="hidden" name="shop_id" value="{{.ShopID}}" />
       <input type="hidden" name="week_start" value="{{.WeekStart}}" />
-      <button type="submit" class="btn btn-primary btn-sm">Generate</button>
+      <button type="submit" class="btn btn-primary btn-sm">Tạo lịch</button>
     </form>
   </div>
   {{else}}
@@ -41,18 +41,18 @@
     <article class="schedule-card card{{if .IsApproved}} is-approved{{end}}">
       <header class="schedule-header">
         <div class="schedule-title">
-          <span class="variant">Variant {{.VariantLabel}}</span>
-          <span class="badge badge-{{.Status}}">{{.Status}}</span>
+          <span class="variant">Phương án {{.VariantLabel}}</span>
+          <span class="badge badge-{{.Status}}">{{.StatusLabel}}</span>
         </div>
         <div class="schedule-meta">
-          <span>Score {{.Score}}</span>
-          <span>{{.AssignmentCount}} assignments</span>
+          <span>Điểm {{.Score}}</span>
+          <span>{{.AssignmentCount}} ca</span>
         </div>
       </header>
 
       {{if .Violations}}
       <div class="violations">
-        <strong>Violations</strong>
+        <strong>Vi phạm ràng buộc</strong>
         <ul>
           {{range .Violations}}<li>{{.}}</li>{{end}}
         </ul>
@@ -69,7 +69,7 @@
         <input type="hidden" name="shop_id" value="{{$.ShopID}}" />
         <input type="hidden" name="week_start" value="{{$.WeekStart}}" />
         <button type="submit" class="btn btn-primary btn-sm modal-action">
-          <span class="modal-action-label">Approve</span>
+          <span class="modal-action-label">Duyệt</span>
         </button>
       </form>
       {{end}}
@@ -77,18 +77,18 @@
       {{if .Days}}
       <div class="assignments">
         {{range .Days}}
-        <section class="day-block">
-          <h3>{{.Label}}</h3>
-          <ul class="shift-list">
+        <div class="day-group">
+          <h3 class="day-heading">{{.Label}}</h3>
+          <ul class="shift-lines">
             {{range .Shifts}}
-            <li>
+            <li class="shift-line">
               <span class="shift-name">{{.Name}}</span>
               <span class="shift-time">{{.TimeRange}}</span>:
               <span class="shift-employees">{{join .Employees}}</span>
             </li>
             {{end}}
           </ul>
-        </section>
+        </div>
         {{end}}
       </div>
       {{end}}

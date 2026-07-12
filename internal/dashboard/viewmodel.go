@@ -34,6 +34,7 @@ type ScheduleView struct {
 	ID              string
 	VariantLabel    string
 	Status          string
+	StatusLabel     string
 	Score           string
 	AssignmentCount int
 	IsApproved      bool
@@ -83,6 +84,7 @@ func buildWeekView(
 			ID:              sched.ID.String(),
 			VariantLabel:    sched.VariantLabel,
 			Status:          sched.Status,
+			StatusLabel:     statusLabel(sched.Status),
 			Score:           formatScore(sched.Score),
 			AssignmentCount: len(sched.Assignments),
 			IsApproved:      sched.Status == "approved",
@@ -172,7 +174,7 @@ func groupAssignments(assignments []*store.ScheduleAssignment, loc *time.Locatio
 		parsed, _ := time.ParseInLocation(dateLayout, dateKey, loc)
 		days = append(days, DayView{
 			Date:   dateKey,
-			Label:  parsed.Format("Mon 2006-01-02"),
+			Label:  formatDayLabel(parsed),
 			Shifts: shifts,
 		})
 	}
@@ -185,4 +187,27 @@ func formatScore(score float64) string {
 
 func formatEmployees(names []string) string {
 	return strings.Join(names, ", ")
+}
+
+var weekdayVI = []string{
+	"Chủ nhật", "Thứ hai", "Thứ ba", "Thứ tư", "Thứ năm", "Thứ sáu", "Thứ bảy",
+}
+
+func formatDayLabel(t time.Time) string {
+	return fmt.Sprintf("%s %s", weekdayVI[t.Weekday()], t.Format("02/01/2006"))
+}
+
+func statusLabel(status string) string {
+	switch status {
+	case "draft":
+		return "nháp"
+	case "approved":
+		return "đã duyệt"
+	case "voting":
+		return "đang bỏ phiếu"
+	case "published":
+		return "đã phát hành"
+	default:
+		return status
+	}
 }
