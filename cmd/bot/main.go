@@ -47,7 +47,8 @@ func run(log *slog.Logger) error {
 
 	llmSvc := llm.NewService(newProvider(cfg, log))
 	tg := telegram.NewClient(cfg.TelegramToken)
-	bot := telegram.NewBot(tg, llmSvc, st.Employees, st.Availability, st.Votes, log)
+	drafts := telegram.NewMemoryAvailabilityDraftStore(30 * time.Minute)
+	bot := telegram.NewBot(tg, llmSvc, st.Shops, st.Employees, st.Availability, st.Votes, drafts, log)
 
 	// Cron: remind Thursdays 10:00, nag Saturdays 10:00, finalize Sundays 18:00.
 	runner := scheduler.NewRunner(log,

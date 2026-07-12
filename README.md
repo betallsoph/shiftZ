@@ -107,6 +107,16 @@ curl "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/setWebhook" \
   -d "secret_token=$TELEGRAM_WEBHOOK_SECRET"
 ```
 
+### Availability intake
+
+1. Employee joins with `/start <invite-code>`.
+2. Employee sends availability in plain language.
+3. Bot parses the message (using the shop timezone) and replies with a short summary plus **Confirm** / **Cancel** buttons.
+4. Only **Confirm** writes availability to the database; **Cancel** discards the draft.
+5. Pending confirmations expire after 30 minutes (in-memory for now).
+
+LLM provider setup is not required to boot the bot; without a provider the bot explains that parsing is not configured yet.
+
 ## Environment variables
 
 | Variable                  | Required by     | Default | Description                                    |
@@ -176,6 +186,9 @@ them in the dashboard, and approve one variant. Generation is atomic
 (all candidates persist in one transaction) and duplicate-protected at the
 database level (unique index on shop, week, variant).
 
-Still skeleton / not wired: Telegram bot flows beyond availability intake,
-LLM providers (plug into `internal/llm.Provider` in `cmd/bot/main.go`), auth,
-and manual schedule editing.
+Still skeleton / not wired: schedule generation from Telegram, employee voting
+beyond inline callbacks, real LLM providers (plug into `internal/llm.Provider`
+in `cmd/bot/main.go`), auth, and manual schedule editing.
+
+Telegram availability intake uses a confirm-before-save flow with in-memory
+drafts (30-minute TTL).
