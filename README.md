@@ -60,7 +60,27 @@ go test ./...
 
 # 5. Run the API + dashboard (http://localhost:8080)
 go run ./cmd/server
+```
 
+## Dev API
+
+After seeding, copy the shop `id` from the seed logs (or query Postgres). Then:
+
+```sh
+# Generate schedule candidates for a week
+curl -X POST "http://localhost:8080/api/v1/dev/generate-schedule?shop_id=<SHOP_ID>&week_start=2026-07-13"
+
+# List persisted candidates and assignments
+curl "http://localhost:8080/api/v1/schedules?shop_id=<SHOP_ID>&week_start=2026-07-13"
+
+# Approve one candidate (demotes siblings to draft)
+curl -X POST "http://localhost:8080/api/v1/schedules/<SCHEDULE_ID>/approve?shop_id=<SHOP_ID>"
+```
+
+`week_start` is interpreted in the shop timezone (from seed: `Asia/Ho_Chi_Minh`).
+Generating again for the same shop/week returns `409 Conflict`.
+
+```sh
 # 6. Run the Telegram bot (webhook mode)
 export TELEGRAM_BOT_TOKEN='123456:ABC...'          # from @BotFather
 export TELEGRAM_WEBHOOK_SECRET='some-random-string'

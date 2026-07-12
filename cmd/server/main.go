@@ -3,7 +3,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"io/fs"
 	"log/slog"
@@ -13,6 +12,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/betallsoph/shiftz/internal/api"
 	"github.com/betallsoph/shiftz/internal/config"
 	"github.com/betallsoph/shiftz/internal/store"
 	"github.com/betallsoph/shiftz/web"
@@ -49,12 +49,7 @@ func run(log *slog.Logger) error {
 		}
 		w.WriteHeader(http.StatusOK)
 	})
-	// Placeholder API surface; real endpoints (shops, schedules, rules)
-	// grow here.
-	mux.HandleFunc("GET /api/v1/ping", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
-	})
+	api.New(st, log).Register(mux)
 
 	dist, err := fs.Sub(web.Dist, "dist")
 	if err != nil {
