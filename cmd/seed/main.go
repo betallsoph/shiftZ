@@ -95,16 +95,21 @@ func run(log *slog.Logger) error {
 	}
 	log.Info("created shift templates", "count", 14)
 
+	loc, err := time.LoadLocation(shop.Timezone)
+	if err != nil {
+		return fmt.Errorf("seed timezone: %w", err)
+	}
+	monday := store.WeekStart(time.Now().In(loc).AddDate(0, 0, 7), loc)
+
 	// One availability submission per employee for next week: everyone can
 	// work every day 08:00-20:00, so the demo problem is trivially feasible.
-	monday := nextMonday(time.Now().UTC())
 	for _, emp := range employees {
 		slots := make([]store.AvailabilitySlot, 0, 7)
 		for day := 0; day < 7; day++ {
 			date := monday.AddDate(0, 0, day)
 			slots = append(slots, store.AvailabilitySlot{
-				Start:      date.Add(8 * time.Hour),
-				End:        date.Add(20 * time.Hour),
+				Start:      time.Date(date.Year(), date.Month(), date.Day(), 8, 0, 0, 0, loc),
+				End:        time.Date(date.Year(), date.Month(), date.Day(), 20, 0, 0, 0, loc),
 				Preference: 1,
 			})
 		}
@@ -117,13 +122,4 @@ func run(log *slog.Logger) error {
 
 	fmt.Printf("\nSeeded. Join the demo shop in Telegram with:\n  /start %s\n", shop.InviteCode)
 	return nil
-}
-
-func nextMonday(t time.Time) time.Time {
-	t = time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, t.Location())
-	days := (int(time.Monday) - int(t.Weekday()) + 7) % 7
-	if days == 0 {
-		days = 7
-	}
-	return t.AddDate(0, 0, days)
 }

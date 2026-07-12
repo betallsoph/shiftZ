@@ -77,6 +77,21 @@ func New(ctx context.Context, databaseURL string, debug bool) (*Store, error) {
 	}, nil
 }
 
+// NewWithClient returns a Store wired to an existing ent client. Useful for
+// tests and tools that manage their own database connection.
+func NewWithClient(client *ent.Client) *Store {
+	return &Store{
+		Client:       client,
+		Shops:        &ShopRepo{client: client},
+		Employees:    &EmployeeRepo{client: client},
+		Shifts:       &ShiftRepo{client: client},
+		Availability: &AvailabilityRepo{client: client},
+		Schedules:    &ScheduleRepo{client: client},
+		Rules:        &RuleRepo{client: client},
+		Votes:        &VoteRepo{client: client},
+	}
+}
+
 // Ping checks database reachability (used by health endpoints).
 func (s *Store) Ping(ctx context.Context) error { return s.db.PingContext(ctx) }
 
