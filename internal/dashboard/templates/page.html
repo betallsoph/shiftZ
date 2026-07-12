@@ -6,25 +6,34 @@
     <title>shiftZ</title>
     <link rel="stylesheet" href="/static/dashboard.css" />
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+    <script src="/static/dashboard.js" defer></script>
   </head>
-  <body>
+  <body class="roomio-grid-bg">
     <header class="site-header">
       <h1>shiftZ</h1>
+      <p>Owner schedule dashboard</p>
     </header>
     <main class="container">
-      <section class="controls">
+      <section class="controls card">
         <form id="shop-form" class="control-form">
           <label>
             Shop ID
-            <input type="text" name="shop_id" placeholder="uuid" autocomplete="off" />
+            <input
+              class="input"
+              type="text"
+              name="shop_id"
+              placeholder="paste uuid from seed"
+              autocomplete="off"
+            />
           </label>
           <label>
             Week start
-            <input type="date" name="week_start" value="{{.Today}}" />
+            <input class="input" type="date" name="week_start" value="{{.Today}}" />
           </label>
           <div class="control-actions">
             <button
               type="button"
+              class="btn btn-ghost"
               hx-get="/dashboard/week"
               hx-include="#shop-form"
               hx-target="#week-panel"
@@ -34,6 +43,7 @@
             </button>
             <button
               type="button"
+              class="btn btn-primary"
               hx-post="/dashboard/generate"
               hx-include="#shop-form"
               hx-target="#week-panel"

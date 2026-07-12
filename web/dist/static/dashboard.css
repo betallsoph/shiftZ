@@ -1,3 +1,16 @@
+/* Roomio Soft Neobrutalism — plain CSS port for shiftZ dashboard */
+
+:root {
+  --shadow-primary: 4px 4px 0 -1px #000;
+  --shadow-secondary: 2px 2px 0 -1px #000;
+  --blue-50: #eff6ff;
+  --blue-100: #dbeafe;
+  --blue-200: #bfdbfe;
+  --blue-300: #93c5fd;
+  --blue-400: #60a5fa;
+  --tap-depth: 1px;
+}
+
 *,
 *::before,
 *::after {
@@ -6,143 +19,308 @@
 
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, sans-serif;
+  min-height: 100vh;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
   font-size: 15px;
   line-height: 1.5;
-  color: #1a1a1a;
-  background: #f4f4f2;
+  color: #000;
+  background: #fff;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+.roomio-grid-bg {
+  background-image:
+    linear-gradient(to right, rgba(156, 163, 175, 0.22) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(156, 163, 175, 0.22) 1px, transparent 1px);
+  background-size: 50px 50px;
 }
 
 .site-header {
-  padding: 12px 16px;
-  background: #2f3e2f;
-  color: #f8f8f6;
+  margin: 16px 16px 0;
+  max-width: 920px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 14px 18px;
+  background: var(--blue-300);
+  border: 2px solid #000;
+  border-radius: 8px;
+  box-shadow: var(--shadow-primary);
 }
 
 .site-header h1 {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: 1.25rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.site-header p {
+  margin: 4px 0 0;
+  font-size: 0.8rem;
   font-weight: 600;
-  letter-spacing: 0.02em;
+  opacity: 0.75;
 }
 
 .container {
-  max-width: 880px;
+  max-width: 920px;
   margin: 0 auto;
   padding: 16px;
 }
 
-.controls {
-  margin-bottom: 16px;
-  padding: 12px;
+.card {
+  border: 2px solid #000;
+  border-radius: 8px;
   background: #fff;
-  border: 1px solid #d8d8d4;
-  border-radius: 6px;
+  box-shadow: var(--shadow-secondary);
+}
+
+.controls {
+  padding: 16px;
+  margin-bottom: 16px;
 }
 
 .control-form {
   display: grid;
-  gap: 10px;
+  gap: 12px;
 }
 
 .control-form label {
   display: grid;
-  gap: 4px;
-  font-size: 0.85rem;
-  color: #444;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
-.control-form input[type="text"],
-.control-form input[type="date"] {
-  padding: 8px 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+.input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 2px solid #000;
+  border-radius: 8px;
+  background: #fff;
   font: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #000;
+}
+
+.input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--blue-300);
 }
 
 .control-actions {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   flex-wrap: wrap;
+  padding-top: 4px;
 }
 
-button {
-  padding: 8px 14px;
-  border: 1px solid #5a6b52;
-  border-radius: 4px;
-  background: #5a6b52;
-  color: #fff;
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border: 2px solid #000;
+  border-radius: 6px;
   font: inherit;
+  font-size: 0.875rem;
+  font-weight: 900;
   cursor: pointer;
+  color: #000;
+  background: #fff;
+  box-shadow: var(--shadow-secondary);
 }
 
-button:hover {
-  background: #4a5a44;
+.btn-primary {
+  background: var(--blue-300);
+}
+
+.btn-primary:hover {
+  background: var(--blue-400);
+}
+
+.btn-ghost {
+  background: var(--blue-50);
+}
+
+.btn-ghost:hover {
+  background: var(--blue-100);
+}
+
+.btn-sm {
+  padding: 8px 14px;
+  font-size: 0.75rem;
+}
+
+[class*="shadow-primary"] {
+  --tap-depth: 2px;
+  --tap-shadow: var(--shadow-primary);
+}
+
+[class*="shadow-secondary"],
+.btn {
+  --tap-depth: 1px;
+  --tap-shadow: var(--shadow-secondary);
+}
+
+:where(button, a, [role="button"]):where(.btn, .modal-action) {
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease,
+    opacity 150ms ease,
+    transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+:where(button, a, [role="button"]):where(.btn, .modal-action):active {
+  transform: translate(var(--tap-depth, 1px), var(--tap-depth, 1px));
+  box-shadow: none;
+  transition: transform 80ms ease, box-shadow 80ms ease;
+}
+
+.tap-bounce {
+  animation: tap-bounce 250ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.tap-sink {
+  transform: translate(var(--tap-depth, 1px), var(--tap-depth, 1px));
+  box-shadow: none;
+  transition: transform 80ms ease, box-shadow 80ms ease;
+}
+
+@keyframes tap-bounce {
+  0% {
+    transform: translate(var(--tap-depth, 1px), var(--tap-depth, 1px));
+    box-shadow: none;
+  }
+  50% {
+    transform: translate(-0.5px, -0.5px);
+    box-shadow: var(--tap-shadow, var(--shadow-secondary));
+  }
+  100% {
+    transform: translate(0, 0);
+    box-shadow: var(--tap-shadow, var(--shadow-secondary));
+  }
+}
+
+.modal-action {
+  --hover-x: 50%;
+  --hover-y: 50%;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.modal-action::before {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  background: #fff;
+  clip-path: circle(0 at var(--hover-x) var(--hover-y));
+  content: "";
+  transition: clip-path 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.modal-action:not(:disabled):hover::before {
+  clip-path: circle(160% at var(--hover-x) var(--hover-y));
+}
+
+.modal-action-label {
+  position: relative;
+  z-index: 1;
+  transition: color 150ms ease;
+}
+
+.modal-action:not(:disabled):hover .modal-action-label {
+  color: #2563eb;
 }
 
 .week-panel-inner {
   display: grid;
-  gap: 12px;
+  gap: 14px;
 }
 
 .empty-state {
-  padding: 16px;
-  background: #fff;
-  border: 1px dashed #ccc;
-  border-radius: 6px;
-  color: #555;
+  padding: 20px;
+  text-align: center;
+  font-weight: 600;
+  color: #333;
+}
+
+.empty-state p {
+  margin: 0 0 12px;
 }
 
 .alert {
-  padding: 10px 12px;
-  border-radius: 4px;
-  font-size: 0.9rem;
+  padding: 12px 14px;
+  border: 2px solid #000;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  box-shadow: var(--shadow-secondary);
 }
 
-.alert-error {
-  background: #fdecea;
-  border: 1px solid #e8b4b0;
-  color: #7a1f1a;
-}
-
-.alert-notice {
-  background: #eef4fb;
-  border: 1px solid #b8cfe8;
-  color: #1f3f66;
-}
-
-.alert-warn {
-  background: #fff8e6;
-  border: 1px solid #e8d49a;
-  color: #5c4a12;
+.alert strong {
+  font-weight: 900;
 }
 
 .alert ul {
-  margin: 6px 0 0;
+  margin: 8px 0 0;
   padding-left: 18px;
+}
+
+.alert-error {
+  background: #fecaca;
+}
+
+.alert-notice {
+  background: var(--blue-100);
+}
+
+.alert-warn {
+  background: #fef08a;
+}
+
+.week-summary {
+  padding: 16px;
+  background: var(--blue-50);
+  border: 2px solid #000;
+  border-radius: 8px;
+  box-shadow: var(--shadow-secondary);
 }
 
 .week-summary h2 {
   margin: 0 0 4px;
   font-size: 1.1rem;
+  font-weight: 900;
 }
 
 .meta {
   margin: 0;
-  color: #666;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #333;
 }
 
 .schedules {
   display: grid;
-  gap: 12px;
+  gap: 14px;
 }
 
 .schedule-card {
-  padding: 12px;
+  padding: 16px;
   background: #fff;
-  border: 1px solid #d8d8d4;
-  border-radius: 6px;
+}
+
+.schedule-card.is-approved {
+  background: var(--blue-50);
 }
 
 .schedule-header {
@@ -150,104 +328,173 @@ button:hover {
   justify-content: space-between;
   gap: 12px;
   flex-wrap: wrap;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 2px dashed #000;
 }
 
 .schedule-title {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .variant {
-  font-weight: 600;
+  font-weight: 900;
+  font-size: 1rem;
 }
 
 .badge {
   display: inline-block;
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 0.75rem;
+  padding: 3px 10px;
+  border: 2px solid #000;
+  border-radius: 6px;
+  font-size: 0.65rem;
+  font-weight: 900;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.06em;
+  box-shadow: 1px 1px 0 -1px #000;
 }
 
 .badge-draft {
-  background: #eee;
-  color: #555;
+  background: #e5e7eb;
 }
 
 .badge-approved {
-  background: #e3f0e3;
-  color: #2f5c2f;
+  background: var(--blue-300);
 }
 
 .badge-voting,
 .badge-published {
-  background: #eef4fb;
-  color: #1f3f66;
+  background: var(--blue-200);
 }
 
 .schedule-meta {
   display: flex;
   gap: 12px;
-  color: #666;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
+  font-weight: 700;
 }
 
 .violations {
-  margin: 8px 0;
-  font-size: 0.85rem;
-  color: #7a1f1a;
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border: 2px solid #000;
+  border-radius: 6px;
+  background: #fecaca;
+  font-size: 0.8rem;
 }
 
 .violations ul {
-  margin: 4px 0 0;
+  margin: 6px 0 0;
   padding-left: 18px;
 }
 
 .approve-form {
-  margin: 8px 0;
+  margin: 0 0 12px;
 }
 
 .assignments {
-  margin-top: 8px;
+  display: grid;
+  gap: 10px;
+}
+
+.day-block {
+  padding: 12px;
+  background: var(--blue-50);
+  border: 2px solid #000;
+  border-radius: 8px;
 }
 
 .day-block h3 {
-  margin: 0 0 6px;
-  font-size: 0.95rem;
-  color: #333;
+  margin: 0 0 8px;
+  font-size: 0.85rem;
+  font-weight: 900;
 }
 
 .shift-list {
-  margin: 0 0 12px;
-  padding-left: 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 6px;
 }
 
 .shift-list li {
-  margin-bottom: 4px;
+  padding: 8px 10px;
+  background: #fff;
+  border: 2px solid #000;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
 }
 
 .shift-name {
-  font-weight: 500;
+  font-weight: 900;
 }
 
 .shift-time {
-  color: #666;
-  font-size: 0.9rem;
+  color: #444;
+  font-weight: 700;
 }
 
 .shift-employees {
-  color: #1a1a1a;
+  font-weight: 800;
+  color: #1d4ed8;
 }
 
 .inline-form {
   margin-top: 8px;
 }
 
+@keyframes scale-up {
+  from {
+    transform: scale(0.98);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.week-panel-inner {
+  animation: scale-up 0.2s ease-out;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--blue-300);
+  border: 2px solid #000;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--blue-400);
+}
+
+::selection {
+  background: var(--blue-300);
+  color: #000;
+}
+
 @media (max-width: 600px) {
+  .site-header {
+    margin-top: 12px;
+  }
+
   .schedule-header {
     flex-direction: column;
+  }
+
+  .control-actions .btn {
+    flex: 1;
   }
 }

@@ -1,9 +1,9 @@
 <div class="week-panel-inner">
   {{if .Error}}
-  <div class="alert alert-error">{{.Error}}</div>
+  <div class="alert alert-error"><strong>Error</strong> — {{.Error}}</div>
   {{end}}
   {{if .Notice}}
-  <div class="alert alert-notice">{{.Notice}}</div>
+  <div class="alert alert-notice"><strong>Note</strong> — {{.Notice}}</div>
   {{end}}
   {{if .Warnings}}
   <div class="alert alert-warn">
@@ -22,7 +22,7 @@
   {{end}}
 
   {{if not .Schedules}}
-  <div class="empty-state">
+  <div class="empty-state card">
     <p>No schedules generated yet.</p>
     <form
       hx-post="/dashboard/generate"
@@ -32,13 +32,13 @@
     >
       <input type="hidden" name="shop_id" value="{{.ShopID}}" />
       <input type="hidden" name="week_start" value="{{.WeekStart}}" />
-      <button type="submit">Generate</button>
+      <button type="submit" class="btn btn-primary btn-sm">Generate</button>
     </form>
   </div>
   {{else}}
   <div class="schedules">
     {{range .Schedules}}
-    <article class="schedule-card">
+    <article class="schedule-card card{{if .IsApproved}} is-approved{{end}}">
       <header class="schedule-header">
         <div class="schedule-title">
           <span class="variant">Variant {{.VariantLabel}}</span>
@@ -68,7 +68,9 @@
       >
         <input type="hidden" name="shop_id" value="{{$.ShopID}}" />
         <input type="hidden" name="week_start" value="{{$.WeekStart}}" />
-        <button type="submit">Approve</button>
+        <button type="submit" class="btn btn-primary btn-sm modal-action">
+          <span class="modal-action-label">Approve</span>
+        </button>
       </form>
       {{end}}
 
