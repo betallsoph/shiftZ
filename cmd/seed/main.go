@@ -120,6 +120,6 @@ func run(log *slog.Logger) error {
 	}
 	log.Info("created availabilities", "week_start", monday.Format("2006-01-02"), "employees", len(employees))
 
-	fmt.Printf("\nSeeded. Join the demo shop in Telegram with:\n  /start %s\n", shop.InviteCode)
+	fmt.Printf("\nSeeded. Shop ID: %s\nJoin the demo shop in Telegram with:\n  /start %s\n", shop.ID, shop.InviteCode)
 	return nil
 }

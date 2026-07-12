@@ -1,0 +1,253 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  color: #1a1a1a;
+  background: #f4f4f2;
+}
+
+.site-header {
+  padding: 12px 16px;
+  background: #2f3e2f;
+  color: #f8f8f6;
+}
+
+.site-header h1 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.container {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.controls {
+  margin-bottom: 16px;
+  padding: 12px;
+  background: #fff;
+  border: 1px solid #d8d8d4;
+  border-radius: 6px;
+}
+
+.control-form {
+  display: grid;
+  gap: 10px;
+}
+
+.control-form label {
+  display: grid;
+  gap: 4px;
+  font-size: 0.85rem;
+  color: #444;
+}
+
+.control-form input[type="text"],
+.control-form input[type="date"] {
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font: inherit;
+}
+
+.control-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+button {
+  padding: 8px 14px;
+  border: 1px solid #5a6b52;
+  border-radius: 4px;
+  background: #5a6b52;
+  color: #fff;
+  font: inherit;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #4a5a44;
+}
+
+.week-panel-inner {
+  display: grid;
+  gap: 12px;
+}
+
+.empty-state {
+  padding: 16px;
+  background: #fff;
+  border: 1px dashed #ccc;
+  border-radius: 6px;
+  color: #555;
+}
+
+.alert {
+  padding: 10px 12px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.alert-error {
+  background: #fdecea;
+  border: 1px solid #e8b4b0;
+  color: #7a1f1a;
+}
+
+.alert-notice {
+  background: #eef4fb;
+  border: 1px solid #b8cfe8;
+  color: #1f3f66;
+}
+
+.alert-warn {
+  background: #fff8e6;
+  border: 1px solid #e8d49a;
+  color: #5c4a12;
+}
+
+.alert ul {
+  margin: 6px 0 0;
+  padding-left: 18px;
+}
+
+.week-summary h2 {
+  margin: 0 0 4px;
+  font-size: 1.1rem;
+}
+
+.meta {
+  margin: 0;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.schedules {
+  display: grid;
+  gap: 12px;
+}
+
+.schedule-card {
+  padding: 12px;
+  background: #fff;
+  border: 1px solid #d8d8d4;
+  border-radius: 6px;
+}
+
+.schedule-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.schedule-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.variant {
+  font-weight: 600;
+}
+
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.badge-draft {
+  background: #eee;
+  color: #555;
+}
+
+.badge-approved {
+  background: #e3f0e3;
+  color: #2f5c2f;
+}
+
+.badge-voting,
+.badge-published {
+  background: #eef4fb;
+  color: #1f3f66;
+}
+
+.schedule-meta {
+  display: flex;
+  gap: 12px;
+  color: #666;
+  font-size: 0.85rem;
+}
+
+.violations {
+  margin: 8px 0;
+  font-size: 0.85rem;
+  color: #7a1f1a;
+}
+
+.violations ul {
+  margin: 4px 0 0;
+  padding-left: 18px;
+}
+
+.approve-form {
+  margin: 8px 0;
+}
+
+.assignments {
+  margin-top: 8px;
+}
+
+.day-block h3 {
+  margin: 0 0 6px;
+  font-size: 0.95rem;
+  color: #333;
+}
+
+.shift-list {
+  margin: 0 0 12px;
+  padding-left: 18px;
+}
+
+.shift-list li {
+  margin-bottom: 4px;
+}
+
+.shift-name {
+  font-weight: 500;
+}
+
+.shift-time {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.shift-employees {
+  color: #1a1a1a;
+}
+
+.inline-form {
+  margin-top: 8px;
+}
+
+@media (max-width: 600px) {
+  .schedule-header {
+    flex-direction: column;
+  }
+}

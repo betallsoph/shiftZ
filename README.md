@@ -80,6 +80,17 @@ curl -X POST "http://localhost:8080/api/v1/schedules/<SCHEDULE_ID>/approve?shop_
 `week_start` is interpreted in the shop timezone (from seed: `Asia/Ho_Chi_Minh`).
 Generating again for the same shop/week returns `409 Conflict`.
 
+## Dashboard
+
+Open `http://localhost:8080` after `go run ./cmd/server`.
+
+1. Paste the shop `id` printed by `go run ./cmd/seed`.
+2. Pick a week start (next Monday works well with seeded availability).
+3. Click **Generate** to run the planner, or **Load** to view existing candidates.
+4. Click **Approve** on the variant you want.
+
+The dashboard uses HTMX and calls the Go planner/store layer directly (no JSON API from the browser).
+
 ```sh
 # 6. Run the Telegram bot (webhook mode)
 export TELEGRAM_BOT_TOKEN='123456:ABC...'          # from @BotFather

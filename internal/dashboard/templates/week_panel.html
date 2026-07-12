@@ -1,0 +1,97 @@
+<div class="week-panel-inner">
+  {{if .Error}}
+  <div class="alert alert-error">{{.Error}}</div>
+  {{end}}
+  {{if .Notice}}
+  <div class="alert alert-notice">{{.Notice}}</div>
+  {{end}}
+  {{if .Warnings}}
+  <div class="alert alert-warn">
+    <strong>Warnings</strong>
+    <ul>
+      {{range .Warnings}}<li>{{.}}</li>{{end}}
+    </ul>
+  </div>
+  {{end}}
+
+  {{if .ShopName}}
+  <div class="week-summary">
+    <h2>{{.ShopName}}</h2>
+    <p class="meta">Week of {{.WeekStart}}</p>
+  </div>
+  {{end}}
+
+  {{if not .Schedules}}
+  <div class="empty-state">
+    <p>No schedules generated yet.</p>
+    <form
+      hx-post="/dashboard/generate"
+      hx-target="#week-panel"
+      hx-swap="innerHTML"
+      class="inline-form"
+    >
+      <input type="hidden" name="shop_id" value="{{.ShopID}}" />
+      <input type="hidden" name="week_start" value="{{.WeekStart}}" />
+      <button type="submit">Generate</button>
+    </form>
+  </div>
+  {{else}}
+  <div class="schedules">
+    {{range .Schedules}}
+    <article class="schedule-card">
+      <header class="schedule-header">
+        <div class="schedule-title">
+          <span class="variant">Variant {{.VariantLabel}}</span>
+          <span class="badge badge-{{.Status}}">{{.Status}}</span>
+        </div>
+        <div class="schedule-meta">
+          <span>Score {{.Score}}</span>
+          <span>{{.AssignmentCount}} assignments</span>
+        </div>
+      </header>
+
+      {{if .Violations}}
+      <div class="violations">
+        <strong>Violations</strong>
+        <ul>
+          {{range .Violations}}<li>{{.}}</li>{{end}}
+        </ul>
+      </div>
+      {{end}}
+
+      {{if not .IsApproved}}
+      <form
+        hx-post="/dashboard/schedules/{{.ID}}/approve"
+        hx-target="#week-panel"
+        hx-swap="innerHTML"
+        class="approve-form"
+      >
+        <input type="hidden" name="shop_id" value="{{$.ShopID}}" />
+        <input type="hidden" name="week_start" value="{{$.WeekStart}}" />
+        <button type="submit">Approve</button>
+      </form>
+      {{end}}
+
+      {{if .Days}}
+      <div class="assignments">
+        {{range .Days}}
+        <section class="day-block">
+          <h3>{{.Label}}</h3>
+          <ul class="shift-list">
+            {{range .Shifts}}
+            <li>
+              <span class="shift-name">{{.Name}}</span>
+              <span class="shift-time">{{.TimeRange}}</span>:
+              <span class="shift-employees">{{join .Employees}}</span>
+            </li>
+            {{end}}
+          </ul>
+        </section>
+        {{end}}
+      </div>
+      {{end}}
+    </article>
+    {{end}}
+  </div>
+  {{end}}
+</div>

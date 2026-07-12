@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>shiftZ</title>
+    <link rel="stylesheet" href="/static/dashboard.css" />
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <h1>shiftZ</h1>
+    </header>
+    <main class="container">
+      <section class="controls">
+        <form id="shop-form" class="control-form">
+          <label>
+            Shop ID
+            <input type="text" name="shop_id" placeholder="uuid" autocomplete="off" />
+          </label>
+          <label>
+            Week start
+            <input type="date" name="week_start" value="{{.Today}}" />
+          </label>
+          <div class="control-actions">
+            <button
+              type="button"
+              hx-get="/dashboard/week"
+              hx-include="#shop-form"
+              hx-target="#week-panel"
+              hx-swap="innerHTML"
+            >
+              Load
+            </button>
+            <button
+              type="button"
+              hx-post="/dashboard/generate"
+              hx-include="#shop-form"
+              hx-target="#week-panel"
+              hx-swap="innerHTML"
+            >
+              Generate
+            </button>
+          </div>
+        </form>
+      </section>
+      <section id="week-panel" class="week-panel">
+        {{template "empty.html" .}}
+      </section>
+    </main>
+  </body>
+</html>

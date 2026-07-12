@@ -14,6 +14,7 @@ import (
 
 	"github.com/betallsoph/shiftz/internal/api"
 	"github.com/betallsoph/shiftz/internal/config"
+	"github.com/betallsoph/shiftz/internal/dashboard"
 	"github.com/betallsoph/shiftz/internal/store"
 	"github.com/betallsoph/shiftz/web"
 )
@@ -50,6 +51,12 @@ func run(log *slog.Logger) error {
 		w.WriteHeader(http.StatusOK)
 	})
 	api.New(st, log).Register(mux)
+
+	dash, err := dashboard.New(st, log)
+	if err != nil {
+		return err
+	}
+	dash.Register(mux)
 
 	dist, err := fs.Sub(web.Dist, "dist")
 	if err != nil {
