@@ -26,7 +26,8 @@ type WeekView struct {
 	Notice    string
 	Error     string
 	Warnings  []string
-	Schedules []ScheduleView
+	Schedules     []ScheduleView
+	HasApproved   bool
 }
 
 // ScheduleView is one schedule candidate card.
@@ -75,7 +76,11 @@ func buildWeekView(
 	}
 
 	views := make([]ScheduleView, len(schedules))
+	hasApproved := false
 	for i, sched := range schedules {
+		if sched.Status == "approved" {
+			hasApproved = true
+		}
 		violations := violationsByID[sched.ID.String()]
 		if violations == nil {
 			violations = []string{}
@@ -98,12 +103,13 @@ func buildWeekView(
 	}
 
 	return WeekView{
-		ShopID:    shop.ID.String(),
-		ShopName:  shop.Name,
-		WeekStart: weekStart.Format(dateLayout),
-		Notice:    notice,
-		Warnings:  warnings,
-		Schedules: views,
+		ShopID:      shop.ID.String(),
+		ShopName:    shop.Name,
+		WeekStart:   weekStart.Format(dateLayout),
+		Notice:      notice,
+		Warnings:    warnings,
+		Schedules:   views,
+		HasApproved: hasApproved,
 	}
 }
 

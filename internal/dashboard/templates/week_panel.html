@@ -40,8 +40,11 @@
   {{else}}
   <div class="schedules">
     {{range .Schedules}}
-    <article class="schedule-card card{{if .IsApproved}} is-approved{{end}}">
-      <header class="schedule-header">
+    <details
+      class="schedule-card card{{if .IsApproved}} is-approved{{end}}"
+      {{if or .IsApproved (not $.HasApproved)}}open{{end}}
+    >
+      <summary class="schedule-header">
         <div class="schedule-title">
           <span class="variant">Phương án {{.VariantLabel}}</span>
           <span class="badge badge-{{.Status}}">{{.StatusLabel}}</span>
@@ -50,51 +53,53 @@
           <span>Điểm {{.Score}}</span>
           <span>{{.AssignmentCount}} ca</span>
         </div>
-      </header>
+      </summary>
 
-      {{if .Violations}}
-      <div class="violations">
-        <strong>Vi phạm ràng buộc</strong>
-        <ul>
-          {{range .Violations}}<li>{{.}}</li>{{end}}
-        </ul>
-      </div>
-      {{end}}
-
-      {{if not .IsApproved}}
-      <form
-        hx-post="/dashboard/schedules/{{.ID}}/approve"
-        hx-target="#week-panel"
-        hx-swap="innerHTML"
-        class="approve-form"
-      >
-        <input type="hidden" name="shop_id" value="{{$.ShopID}}" />
-        <input type="hidden" name="week_start" value="{{$.WeekStart}}" />
-        <button type="submit" class="btn btn-primary btn-sm modal-action">
-          <span class="modal-action-label">Duyệt</span>
-        </button>
-      </form>
-      {{end}}
-
-      {{if .Days}}
-      <div class="assignments">
-        {{range .Days}}
-        <div class="day-group">
-          <h3 class="day-heading">{{.Label}}</h3>
-          <ul class="shift-lines">
-            {{range .Shifts}}
-            <li class="shift-line">
-              <span class="shift-name">{{.Name}}</span>
-              <span class="shift-time">{{.TimeRange}}</span>:
-              <span class="shift-employees">{{join .Employees}}</span>
-            </li>
-            {{end}}
+      <div class="schedule-body">
+        {{if .Violations}}
+        <div class="violations">
+          <strong>Vi phạm ràng buộc</strong>
+          <ul>
+            {{range .Violations}}<li>{{.}}</li>{{end}}
           </ul>
         </div>
         {{end}}
+
+        {{if not .IsApproved}}
+        <form
+          hx-post="/dashboard/schedules/{{.ID}}/approve"
+          hx-target="#week-panel"
+          hx-swap="innerHTML"
+          class="approve-form"
+        >
+          <input type="hidden" name="shop_id" value="{{$.ShopID}}" />
+          <input type="hidden" name="week_start" value="{{$.WeekStart}}" />
+          <button type="submit" class="btn btn-primary btn-sm modal-action">
+            <span class="modal-action-label">Duyệt</span>
+          </button>
+        </form>
+        {{end}}
+
+        {{if .Days}}
+        <div class="assignments">
+          {{range .Days}}
+          <div class="day-group">
+            <h3 class="day-heading">{{.Label}}</h3>
+            <ul class="shift-lines">
+              {{range .Shifts}}
+              <li class="shift-line">
+                <span class="shift-name">{{.Name}}</span>
+                <span class="shift-time">{{.TimeRange}}</span>:
+                <span class="shift-employees">{{join .Employees}}</span>
+              </li>
+              {{end}}
+            </ul>
+          </div>
+          {{end}}
+        </div>
+        {{end}}
       </div>
-      {{end}}
-    </article>
+    </details>
     {{end}}
   </div>
   {{end}}

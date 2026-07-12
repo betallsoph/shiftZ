@@ -311,12 +311,22 @@ body {
 }
 
 .schedule-card {
-  padding: 16px;
+  padding: 0;
   background: #fff;
+  overflow: hidden;
 }
 
 .schedule-card.is-approved {
   background: var(--blue-50);
+}
+
+.schedule-card > summary {
+  list-style: none;
+  cursor: pointer;
+}
+
+.schedule-card > summary::-webkit-details-marker {
+  display: none;
 }
 
 .schedule-header {
@@ -324,9 +334,36 @@ body {
   justify-content: space-between;
   gap: 12px;
   flex-wrap: wrap;
+  margin-bottom: 0;
+  padding: 16px 40px 16px 16px;
+  border-bottom: 2px dashed transparent;
+  position: relative;
+}
+
+.schedule-card[open] .schedule-header {
   margin-bottom: 12px;
   padding-bottom: 12px;
-  border-bottom: 2px dashed #000;
+  border-bottom-color: #000;
+}
+
+.schedule-header::after {
+  content: "▸";
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1rem;
+  font-weight: 900;
+  color: #2563eb;
+  transition: transform 150ms ease;
+}
+
+.schedule-card[open] .schedule-header::after {
+  content: "▾";
+}
+
+.schedule-body {
+  padding: 0 16px 16px;
 }
 
 .schedule-title {
@@ -405,7 +442,7 @@ body {
   margin: 0 0 6px;
   font-size: 0.85rem;
   font-weight: 900;
-  color: #111;
+  color: #2563eb;
 }
 
 .shift-lines {
