@@ -15,6 +15,7 @@ import (
 	"github.com/betallsoph/shiftz/internal/ent/availability"
 	"github.com/betallsoph/shiftz/internal/ent/employee"
 	"github.com/betallsoph/shiftz/internal/ent/predicate"
+	"github.com/betallsoph/shiftz/internal/ent/reminderdelivery"
 	"github.com/betallsoph/shiftz/internal/ent/scheduleassignment"
 	"github.com/betallsoph/shiftz/internal/ent/schedulevote"
 	"github.com/betallsoph/shiftz/internal/ent/shop"
@@ -24,14 +25,15 @@ import (
 // EmployeeQuery is the builder for querying Employee entities.
 type EmployeeQuery struct {
 	config
-	ctx                *QueryContext
-	order              []employee.OrderOption
-	inters             []Interceptor
-	predicates         []predicate.Employee
-	withShop           *ShopQuery
-	withAvailabilities *AvailabilityQuery
-	withAssignments    *ScheduleAssignmentQuery
-	withVotes          *ScheduleVoteQuery
+	ctx                    *QueryContext
+	order                  []employee.OrderOption
+	inters                 []Interceptor
+	predicates             []predicate.Employee
+	withShop               *ShopQuery
+	withAvailabilities     *AvailabilityQuery
+	withAssignments        *ScheduleAssignmentQuery
+	withVotes              *ScheduleVoteQuery
+	withReminderDeliveries *ReminderDeliveryQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -149,6 +151,28 @@ func (_q *EmployeeQuery) QueryVotes() *ScheduleVoteQuery {
 			sqlgraph.From(employee.Table, employee.FieldID, selector),
 			sqlgraph.To(schedulevote.Table, schedulevote.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, employee.VotesTable, employee.VotesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryReminderDeliveries chains the current query on the "reminder_deliveries" edge.
+func (_q *EmployeeQuery) QueryReminderDeliveries() *ReminderDeliveryQuery {
+	query := (&ReminderDeliveryClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(employee.Table, employee.FieldID, selector),
+			sqlgraph.To(reminderdelivery.Table, reminderdelivery.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, employee.ReminderDeliveriesTable, employee.ReminderDeliveriesColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -343,15 +367,16 @@ func (_q *EmployeeQuery) Clone() *EmployeeQuery {
 		return nil
 	}
 	return &EmployeeQuery{
-		config:             _q.config,
-		ctx:                _q.ctx.Clone(),
-		order:              append([]employee.OrderOption{}, _q.order...),
-		inters:             append([]Interceptor{}, _q.inters...),
-		predicates:         append([]predicate.Employee{}, _q.predicates...),
-		withShop:           _q.withShop.Clone(),
-		withAvailabilities: _q.withAvailabilities.Clone(),
-		withAssignments:    _q.withAssignments.Clone(),
-		withVotes:          _q.withVotes.Clone(),
+		config:                 _q.config,
+		ctx:                    _q.ctx.Clone(),
+		order:                  append([]employee.OrderOption{}, _q.order...),
+		inters:                 append([]Interceptor{}, _q.inters...),
+		predicates:             append([]predicate.Employee{}, _q.predicates...),
+		withShop:               _q.withShop.Clone(),
+		withAvailabilities:     _q.withAvailabilities.Clone(),
+		withAssignments:        _q.withAssignments.Clone(),
+		withVotes:              _q.withVotes.Clone(),
+		withReminderDeliveries: _q.withReminderDeliveries.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
@@ -399,6 +424,17 @@ func (_q *EmployeeQuery) WithVotes(opts ...func(*ScheduleVoteQuery)) *EmployeeQu
 		opt(query)
 	}
 	_q.withVotes = query
+	return _q
+}
+
+// WithReminderDeliveries tells the query-builder to eager-load the nodes that are connected to
+// the "reminder_deliveries" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *EmployeeQuery) WithReminderDeliveries(opts ...func(*ReminderDeliveryQuery)) *EmployeeQuery {
+	query := (&ReminderDeliveryClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withReminderDeliveries = query
 	return _q
 }
 
@@ -480,11 +516,12 @@ func (_q *EmployeeQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Emp
 	var (
 		nodes       = []*Employee{}
 		_spec       = _q.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [5]bool{
 			_q.withShop != nil,
 			_q.withAvailabilities != nil,
 			_q.withAssignments != nil,
 			_q.withVotes != nil,
+			_q.withReminderDeliveries != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -529,6 +566,15 @@ func (_q *EmployeeQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Emp
 		if err := _q.loadVotes(ctx, query, nodes,
 			func(n *Employee) { n.Edges.Votes = []*ScheduleVote{} },
 			func(n *Employee, e *ScheduleVote) { n.Edges.Votes = append(n.Edges.Votes, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withReminderDeliveries; query != nil {
+		if err := _q.loadReminderDeliveries(ctx, query, nodes,
+			func(n *Employee) { n.Edges.ReminderDeliveries = []*ReminderDelivery{} },
+			func(n *Employee, e *ReminderDelivery) {
+				n.Edges.ReminderDeliveries = append(n.Edges.ReminderDeliveries, e)
+			}); err != nil {
 			return nil, err
 		}
 	}
@@ -639,6 +685,36 @@ func (_q *EmployeeQuery) loadVotes(ctx context.Context, query *ScheduleVoteQuery
 	}
 	query.Where(predicate.ScheduleVote(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(employee.VotesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.EmployeeID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "employee_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *EmployeeQuery) loadReminderDeliveries(ctx context.Context, query *ReminderDeliveryQuery, nodes []*Employee, init func(*Employee), assign func(*Employee, *ReminderDelivery)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Employee)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(reminderdelivery.FieldEmployeeID)
+	}
+	query.Where(predicate.ReminderDelivery(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(employee.ReminderDeliveriesColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

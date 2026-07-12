@@ -116,6 +116,22 @@ curl "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/setWebhook" \
 4. Only **Confirm** writes availability to the database; **Cancel** discards the draft.
 5. Pending confirmations expire after 30 minutes (in-memory for now).
 
+### Availability reminders
+
+Background reminders are disabled by default. Enable with:
+
+```sh
+export REMINDERS_ENABLED=true
+export REMINDER_TICK_INTERVAL=1m
+```
+
+Each shop uses its own timezone. Default schedule:
+
+- Thursday 10:00 local — weekly availability reminder to all active linked employees
+- Saturday 10:00 local — nag only employees who have not submitted for the target week
+
+Delivery rows in the database prevent duplicate sends across worker ticks.
+
 LLM provider setup is not required to boot the bot; without a provider the bot explains that parsing is not configured yet.
 
 To enable Gemini parsing:
@@ -138,6 +154,8 @@ export LLM_MODEL='gemini-3.5-flash'   # optional; swap for cheaper Flash-Lite-st
 | `LLM_PROVIDER`            | bot (optional)  | —       | Model backend (`gemini`); empty disables LLM features |
 | `LLM_API_KEY`             | bot (optional)  | —       | API key for the selected provider              |
 | `LLM_MODEL`               | bot (optional)  | —       | Model id for the selected provider             |
+| `REMINDERS_ENABLED`       | bot (optional)  | —       | `true` starts availability reminder/nag loop   |
+| `REMINDER_TICK_INTERVAL`  | bot (optional)  | `1m`    | How often the reminder worker ticks            |
 | `ENT_DEBUG`               | all (optional)  | —       | `1`/`true` logs every generated SQL statement (dev only) |
 
 ## Data layer: ent + Atlas

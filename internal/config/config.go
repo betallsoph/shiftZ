@@ -4,6 +4,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"time"
 )
 
 // Config carries every setting for both binaries; each cmd validates the
@@ -33,6 +34,11 @@ type Config struct {
 	// EntDebug logs every SQL statement ent generates. Dev only: verbose
 	// and includes query parameters.
 	EntDebug bool
+
+	// RemindersEnabled starts the availability reminder/nag background loop.
+	RemindersEnabled bool
+	// ReminderTickInterval is how often the reminder worker checks due jobs.
+	ReminderTickInterval time.Duration
 }
 
 // Load reads all settings from the environment, applying defaults for
@@ -48,6 +54,8 @@ func Load() *Config {
 		LLMAPIKey:             os.Getenv("LLM_API_KEY"),
 		LLMModel:              os.Getenv("LLM_MODEL"),
 		EntDebug:              os.Getenv("ENT_DEBUG") == "1" || os.Getenv("ENT_DEBUG") == "true",
+		RemindersEnabled:      os.Getenv("REMINDERS_ENABLED") == "1" || os.Getenv("REMINDERS_ENABLED") == "true",
+		ReminderTickInterval:  envDurationOr("REMINDER_TICK_INTERVAL", time.Minute),
 	}
 }
 
@@ -72,4 +80,16 @@ func envOr(key, fallback string) string {
 		return v
 	}
 	return fallback
+}
+
+func envDurationOr(key string, fallback time.Duration) time.Duration {
+	v := os.Getenv(key)
+	if v == "" {
+		return fallback
+	}
+	d, err := time.ParseDuration(v)
+	if err != nil {
+		return fallback
+	}
+	return d
 }

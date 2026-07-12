@@ -48,9 +48,11 @@ type ShopEdges struct {
 	Rules []*Rule `json:"rules,omitempty"`
 	// Availabilities holds the value of the availabilities edge.
 	Availabilities []*Availability `json:"availabilities,omitempty"`
+	// ReminderDeliveries holds the value of the reminder_deliveries edge.
+	ReminderDeliveries []*ReminderDelivery `json:"reminder_deliveries,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [5]bool
+	loadedTypes [6]bool
 }
 
 // EmployeesOrErr returns the Employees value or an error if the edge
@@ -96,6 +98,15 @@ func (e ShopEdges) AvailabilitiesOrErr() ([]*Availability, error) {
 		return e.Availabilities, nil
 	}
 	return nil, &NotLoadedError{edge: "availabilities"}
+}
+
+// ReminderDeliveriesOrErr returns the ReminderDeliveries value or an error if the edge
+// was not loaded in eager-loading.
+func (e ShopEdges) ReminderDeliveriesOrErr() ([]*ReminderDelivery, error) {
+	if e.loadedTypes[5] {
+		return e.ReminderDeliveries, nil
+	}
+	return nil, &NotLoadedError{edge: "reminder_deliveries"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -204,6 +215,11 @@ func (_m *Shop) QueryRules() *RuleQuery {
 // QueryAvailabilities queries the "availabilities" edge of the Shop entity.
 func (_m *Shop) QueryAvailabilities() *AvailabilityQuery {
 	return NewShopClient(_m.config).QueryAvailabilities(_m)
+}
+
+// QueryReminderDeliveries queries the "reminder_deliveries" edge of the Shop entity.
+func (_m *Shop) QueryReminderDeliveries() *ReminderDeliveryQuery {
+	return NewShopClient(_m.config).QueryReminderDeliveries(_m)
 }
 
 // Update returns a builder for updating this Shop.

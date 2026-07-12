@@ -69,6 +69,18 @@ func (r *EmployeeRepo) ByTelegramID(ctx context.Context, telegramUserID int64) (
 	return employeeFromEnt(row), nil
 }
 
+// ByID returns an employee by primary key.
+func (r *EmployeeRepo) ByID(ctx context.Context, id uuid.UUID) (*Employee, error) {
+	row, err := r.client.Employee.Get(ctx, id)
+	if ent.IsNotFound(err) {
+		return nil, ErrNotFound
+	}
+	if err != nil {
+		return nil, fmt.Errorf("store: employee by id: %w", err)
+	}
+	return employeeFromEnt(row), nil
+}
+
 // ActiveTelegramIDs lists the Telegram ids of all active employees across
 // all shops; the scheduler uses it to fan out weekly reminders.
 func (r *EmployeeRepo) ActiveTelegramIDs(ctx context.Context) ([]int64, error) {

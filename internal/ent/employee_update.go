@@ -13,6 +13,7 @@ import (
 	"github.com/betallsoph/shiftz/internal/ent/availability"
 	"github.com/betallsoph/shiftz/internal/ent/employee"
 	"github.com/betallsoph/shiftz/internal/ent/predicate"
+	"github.com/betallsoph/shiftz/internal/ent/reminderdelivery"
 	"github.com/betallsoph/shiftz/internal/ent/scheduleassignment"
 	"github.com/betallsoph/shiftz/internal/ent/schedulevote"
 	"github.com/betallsoph/shiftz/internal/ent/shop"
@@ -180,6 +181,21 @@ func (_u *EmployeeUpdate) AddVotes(v ...*ScheduleVote) *EmployeeUpdate {
 	return _u.AddVoteIDs(ids...)
 }
 
+// AddReminderDeliveryIDs adds the "reminder_deliveries" edge to the ReminderDelivery entity by IDs.
+func (_u *EmployeeUpdate) AddReminderDeliveryIDs(ids ...uuid.UUID) *EmployeeUpdate {
+	_u.mutation.AddReminderDeliveryIDs(ids...)
+	return _u
+}
+
+// AddReminderDeliveries adds the "reminder_deliveries" edges to the ReminderDelivery entity.
+func (_u *EmployeeUpdate) AddReminderDeliveries(v ...*ReminderDelivery) *EmployeeUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddReminderDeliveryIDs(ids...)
+}
+
 // Mutation returns the EmployeeMutation object of the builder.
 func (_u *EmployeeUpdate) Mutation() *EmployeeMutation {
 	return _u.mutation
@@ -252,6 +268,27 @@ func (_u *EmployeeUpdate) RemoveVotes(v ...*ScheduleVote) *EmployeeUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveVoteIDs(ids...)
+}
+
+// ClearReminderDeliveries clears all "reminder_deliveries" edges to the ReminderDelivery entity.
+func (_u *EmployeeUpdate) ClearReminderDeliveries() *EmployeeUpdate {
+	_u.mutation.ClearReminderDeliveries()
+	return _u
+}
+
+// RemoveReminderDeliveryIDs removes the "reminder_deliveries" edge to ReminderDelivery entities by IDs.
+func (_u *EmployeeUpdate) RemoveReminderDeliveryIDs(ids ...uuid.UUID) *EmployeeUpdate {
+	_u.mutation.RemoveReminderDeliveryIDs(ids...)
+	return _u
+}
+
+// RemoveReminderDeliveries removes "reminder_deliveries" edges to ReminderDelivery entities.
+func (_u *EmployeeUpdate) RemoveReminderDeliveries(v ...*ReminderDelivery) *EmployeeUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveReminderDeliveryIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -486,6 +523,51 @@ func (_u *EmployeeUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.ReminderDeliveriesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   employee.ReminderDeliveriesTable,
+			Columns: []string{employee.ReminderDeliveriesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(reminderdelivery.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedReminderDeliveriesIDs(); len(nodes) > 0 && !_u.mutation.ReminderDeliveriesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   employee.ReminderDeliveriesTable,
+			Columns: []string{employee.ReminderDeliveriesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(reminderdelivery.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ReminderDeliveriesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   employee.ReminderDeliveriesTable,
+			Columns: []string{employee.ReminderDeliveriesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(reminderdelivery.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{employee.Label}
@@ -654,6 +736,21 @@ func (_u *EmployeeUpdateOne) AddVotes(v ...*ScheduleVote) *EmployeeUpdateOne {
 	return _u.AddVoteIDs(ids...)
 }
 
+// AddReminderDeliveryIDs adds the "reminder_deliveries" edge to the ReminderDelivery entity by IDs.
+func (_u *EmployeeUpdateOne) AddReminderDeliveryIDs(ids ...uuid.UUID) *EmployeeUpdateOne {
+	_u.mutation.AddReminderDeliveryIDs(ids...)
+	return _u
+}
+
+// AddReminderDeliveries adds the "reminder_deliveries" edges to the ReminderDelivery entity.
+func (_u *EmployeeUpdateOne) AddReminderDeliveries(v ...*ReminderDelivery) *EmployeeUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddReminderDeliveryIDs(ids...)
+}
+
 // Mutation returns the EmployeeMutation object of the builder.
 func (_u *EmployeeUpdateOne) Mutation() *EmployeeMutation {
 	return _u.mutation
@@ -726,6 +823,27 @@ func (_u *EmployeeUpdateOne) RemoveVotes(v ...*ScheduleVote) *EmployeeUpdateOne 
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveVoteIDs(ids...)
+}
+
+// ClearReminderDeliveries clears all "reminder_deliveries" edges to the ReminderDelivery entity.
+func (_u *EmployeeUpdateOne) ClearReminderDeliveries() *EmployeeUpdateOne {
+	_u.mutation.ClearReminderDeliveries()
+	return _u
+}
+
+// RemoveReminderDeliveryIDs removes the "reminder_deliveries" edge to ReminderDelivery entities by IDs.
+func (_u *EmployeeUpdateOne) RemoveReminderDeliveryIDs(ids ...uuid.UUID) *EmployeeUpdateOne {
+	_u.mutation.RemoveReminderDeliveryIDs(ids...)
+	return _u
+}
+
+// RemoveReminderDeliveries removes "reminder_deliveries" edges to ReminderDelivery entities.
+func (_u *EmployeeUpdateOne) RemoveReminderDeliveries(v ...*ReminderDelivery) *EmployeeUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveReminderDeliveryIDs(ids...)
 }
 
 // Where appends a list predicates to the EmployeeUpdate builder.
@@ -983,6 +1101,51 @@ func (_u *EmployeeUpdateOne) sqlSave(ctx context.Context) (_node *Employee, err 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(schedulevote.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ReminderDeliveriesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   employee.ReminderDeliveriesTable,
+			Columns: []string{employee.ReminderDeliveriesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(reminderdelivery.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedReminderDeliveriesIDs(); len(nodes) > 0 && !_u.mutation.ReminderDeliveriesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   employee.ReminderDeliveriesTable,
+			Columns: []string{employee.ReminderDeliveriesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(reminderdelivery.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ReminderDeliveriesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   employee.ReminderDeliveriesTable,
+			Columns: []string{employee.ReminderDeliveriesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(reminderdelivery.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

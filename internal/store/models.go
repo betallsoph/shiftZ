@@ -65,6 +65,20 @@ type Availability struct {
 	CreatedAt  time.Time
 }
 
+// ReminderDelivery is one queued or completed Telegram reminder/nag send.
+type ReminderDelivery struct {
+	ID         uuid.UUID
+	ShopID     uuid.UUID
+	EmployeeID uuid.UUID
+	WeekStart  time.Time
+	Kind       string
+	Status     string
+	Attempts   int
+	LastError  string
+	CreatedAt  time.Time
+	SentAt     *time.Time
+}
+
 // Schedule is one solver-generated schedule variant for a week.
 type Schedule struct {
 	ID           uuid.UUID

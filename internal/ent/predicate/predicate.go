@@ -12,6 +12,9 @@ type Availability func(*sql.Selector)
 // Employee is the predicate function for employee builders.
 type Employee func(*sql.Selector)
 
+// ReminderDelivery is the predicate function for reminderdelivery builders.
+type ReminderDelivery func(*sql.Selector)
+
 // Rule is the predicate function for rule builders.
 type Rule func(*sql.Selector)
 

@@ -541,6 +541,29 @@ func HasAvailabilitiesWith(preds ...predicate.Availability) predicate.Shop {
 	})
 }
 
+// HasReminderDeliveries applies the HasEdge predicate on the "reminder_deliveries" edge.
+func HasReminderDeliveries() predicate.Shop {
+	return predicate.Shop(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ReminderDeliveriesTable, ReminderDeliveriesColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasReminderDeliveriesWith applies the HasEdge predicate on the "reminder_deliveries" edge with a given conditions (other predicates).
+func HasReminderDeliveriesWith(preds ...predicate.ReminderDelivery) predicate.Shop {
+	return predicate.Shop(func(s *sql.Selector) {
+		step := newReminderDeliveriesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Shop) predicate.Shop {
 	return predicate.Shop(sql.AndPredicates(predicates...))

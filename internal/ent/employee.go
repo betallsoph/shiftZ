@@ -49,9 +49,11 @@ type EmployeeEdges struct {
 	Assignments []*ScheduleAssignment `json:"assignments,omitempty"`
 	// Votes holds the value of the votes edge.
 	Votes []*ScheduleVote `json:"votes,omitempty"`
+	// ReminderDeliveries holds the value of the reminder_deliveries edge.
+	ReminderDeliveries []*ReminderDelivery `json:"reminder_deliveries,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [5]bool
 }
 
 // ShopOrErr returns the Shop value or an error if the edge
@@ -90,6 +92,15 @@ func (e EmployeeEdges) VotesOrErr() ([]*ScheduleVote, error) {
 		return e.Votes, nil
 	}
 	return nil, &NotLoadedError{edge: "votes"}
+}
+
+// ReminderDeliveriesOrErr returns the ReminderDeliveries value or an error if the edge
+// was not loaded in eager-loading.
+func (e EmployeeEdges) ReminderDeliveriesOrErr() ([]*ReminderDelivery, error) {
+	if e.loadedTypes[4] {
+		return e.ReminderDeliveries, nil
+	}
+	return nil, &NotLoadedError{edge: "reminder_deliveries"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -203,6 +214,11 @@ func (_m *Employee) QueryAssignments() *ScheduleAssignmentQuery {
 // QueryVotes queries the "votes" edge of the Employee entity.
 func (_m *Employee) QueryVotes() *ScheduleVoteQuery {
 	return NewEmployeeClient(_m.config).QueryVotes(_m)
+}
+
+// QueryReminderDeliveries queries the "reminder_deliveries" edge of the Employee entity.
+func (_m *Employee) QueryReminderDeliveries() *ReminderDeliveryQuery {
+	return NewEmployeeClient(_m.config).QueryReminderDeliveries(_m)
 }
 
 // Update returns a builder for updating this Employee.

@@ -48,6 +48,19 @@ func (r *ShopRepo) ByID(ctx context.Context, id uuid.UUID) (*Shop, error) {
 	return shopFromEnt(row), nil
 }
 
+// ListAll returns every shop (used by background reminder jobs).
+func (r *ShopRepo) ListAll(ctx context.Context) ([]*Shop, error) {
+	rows, err := r.client.Shop.Query().Order(shop.ByName()).All(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("store: list shops: %w", err)
+	}
+	out := make([]*Shop, len(rows))
+	for i, row := range rows {
+		out[i] = shopFromEnt(row)
+	}
+	return out, nil
+}
+
 // ByInviteCode fetches the shop an employee is joining.
 func (r *ShopRepo) ByInviteCode(ctx context.Context, code string) (*Shop, error) {
 	row, err := r.client.Shop.Query().Where(shop.InviteCode(code)).Only(ctx)

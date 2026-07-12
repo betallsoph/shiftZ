@@ -37,6 +37,8 @@ const (
 	EdgeAssignments = "assignments"
 	// EdgeVotes holds the string denoting the votes edge name in mutations.
 	EdgeVotes = "votes"
+	// EdgeReminderDeliveries holds the string denoting the reminder_deliveries edge name in mutations.
+	EdgeReminderDeliveries = "reminder_deliveries"
 	// Table holds the table name of the employee in the database.
 	Table = "employees"
 	// ShopTable is the table that holds the shop relation/edge.
@@ -67,6 +69,13 @@ const (
 	VotesInverseTable = "schedule_votes"
 	// VotesColumn is the table column denoting the votes relation/edge.
 	VotesColumn = "employee_id"
+	// ReminderDeliveriesTable is the table that holds the reminder_deliveries relation/edge.
+	ReminderDeliveriesTable = "reminder_deliveries"
+	// ReminderDeliveriesInverseTable is the table name for the ReminderDelivery entity.
+	// It exists in this package in order to avoid circular dependency with the "reminderdelivery" package.
+	ReminderDeliveriesInverseTable = "reminder_deliveries"
+	// ReminderDeliveriesColumn is the table column denoting the reminder_deliveries relation/edge.
+	ReminderDeliveriesColumn = "employee_id"
 )
 
 // Columns holds all SQL columns for employee fields.
@@ -195,6 +204,20 @@ func ByVotes(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newVotesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByReminderDeliveriesCount orders the results by reminder_deliveries count.
+func ByReminderDeliveriesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newReminderDeliveriesStep(), opts...)
+	}
+}
+
+// ByReminderDeliveries orders the results by reminder_deliveries terms.
+func ByReminderDeliveries(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newReminderDeliveriesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newShopStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -221,5 +244,12 @@ func newVotesStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(VotesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, VotesTable, VotesColumn),
+	)
+}
+func newReminderDeliveriesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ReminderDeliveriesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, ReminderDeliveriesTable, ReminderDeliveriesColumn),
 	)
 }

@@ -92,6 +92,51 @@ var (
 			},
 		},
 	}
+	// ReminderDeliveriesColumns holds the columns for the "reminder_deliveries" table.
+	ReminderDeliveriesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "week_start", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "date"}},
+		{Name: "kind", Type: field.TypeString},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"pending", "sent", "failed"}, Default: "pending"},
+		{Name: "attempts", Type: field.TypeInt, Default: 0},
+		{Name: "last_error", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "sent_at", Type: field.TypeTime, Nullable: true},
+		{Name: "employee_id", Type: field.TypeUUID},
+		{Name: "shop_id", Type: field.TypeUUID},
+	}
+	// ReminderDeliveriesTable holds the schema information for the "reminder_deliveries" table.
+	ReminderDeliveriesTable = &schema.Table{
+		Name:       "reminder_deliveries",
+		Columns:    ReminderDeliveriesColumns,
+		PrimaryKey: []*schema.Column{ReminderDeliveriesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "reminder_deliveries_employees_reminder_deliveries",
+				Columns:    []*schema.Column{ReminderDeliveriesColumns[8]},
+				RefColumns: []*schema.Column{EmployeesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "reminder_deliveries_shops_reminder_deliveries",
+				Columns:    []*schema.Column{ReminderDeliveriesColumns[9]},
+				RefColumns: []*schema.Column{ShopsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "reminderdelivery_shop_id_employee_id_week_start_kind",
+				Unique:  true,
+				Columns: []*schema.Column{ReminderDeliveriesColumns[9], ReminderDeliveriesColumns[8], ReminderDeliveriesColumns[1], ReminderDeliveriesColumns[2]},
+			},
+			{
+				Name:    "reminderdelivery_status_created_at",
+				Unique:  false,
+				Columns: []*schema.Column{ReminderDeliveriesColumns[3], ReminderDeliveriesColumns[6]},
+			},
+		},
+	}
 	// RulesColumns holds the columns for the "rules" table.
 	RulesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -304,6 +349,7 @@ var (
 	Tables = []*schema.Table{
 		AvailabilitiesTable,
 		EmployeesTable,
+		ReminderDeliveriesTable,
 		RulesTable,
 		SchedulesTable,
 		ScheduleAssignmentsTable,
@@ -317,6 +363,8 @@ func init() {
 	AvailabilitiesTable.ForeignKeys[0].RefTable = EmployeesTable
 	AvailabilitiesTable.ForeignKeys[1].RefTable = ShopsTable
 	EmployeesTable.ForeignKeys[0].RefTable = ShopsTable
+	ReminderDeliveriesTable.ForeignKeys[0].RefTable = EmployeesTable
+	ReminderDeliveriesTable.ForeignKeys[1].RefTable = ShopsTable
 	RulesTable.ForeignKeys[0].RefTable = ShopsTable
 	SchedulesTable.ForeignKeys[0].RefTable = ShopsTable
 	ScheduleAssignmentsTable.ForeignKeys[0].RefTable = EmployeesTable

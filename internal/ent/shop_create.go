@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/betallsoph/shiftz/internal/ent/availability"
 	"github.com/betallsoph/shiftz/internal/ent/employee"
+	"github.com/betallsoph/shiftz/internal/ent/reminderdelivery"
 	"github.com/betallsoph/shiftz/internal/ent/rule"
 	"github.com/betallsoph/shiftz/internal/ent/schedule"
 	"github.com/betallsoph/shiftz/internal/ent/shift"
@@ -176,6 +177,21 @@ func (_c *ShopCreate) AddAvailabilities(v ...*Availability) *ShopCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddAvailabilityIDs(ids...)
+}
+
+// AddReminderDeliveryIDs adds the "reminder_deliveries" edge to the ReminderDelivery entity by IDs.
+func (_c *ShopCreate) AddReminderDeliveryIDs(ids ...uuid.UUID) *ShopCreate {
+	_c.mutation.AddReminderDeliveryIDs(ids...)
+	return _c
+}
+
+// AddReminderDeliveries adds the "reminder_deliveries" edges to the ReminderDelivery entity.
+func (_c *ShopCreate) AddReminderDeliveries(v ...*ReminderDelivery) *ShopCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddReminderDeliveryIDs(ids...)
 }
 
 // Mutation returns the ShopMutation object of the builder.
@@ -384,6 +400,22 @@ func (_c *ShopCreate) createSpec() (*Shop, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(availability.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.ReminderDeliveriesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   shop.ReminderDeliveriesTable,
+			Columns: []string{shop.ReminderDeliveriesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(reminderdelivery.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

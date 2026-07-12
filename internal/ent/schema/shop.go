@@ -41,5 +41,6 @@ func (Shop) Edges() []ent.Edge {
 		edge.To("schedules", Schedule.Type).Annotations(entsql.OnDelete(entsql.Cascade)),
 		edge.To("rules", Rule.Type).Annotations(entsql.OnDelete(entsql.Cascade)),
 		edge.To("availabilities", Availability.Type).Annotations(entsql.OnDelete(entsql.Cascade)),
+		edge.To("reminder_deliveries", ReminderDelivery.Type).Annotations(entsql.OnDelete(entsql.Cascade)),
 	}
 }

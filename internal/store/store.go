@@ -45,6 +45,7 @@ type Store struct {
 	Schedules    *ScheduleRepo
 	Rules        *RuleRepo
 	Votes        *VoteRepo
+	Reminders    *ReminderDeliveryRepo
 
 	db *sql.DB
 }
@@ -76,6 +77,7 @@ func New(ctx context.Context, databaseURL string, debug bool) (*Store, error) {
 		Schedules:    &ScheduleRepo{client: client},
 		Rules:        &RuleRepo{client: client},
 		Votes:        &VoteRepo{client: client},
+		Reminders:    &ReminderDeliveryRepo{client: client},
 		db:           db,
 	}, nil
 }
@@ -92,6 +94,7 @@ func NewWithClient(client *ent.Client) *Store {
 		Schedules:    &ScheduleRepo{client: client},
 		Rules:        &RuleRepo{client: client},
 		Votes:        &VoteRepo{client: client},
+		Reminders:    &ReminderDeliveryRepo{client: client},
 	}
 }
 

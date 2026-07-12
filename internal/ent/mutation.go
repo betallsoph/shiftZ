@@ -14,6 +14,7 @@ import (
 	"github.com/betallsoph/shiftz/internal/ent/availability"
 	"github.com/betallsoph/shiftz/internal/ent/employee"
 	"github.com/betallsoph/shiftz/internal/ent/predicate"
+	"github.com/betallsoph/shiftz/internal/ent/reminderdelivery"
 	"github.com/betallsoph/shiftz/internal/ent/rule"
 	"github.com/betallsoph/shiftz/internal/ent/schedule"
 	"github.com/betallsoph/shiftz/internal/ent/scheduleassignment"
@@ -35,6 +36,7 @@ const (
 	// Node types.
 	TypeAvailability       = "Availability"
 	TypeEmployee           = "Employee"
+	TypeReminderDelivery   = "ReminderDelivery"
 	TypeRule               = "Rule"
 	TypeSchedule           = "Schedule"
 	TypeScheduleAssignment = "ScheduleAssignment"
@@ -764,32 +766,35 @@ func (m *AvailabilityMutation) ResetEdge(name string) error {
 // EmployeeMutation represents an operation that mutates the Employee nodes in the graph.
 type EmployeeMutation struct {
 	config
-	op                    Op
-	typ                   string
-	id                    *uuid.UUID
-	telegram_user_id      *int64
-	addtelegram_user_id   *int64
-	display_name          *string
-	role                  *string
-	max_hours_per_week    *float64
-	addmax_hours_per_week *float64
-	is_active             *bool
-	created_at            *time.Time
-	clearedFields         map[string]struct{}
-	shop                  *uuid.UUID
-	clearedshop           bool
-	availabilities        map[uuid.UUID]struct{}
-	removedavailabilities map[uuid.UUID]struct{}
-	clearedavailabilities bool
-	assignments           map[uuid.UUID]struct{}
-	removedassignments    map[uuid.UUID]struct{}
-	clearedassignments    bool
-	votes                 map[uuid.UUID]struct{}
-	removedvotes          map[uuid.UUID]struct{}
-	clearedvotes          bool
-	done                  bool
-	oldValue              func(context.Context) (*Employee, error)
-	predicates            []predicate.Employee
+	op                         Op
+	typ                        string
+	id                         *uuid.UUID
+	telegram_user_id           *int64
+	addtelegram_user_id        *int64
+	display_name               *string
+	role                       *string
+	max_hours_per_week         *float64
+	addmax_hours_per_week      *float64
+	is_active                  *bool
+	created_at                 *time.Time
+	clearedFields              map[string]struct{}
+	shop                       *uuid.UUID
+	clearedshop                bool
+	availabilities             map[uuid.UUID]struct{}
+	removedavailabilities      map[uuid.UUID]struct{}
+	clearedavailabilities      bool
+	assignments                map[uuid.UUID]struct{}
+	removedassignments         map[uuid.UUID]struct{}
+	clearedassignments         bool
+	votes                      map[uuid.UUID]struct{}
+	removedvotes               map[uuid.UUID]struct{}
+	clearedvotes               bool
+	reminder_deliveries        map[uuid.UUID]struct{}
+	removedreminder_deliveries map[uuid.UUID]struct{}
+	clearedreminder_deliveries bool
+	done                       bool
+	oldValue                   func(context.Context) (*Employee, error)
+	predicates                 []predicate.Employee
 }
 
 var _ ent.Mutation = (*EmployeeMutation)(nil)
@@ -1377,6 +1382,60 @@ func (m *EmployeeMutation) ResetVotes() {
 	m.removedvotes = nil
 }
 
+// AddReminderDeliveryIDs adds the "reminder_deliveries" edge to the ReminderDelivery entity by ids.
+func (m *EmployeeMutation) AddReminderDeliveryIDs(ids ...uuid.UUID) {
+	if m.reminder_deliveries == nil {
+		m.reminder_deliveries = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.reminder_deliveries[ids[i]] = struct{}{}
+	}
+}
+
+// ClearReminderDeliveries clears the "reminder_deliveries" edge to the ReminderDelivery entity.
+func (m *EmployeeMutation) ClearReminderDeliveries() {
+	m.clearedreminder_deliveries = true
+}
+
+// ReminderDeliveriesCleared reports if the "reminder_deliveries" edge to the ReminderDelivery entity was cleared.
+func (m *EmployeeMutation) ReminderDeliveriesCleared() bool {
+	return m.clearedreminder_deliveries
+}
+
+// RemoveReminderDeliveryIDs removes the "reminder_deliveries" edge to the ReminderDelivery entity by IDs.
+func (m *EmployeeMutation) RemoveReminderDeliveryIDs(ids ...uuid.UUID) {
+	if m.removedreminder_deliveries == nil {
+		m.removedreminder_deliveries = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.reminder_deliveries, ids[i])
+		m.removedreminder_deliveries[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedReminderDeliveries returns the removed IDs of the "reminder_deliveries" edge to the ReminderDelivery entity.
+func (m *EmployeeMutation) RemovedReminderDeliveriesIDs() (ids []uuid.UUID) {
+	for id := range m.removedreminder_deliveries {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ReminderDeliveriesIDs returns the "reminder_deliveries" edge IDs in the mutation.
+func (m *EmployeeMutation) ReminderDeliveriesIDs() (ids []uuid.UUID) {
+	for id := range m.reminder_deliveries {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetReminderDeliveries resets all changes to the "reminder_deliveries" edge.
+func (m *EmployeeMutation) ResetReminderDeliveries() {
+	m.reminder_deliveries = nil
+	m.clearedreminder_deliveries = false
+	m.removedreminder_deliveries = nil
+}
+
 // Where appends a list predicates to the EmployeeMutation builder.
 func (m *EmployeeMutation) Where(ps ...predicate.Employee) {
 	m.predicates = append(m.predicates, ps...)
@@ -1639,7 +1698,7 @@ func (m *EmployeeMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *EmployeeMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.shop != nil {
 		edges = append(edges, employee.EdgeShop)
 	}
@@ -1651,6 +1710,9 @@ func (m *EmployeeMutation) AddedEdges() []string {
 	}
 	if m.votes != nil {
 		edges = append(edges, employee.EdgeVotes)
+	}
+	if m.reminder_deliveries != nil {
+		edges = append(edges, employee.EdgeReminderDeliveries)
 	}
 	return edges
 }
@@ -1681,13 +1743,19 @@ func (m *EmployeeMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case employee.EdgeReminderDeliveries:
+		ids := make([]ent.Value, 0, len(m.reminder_deliveries))
+		for id := range m.reminder_deliveries {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *EmployeeMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.removedavailabilities != nil {
 		edges = append(edges, employee.EdgeAvailabilities)
 	}
@@ -1696,6 +1764,9 @@ func (m *EmployeeMutation) RemovedEdges() []string {
 	}
 	if m.removedvotes != nil {
 		edges = append(edges, employee.EdgeVotes)
+	}
+	if m.removedreminder_deliveries != nil {
+		edges = append(edges, employee.EdgeReminderDeliveries)
 	}
 	return edges
 }
@@ -1722,13 +1793,19 @@ func (m *EmployeeMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case employee.EdgeReminderDeliveries:
+		ids := make([]ent.Value, 0, len(m.removedreminder_deliveries))
+		for id := range m.removedreminder_deliveries {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *EmployeeMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.clearedshop {
 		edges = append(edges, employee.EdgeShop)
 	}
@@ -1740,6 +1817,9 @@ func (m *EmployeeMutation) ClearedEdges() []string {
 	}
 	if m.clearedvotes {
 		edges = append(edges, employee.EdgeVotes)
+	}
+	if m.clearedreminder_deliveries {
+		edges = append(edges, employee.EdgeReminderDeliveries)
 	}
 	return edges
 }
@@ -1756,6 +1836,8 @@ func (m *EmployeeMutation) EdgeCleared(name string) bool {
 		return m.clearedassignments
 	case employee.EdgeVotes:
 		return m.clearedvotes
+	case employee.EdgeReminderDeliveries:
+		return m.clearedreminder_deliveries
 	}
 	return false
 }
@@ -1787,8 +1869,952 @@ func (m *EmployeeMutation) ResetEdge(name string) error {
 	case employee.EdgeVotes:
 		m.ResetVotes()
 		return nil
+	case employee.EdgeReminderDeliveries:
+		m.ResetReminderDeliveries()
+		return nil
 	}
 	return fmt.Errorf("unknown Employee edge %s", name)
+}
+
+// ReminderDeliveryMutation represents an operation that mutates the ReminderDelivery nodes in the graph.
+type ReminderDeliveryMutation struct {
+	config
+	op              Op
+	typ             string
+	id              *uuid.UUID
+	week_start      *time.Time
+	kind            *string
+	status          *reminderdelivery.Status
+	attempts        *int
+	addattempts     *int
+	last_error      *string
+	created_at      *time.Time
+	sent_at         *time.Time
+	clearedFields   map[string]struct{}
+	shop            *uuid.UUID
+	clearedshop     bool
+	employee        *uuid.UUID
+	clearedemployee bool
+	done            bool
+	oldValue        func(context.Context) (*ReminderDelivery, error)
+	predicates      []predicate.ReminderDelivery
+}
+
+var _ ent.Mutation = (*ReminderDeliveryMutation)(nil)
+
+// reminderdeliveryOption allows management of the mutation configuration using functional options.
+type reminderdeliveryOption func(*ReminderDeliveryMutation)
+
+// newReminderDeliveryMutation creates new mutation for the ReminderDelivery entity.
+func newReminderDeliveryMutation(c config, op Op, opts ...reminderdeliveryOption) *ReminderDeliveryMutation {
+	m := &ReminderDeliveryMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeReminderDelivery,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withReminderDeliveryID sets the ID field of the mutation.
+func withReminderDeliveryID(id uuid.UUID) reminderdeliveryOption {
+	return func(m *ReminderDeliveryMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *ReminderDelivery
+		)
+		m.oldValue = func(ctx context.Context) (*ReminderDelivery, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().ReminderDelivery.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withReminderDelivery sets the old ReminderDelivery of the mutation.
+func withReminderDelivery(node *ReminderDelivery) reminderdeliveryOption {
+	return func(m *ReminderDeliveryMutation) {
+		m.oldValue = func(context.Context) (*ReminderDelivery, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m ReminderDeliveryMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m ReminderDeliveryMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of ReminderDelivery entities.
+func (m *ReminderDeliveryMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *ReminderDeliveryMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *ReminderDeliveryMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().ReminderDelivery.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetShopID sets the "shop_id" field.
+func (m *ReminderDeliveryMutation) SetShopID(u uuid.UUID) {
+	m.shop = &u
+}
+
+// ShopID returns the value of the "shop_id" field in the mutation.
+func (m *ReminderDeliveryMutation) ShopID() (r uuid.UUID, exists bool) {
+	v := m.shop
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldShopID returns the old "shop_id" field's value of the ReminderDelivery entity.
+// If the ReminderDelivery object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ReminderDeliveryMutation) OldShopID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldShopID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldShopID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldShopID: %w", err)
+	}
+	return oldValue.ShopID, nil
+}
+
+// ResetShopID resets all changes to the "shop_id" field.
+func (m *ReminderDeliveryMutation) ResetShopID() {
+	m.shop = nil
+}
+
+// SetEmployeeID sets the "employee_id" field.
+func (m *ReminderDeliveryMutation) SetEmployeeID(u uuid.UUID) {
+	m.employee = &u
+}
+
+// EmployeeID returns the value of the "employee_id" field in the mutation.
+func (m *ReminderDeliveryMutation) EmployeeID() (r uuid.UUID, exists bool) {
+	v := m.employee
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEmployeeID returns the old "employee_id" field's value of the ReminderDelivery entity.
+// If the ReminderDelivery object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ReminderDeliveryMutation) OldEmployeeID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEmployeeID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEmployeeID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEmployeeID: %w", err)
+	}
+	return oldValue.EmployeeID, nil
+}
+
+// ResetEmployeeID resets all changes to the "employee_id" field.
+func (m *ReminderDeliveryMutation) ResetEmployeeID() {
+	m.employee = nil
+}
+
+// SetWeekStart sets the "week_start" field.
+func (m *ReminderDeliveryMutation) SetWeekStart(t time.Time) {
+	m.week_start = &t
+}
+
+// WeekStart returns the value of the "week_start" field in the mutation.
+func (m *ReminderDeliveryMutation) WeekStart() (r time.Time, exists bool) {
+	v := m.week_start
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWeekStart returns the old "week_start" field's value of the ReminderDelivery entity.
+// If the ReminderDelivery object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ReminderDeliveryMutation) OldWeekStart(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWeekStart is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWeekStart requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWeekStart: %w", err)
+	}
+	return oldValue.WeekStart, nil
+}
+
+// ResetWeekStart resets all changes to the "week_start" field.
+func (m *ReminderDeliveryMutation) ResetWeekStart() {
+	m.week_start = nil
+}
+
+// SetKind sets the "kind" field.
+func (m *ReminderDeliveryMutation) SetKind(s string) {
+	m.kind = &s
+}
+
+// Kind returns the value of the "kind" field in the mutation.
+func (m *ReminderDeliveryMutation) Kind() (r string, exists bool) {
+	v := m.kind
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldKind returns the old "kind" field's value of the ReminderDelivery entity.
+// If the ReminderDelivery object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ReminderDeliveryMutation) OldKind(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldKind is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldKind requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldKind: %w", err)
+	}
+	return oldValue.Kind, nil
+}
+
+// ResetKind resets all changes to the "kind" field.
+func (m *ReminderDeliveryMutation) ResetKind() {
+	m.kind = nil
+}
+
+// SetStatus sets the "status" field.
+func (m *ReminderDeliveryMutation) SetStatus(r reminderdelivery.Status) {
+	m.status = &r
+}
+
+// Status returns the value of the "status" field in the mutation.
+func (m *ReminderDeliveryMutation) Status() (r reminderdelivery.Status, exists bool) {
+	v := m.status
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStatus returns the old "status" field's value of the ReminderDelivery entity.
+// If the ReminderDelivery object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ReminderDeliveryMutation) OldStatus(ctx context.Context) (v reminderdelivery.Status, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStatus is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStatus requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStatus: %w", err)
+	}
+	return oldValue.Status, nil
+}
+
+// ResetStatus resets all changes to the "status" field.
+func (m *ReminderDeliveryMutation) ResetStatus() {
+	m.status = nil
+}
+
+// SetAttempts sets the "attempts" field.
+func (m *ReminderDeliveryMutation) SetAttempts(i int) {
+	m.attempts = &i
+	m.addattempts = nil
+}
+
+// Attempts returns the value of the "attempts" field in the mutation.
+func (m *ReminderDeliveryMutation) Attempts() (r int, exists bool) {
+	v := m.attempts
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAttempts returns the old "attempts" field's value of the ReminderDelivery entity.
+// If the ReminderDelivery object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ReminderDeliveryMutation) OldAttempts(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAttempts is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAttempts requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAttempts: %w", err)
+	}
+	return oldValue.Attempts, nil
+}
+
+// AddAttempts adds i to the "attempts" field.
+func (m *ReminderDeliveryMutation) AddAttempts(i int) {
+	if m.addattempts != nil {
+		*m.addattempts += i
+	} else {
+		m.addattempts = &i
+	}
+}
+
+// AddedAttempts returns the value that was added to the "attempts" field in this mutation.
+func (m *ReminderDeliveryMutation) AddedAttempts() (r int, exists bool) {
+	v := m.addattempts
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetAttempts resets all changes to the "attempts" field.
+func (m *ReminderDeliveryMutation) ResetAttempts() {
+	m.attempts = nil
+	m.addattempts = nil
+}
+
+// SetLastError sets the "last_error" field.
+func (m *ReminderDeliveryMutation) SetLastError(s string) {
+	m.last_error = &s
+}
+
+// LastError returns the value of the "last_error" field in the mutation.
+func (m *ReminderDeliveryMutation) LastError() (r string, exists bool) {
+	v := m.last_error
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLastError returns the old "last_error" field's value of the ReminderDelivery entity.
+// If the ReminderDelivery object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ReminderDeliveryMutation) OldLastError(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLastError is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLastError requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLastError: %w", err)
+	}
+	return oldValue.LastError, nil
+}
+
+// ClearLastError clears the value of the "last_error" field.
+func (m *ReminderDeliveryMutation) ClearLastError() {
+	m.last_error = nil
+	m.clearedFields[reminderdelivery.FieldLastError] = struct{}{}
+}
+
+// LastErrorCleared returns if the "last_error" field was cleared in this mutation.
+func (m *ReminderDeliveryMutation) LastErrorCleared() bool {
+	_, ok := m.clearedFields[reminderdelivery.FieldLastError]
+	return ok
+}
+
+// ResetLastError resets all changes to the "last_error" field.
+func (m *ReminderDeliveryMutation) ResetLastError() {
+	m.last_error = nil
+	delete(m.clearedFields, reminderdelivery.FieldLastError)
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *ReminderDeliveryMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *ReminderDeliveryMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the ReminderDelivery entity.
+// If the ReminderDelivery object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ReminderDeliveryMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *ReminderDeliveryMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetSentAt sets the "sent_at" field.
+func (m *ReminderDeliveryMutation) SetSentAt(t time.Time) {
+	m.sent_at = &t
+}
+
+// SentAt returns the value of the "sent_at" field in the mutation.
+func (m *ReminderDeliveryMutation) SentAt() (r time.Time, exists bool) {
+	v := m.sent_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSentAt returns the old "sent_at" field's value of the ReminderDelivery entity.
+// If the ReminderDelivery object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ReminderDeliveryMutation) OldSentAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSentAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSentAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSentAt: %w", err)
+	}
+	return oldValue.SentAt, nil
+}
+
+// ClearSentAt clears the value of the "sent_at" field.
+func (m *ReminderDeliveryMutation) ClearSentAt() {
+	m.sent_at = nil
+	m.clearedFields[reminderdelivery.FieldSentAt] = struct{}{}
+}
+
+// SentAtCleared returns if the "sent_at" field was cleared in this mutation.
+func (m *ReminderDeliveryMutation) SentAtCleared() bool {
+	_, ok := m.clearedFields[reminderdelivery.FieldSentAt]
+	return ok
+}
+
+// ResetSentAt resets all changes to the "sent_at" field.
+func (m *ReminderDeliveryMutation) ResetSentAt() {
+	m.sent_at = nil
+	delete(m.clearedFields, reminderdelivery.FieldSentAt)
+}
+
+// ClearShop clears the "shop" edge to the Shop entity.
+func (m *ReminderDeliveryMutation) ClearShop() {
+	m.clearedshop = true
+	m.clearedFields[reminderdelivery.FieldShopID] = struct{}{}
+}
+
+// ShopCleared reports if the "shop" edge to the Shop entity was cleared.
+func (m *ReminderDeliveryMutation) ShopCleared() bool {
+	return m.clearedshop
+}
+
+// ShopIDs returns the "shop" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ShopID instead. It exists only for internal usage by the builders.
+func (m *ReminderDeliveryMutation) ShopIDs() (ids []uuid.UUID) {
+	if id := m.shop; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetShop resets all changes to the "shop" edge.
+func (m *ReminderDeliveryMutation) ResetShop() {
+	m.shop = nil
+	m.clearedshop = false
+}
+
+// ClearEmployee clears the "employee" edge to the Employee entity.
+func (m *ReminderDeliveryMutation) ClearEmployee() {
+	m.clearedemployee = true
+	m.clearedFields[reminderdelivery.FieldEmployeeID] = struct{}{}
+}
+
+// EmployeeCleared reports if the "employee" edge to the Employee entity was cleared.
+func (m *ReminderDeliveryMutation) EmployeeCleared() bool {
+	return m.clearedemployee
+}
+
+// EmployeeIDs returns the "employee" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// EmployeeID instead. It exists only for internal usage by the builders.
+func (m *ReminderDeliveryMutation) EmployeeIDs() (ids []uuid.UUID) {
+	if id := m.employee; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetEmployee resets all changes to the "employee" edge.
+func (m *ReminderDeliveryMutation) ResetEmployee() {
+	m.employee = nil
+	m.clearedemployee = false
+}
+
+// Where appends a list predicates to the ReminderDeliveryMutation builder.
+func (m *ReminderDeliveryMutation) Where(ps ...predicate.ReminderDelivery) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the ReminderDeliveryMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *ReminderDeliveryMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.ReminderDelivery, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *ReminderDeliveryMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *ReminderDeliveryMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (ReminderDelivery).
+func (m *ReminderDeliveryMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *ReminderDeliveryMutation) Fields() []string {
+	fields := make([]string, 0, 9)
+	if m.shop != nil {
+		fields = append(fields, reminderdelivery.FieldShopID)
+	}
+	if m.employee != nil {
+		fields = append(fields, reminderdelivery.FieldEmployeeID)
+	}
+	if m.week_start != nil {
+		fields = append(fields, reminderdelivery.FieldWeekStart)
+	}
+	if m.kind != nil {
+		fields = append(fields, reminderdelivery.FieldKind)
+	}
+	if m.status != nil {
+		fields = append(fields, reminderdelivery.FieldStatus)
+	}
+	if m.attempts != nil {
+		fields = append(fields, reminderdelivery.FieldAttempts)
+	}
+	if m.last_error != nil {
+		fields = append(fields, reminderdelivery.FieldLastError)
+	}
+	if m.created_at != nil {
+		fields = append(fields, reminderdelivery.FieldCreatedAt)
+	}
+	if m.sent_at != nil {
+		fields = append(fields, reminderdelivery.FieldSentAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *ReminderDeliveryMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case reminderdelivery.FieldShopID:
+		return m.ShopID()
+	case reminderdelivery.FieldEmployeeID:
+		return m.EmployeeID()
+	case reminderdelivery.FieldWeekStart:
+		return m.WeekStart()
+	case reminderdelivery.FieldKind:
+		return m.Kind()
+	case reminderdelivery.FieldStatus:
+		return m.Status()
+	case reminderdelivery.FieldAttempts:
+		return m.Attempts()
+	case reminderdelivery.FieldLastError:
+		return m.LastError()
+	case reminderdelivery.FieldCreatedAt:
+		return m.CreatedAt()
+	case reminderdelivery.FieldSentAt:
+		return m.SentAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *ReminderDeliveryMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case reminderdelivery.FieldShopID:
+		return m.OldShopID(ctx)
+	case reminderdelivery.FieldEmployeeID:
+		return m.OldEmployeeID(ctx)
+	case reminderdelivery.FieldWeekStart:
+		return m.OldWeekStart(ctx)
+	case reminderdelivery.FieldKind:
+		return m.OldKind(ctx)
+	case reminderdelivery.FieldStatus:
+		return m.OldStatus(ctx)
+	case reminderdelivery.FieldAttempts:
+		return m.OldAttempts(ctx)
+	case reminderdelivery.FieldLastError:
+		return m.OldLastError(ctx)
+	case reminderdelivery.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case reminderdelivery.FieldSentAt:
+		return m.OldSentAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown ReminderDelivery field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ReminderDeliveryMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case reminderdelivery.FieldShopID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetShopID(v)
+		return nil
+	case reminderdelivery.FieldEmployeeID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEmployeeID(v)
+		return nil
+	case reminderdelivery.FieldWeekStart:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWeekStart(v)
+		return nil
+	case reminderdelivery.FieldKind:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetKind(v)
+		return nil
+	case reminderdelivery.FieldStatus:
+		v, ok := value.(reminderdelivery.Status)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStatus(v)
+		return nil
+	case reminderdelivery.FieldAttempts:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAttempts(v)
+		return nil
+	case reminderdelivery.FieldLastError:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLastError(v)
+		return nil
+	case reminderdelivery.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case reminderdelivery.FieldSentAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSentAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown ReminderDelivery field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *ReminderDeliveryMutation) AddedFields() []string {
+	var fields []string
+	if m.addattempts != nil {
+		fields = append(fields, reminderdelivery.FieldAttempts)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *ReminderDeliveryMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case reminderdelivery.FieldAttempts:
+		return m.AddedAttempts()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ReminderDeliveryMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case reminderdelivery.FieldAttempts:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddAttempts(v)
+		return nil
+	}
+	return fmt.Errorf("unknown ReminderDelivery numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *ReminderDeliveryMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(reminderdelivery.FieldLastError) {
+		fields = append(fields, reminderdelivery.FieldLastError)
+	}
+	if m.FieldCleared(reminderdelivery.FieldSentAt) {
+		fields = append(fields, reminderdelivery.FieldSentAt)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *ReminderDeliveryMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *ReminderDeliveryMutation) ClearField(name string) error {
+	switch name {
+	case reminderdelivery.FieldLastError:
+		m.ClearLastError()
+		return nil
+	case reminderdelivery.FieldSentAt:
+		m.ClearSentAt()
+		return nil
+	}
+	return fmt.Errorf("unknown ReminderDelivery nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *ReminderDeliveryMutation) ResetField(name string) error {
+	switch name {
+	case reminderdelivery.FieldShopID:
+		m.ResetShopID()
+		return nil
+	case reminderdelivery.FieldEmployeeID:
+		m.ResetEmployeeID()
+		return nil
+	case reminderdelivery.FieldWeekStart:
+		m.ResetWeekStart()
+		return nil
+	case reminderdelivery.FieldKind:
+		m.ResetKind()
+		return nil
+	case reminderdelivery.FieldStatus:
+		m.ResetStatus()
+		return nil
+	case reminderdelivery.FieldAttempts:
+		m.ResetAttempts()
+		return nil
+	case reminderdelivery.FieldLastError:
+		m.ResetLastError()
+		return nil
+	case reminderdelivery.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case reminderdelivery.FieldSentAt:
+		m.ResetSentAt()
+		return nil
+	}
+	return fmt.Errorf("unknown ReminderDelivery field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *ReminderDeliveryMutation) AddedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.shop != nil {
+		edges = append(edges, reminderdelivery.EdgeShop)
+	}
+	if m.employee != nil {
+		edges = append(edges, reminderdelivery.EdgeEmployee)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *ReminderDeliveryMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case reminderdelivery.EdgeShop:
+		if id := m.shop; id != nil {
+			return []ent.Value{*id}
+		}
+	case reminderdelivery.EdgeEmployee:
+		if id := m.employee; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *ReminderDeliveryMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 2)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *ReminderDeliveryMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *ReminderDeliveryMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.clearedshop {
+		edges = append(edges, reminderdelivery.EdgeShop)
+	}
+	if m.clearedemployee {
+		edges = append(edges, reminderdelivery.EdgeEmployee)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *ReminderDeliveryMutation) EdgeCleared(name string) bool {
+	switch name {
+	case reminderdelivery.EdgeShop:
+		return m.clearedshop
+	case reminderdelivery.EdgeEmployee:
+		return m.clearedemployee
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *ReminderDeliveryMutation) ClearEdge(name string) error {
+	switch name {
+	case reminderdelivery.EdgeShop:
+		m.ClearShop()
+		return nil
+	case reminderdelivery.EdgeEmployee:
+		m.ClearEmployee()
+		return nil
+	}
+	return fmt.Errorf("unknown ReminderDelivery unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *ReminderDeliveryMutation) ResetEdge(name string) error {
+	switch name {
+	case reminderdelivery.EdgeShop:
+		m.ResetShop()
+		return nil
+	case reminderdelivery.EdgeEmployee:
+		m.ResetEmployee()
+		return nil
+	}
+	return fmt.Errorf("unknown ReminderDelivery edge %s", name)
 }
 
 // RuleMutation represents an operation that mutates the Rule nodes in the graph.
@@ -5699,35 +6725,38 @@ func (m *ShiftMutation) ResetEdge(name string) error {
 // ShopMutation represents an operation that mutates the Shop nodes in the graph.
 type ShopMutation struct {
 	config
-	op                    Op
-	typ                   string
-	id                    *uuid.UUID
-	name                  *string
-	timezone              *string
-	invite_code           *string
-	telegram_group_id     *int64
-	addtelegram_group_id  *int64
-	plan                  *string
-	created_at            *time.Time
-	clearedFields         map[string]struct{}
-	employees             map[uuid.UUID]struct{}
-	removedemployees      map[uuid.UUID]struct{}
-	clearedemployees      bool
-	shifts                map[uuid.UUID]struct{}
-	removedshifts         map[uuid.UUID]struct{}
-	clearedshifts         bool
-	schedules             map[uuid.UUID]struct{}
-	removedschedules      map[uuid.UUID]struct{}
-	clearedschedules      bool
-	rules                 map[uuid.UUID]struct{}
-	removedrules          map[uuid.UUID]struct{}
-	clearedrules          bool
-	availabilities        map[uuid.UUID]struct{}
-	removedavailabilities map[uuid.UUID]struct{}
-	clearedavailabilities bool
-	done                  bool
-	oldValue              func(context.Context) (*Shop, error)
-	predicates            []predicate.Shop
+	op                         Op
+	typ                        string
+	id                         *uuid.UUID
+	name                       *string
+	timezone                   *string
+	invite_code                *string
+	telegram_group_id          *int64
+	addtelegram_group_id       *int64
+	plan                       *string
+	created_at                 *time.Time
+	clearedFields              map[string]struct{}
+	employees                  map[uuid.UUID]struct{}
+	removedemployees           map[uuid.UUID]struct{}
+	clearedemployees           bool
+	shifts                     map[uuid.UUID]struct{}
+	removedshifts              map[uuid.UUID]struct{}
+	clearedshifts              bool
+	schedules                  map[uuid.UUID]struct{}
+	removedschedules           map[uuid.UUID]struct{}
+	clearedschedules           bool
+	rules                      map[uuid.UUID]struct{}
+	removedrules               map[uuid.UUID]struct{}
+	clearedrules               bool
+	availabilities             map[uuid.UUID]struct{}
+	removedavailabilities      map[uuid.UUID]struct{}
+	clearedavailabilities      bool
+	reminder_deliveries        map[uuid.UUID]struct{}
+	removedreminder_deliveries map[uuid.UUID]struct{}
+	clearedreminder_deliveries bool
+	done                       bool
+	oldValue                   func(context.Context) (*Shop, error)
+	predicates                 []predicate.Shop
 }
 
 var _ ent.Mutation = (*ShopMutation)(nil)
@@ -6340,6 +7369,60 @@ func (m *ShopMutation) ResetAvailabilities() {
 	m.removedavailabilities = nil
 }
 
+// AddReminderDeliveryIDs adds the "reminder_deliveries" edge to the ReminderDelivery entity by ids.
+func (m *ShopMutation) AddReminderDeliveryIDs(ids ...uuid.UUID) {
+	if m.reminder_deliveries == nil {
+		m.reminder_deliveries = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.reminder_deliveries[ids[i]] = struct{}{}
+	}
+}
+
+// ClearReminderDeliveries clears the "reminder_deliveries" edge to the ReminderDelivery entity.
+func (m *ShopMutation) ClearReminderDeliveries() {
+	m.clearedreminder_deliveries = true
+}
+
+// ReminderDeliveriesCleared reports if the "reminder_deliveries" edge to the ReminderDelivery entity was cleared.
+func (m *ShopMutation) ReminderDeliveriesCleared() bool {
+	return m.clearedreminder_deliveries
+}
+
+// RemoveReminderDeliveryIDs removes the "reminder_deliveries" edge to the ReminderDelivery entity by IDs.
+func (m *ShopMutation) RemoveReminderDeliveryIDs(ids ...uuid.UUID) {
+	if m.removedreminder_deliveries == nil {
+		m.removedreminder_deliveries = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.reminder_deliveries, ids[i])
+		m.removedreminder_deliveries[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedReminderDeliveries returns the removed IDs of the "reminder_deliveries" edge to the ReminderDelivery entity.
+func (m *ShopMutation) RemovedReminderDeliveriesIDs() (ids []uuid.UUID) {
+	for id := range m.removedreminder_deliveries {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ReminderDeliveriesIDs returns the "reminder_deliveries" edge IDs in the mutation.
+func (m *ShopMutation) ReminderDeliveriesIDs() (ids []uuid.UUID) {
+	for id := range m.reminder_deliveries {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetReminderDeliveries resets all changes to the "reminder_deliveries" edge.
+func (m *ShopMutation) ResetReminderDeliveries() {
+	m.reminder_deliveries = nil
+	m.clearedreminder_deliveries = false
+	m.removedreminder_deliveries = nil
+}
+
 // Where appends a list predicates to the ShopMutation builder.
 func (m *ShopMutation) Where(ps ...predicate.Shop) {
 	m.predicates = append(m.predicates, ps...)
@@ -6573,7 +7656,7 @@ func (m *ShopMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ShopMutation) AddedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m.employees != nil {
 		edges = append(edges, shop.EdgeEmployees)
 	}
@@ -6588,6 +7671,9 @@ func (m *ShopMutation) AddedEdges() []string {
 	}
 	if m.availabilities != nil {
 		edges = append(edges, shop.EdgeAvailabilities)
+	}
+	if m.reminder_deliveries != nil {
+		edges = append(edges, shop.EdgeReminderDeliveries)
 	}
 	return edges
 }
@@ -6626,13 +7712,19 @@ func (m *ShopMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case shop.EdgeReminderDeliveries:
+		ids := make([]ent.Value, 0, len(m.reminder_deliveries))
+		for id := range m.reminder_deliveries {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ShopMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m.removedemployees != nil {
 		edges = append(edges, shop.EdgeEmployees)
 	}
@@ -6647,6 +7739,9 @@ func (m *ShopMutation) RemovedEdges() []string {
 	}
 	if m.removedavailabilities != nil {
 		edges = append(edges, shop.EdgeAvailabilities)
+	}
+	if m.removedreminder_deliveries != nil {
+		edges = append(edges, shop.EdgeReminderDeliveries)
 	}
 	return edges
 }
@@ -6685,13 +7780,19 @@ func (m *ShopMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case shop.EdgeReminderDeliveries:
+		ids := make([]ent.Value, 0, len(m.removedreminder_deliveries))
+		for id := range m.removedreminder_deliveries {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ShopMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m.clearedemployees {
 		edges = append(edges, shop.EdgeEmployees)
 	}
@@ -6706,6 +7807,9 @@ func (m *ShopMutation) ClearedEdges() []string {
 	}
 	if m.clearedavailabilities {
 		edges = append(edges, shop.EdgeAvailabilities)
+	}
+	if m.clearedreminder_deliveries {
+		edges = append(edges, shop.EdgeReminderDeliveries)
 	}
 	return edges
 }
@@ -6724,6 +7828,8 @@ func (m *ShopMutation) EdgeCleared(name string) bool {
 		return m.clearedrules
 	case shop.EdgeAvailabilities:
 		return m.clearedavailabilities
+	case shop.EdgeReminderDeliveries:
+		return m.clearedreminder_deliveries
 	}
 	return false
 }
@@ -6754,6 +7860,9 @@ func (m *ShopMutation) ResetEdge(name string) error {
 		return nil
 	case shop.EdgeAvailabilities:
 		m.ResetAvailabilities()
+		return nil
+	case shop.EdgeReminderDeliveries:
+		m.ResetReminderDeliveries()
 		return nil
 	}
 	return fmt.Errorf("unknown Shop edge %s", name)

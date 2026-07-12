@@ -13,6 +13,7 @@ import (
 	"github.com/betallsoph/shiftz/internal/ent/availability"
 	"github.com/betallsoph/shiftz/internal/ent/employee"
 	"github.com/betallsoph/shiftz/internal/ent/predicate"
+	"github.com/betallsoph/shiftz/internal/ent/reminderdelivery"
 	"github.com/betallsoph/shiftz/internal/ent/rule"
 	"github.com/betallsoph/shiftz/internal/ent/schedule"
 	"github.com/betallsoph/shiftz/internal/ent/shift"
@@ -185,6 +186,21 @@ func (_u *ShopUpdate) AddAvailabilities(v ...*Availability) *ShopUpdate {
 	return _u.AddAvailabilityIDs(ids...)
 }
 
+// AddReminderDeliveryIDs adds the "reminder_deliveries" edge to the ReminderDelivery entity by IDs.
+func (_u *ShopUpdate) AddReminderDeliveryIDs(ids ...uuid.UUID) *ShopUpdate {
+	_u.mutation.AddReminderDeliveryIDs(ids...)
+	return _u
+}
+
+// AddReminderDeliveries adds the "reminder_deliveries" edges to the ReminderDelivery entity.
+func (_u *ShopUpdate) AddReminderDeliveries(v ...*ReminderDelivery) *ShopUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddReminderDeliveryIDs(ids...)
+}
+
 // Mutation returns the ShopMutation object of the builder.
 func (_u *ShopUpdate) Mutation() *ShopMutation {
 	return _u.mutation
@@ -293,6 +309,27 @@ func (_u *ShopUpdate) RemoveAvailabilities(v ...*Availability) *ShopUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveAvailabilityIDs(ids...)
+}
+
+// ClearReminderDeliveries clears all "reminder_deliveries" edges to the ReminderDelivery entity.
+func (_u *ShopUpdate) ClearReminderDeliveries() *ShopUpdate {
+	_u.mutation.ClearReminderDeliveries()
+	return _u
+}
+
+// RemoveReminderDeliveryIDs removes the "reminder_deliveries" edge to ReminderDelivery entities by IDs.
+func (_u *ShopUpdate) RemoveReminderDeliveryIDs(ids ...uuid.UUID) *ShopUpdate {
+	_u.mutation.RemoveReminderDeliveryIDs(ids...)
+	return _u
+}
+
+// RemoveReminderDeliveries removes "reminder_deliveries" edges to ReminderDelivery entities.
+func (_u *ShopUpdate) RemoveReminderDeliveries(v ...*ReminderDelivery) *ShopUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveReminderDeliveryIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -574,6 +611,51 @@ func (_u *ShopUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.ReminderDeliveriesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   shop.ReminderDeliveriesTable,
+			Columns: []string{shop.ReminderDeliveriesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(reminderdelivery.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedReminderDeliveriesIDs(); len(nodes) > 0 && !_u.mutation.ReminderDeliveriesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   shop.ReminderDeliveriesTable,
+			Columns: []string{shop.ReminderDeliveriesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(reminderdelivery.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ReminderDeliveriesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   shop.ReminderDeliveriesTable,
+			Columns: []string{shop.ReminderDeliveriesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(reminderdelivery.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{shop.Label}
@@ -746,6 +828,21 @@ func (_u *ShopUpdateOne) AddAvailabilities(v ...*Availability) *ShopUpdateOne {
 	return _u.AddAvailabilityIDs(ids...)
 }
 
+// AddReminderDeliveryIDs adds the "reminder_deliveries" edge to the ReminderDelivery entity by IDs.
+func (_u *ShopUpdateOne) AddReminderDeliveryIDs(ids ...uuid.UUID) *ShopUpdateOne {
+	_u.mutation.AddReminderDeliveryIDs(ids...)
+	return _u
+}
+
+// AddReminderDeliveries adds the "reminder_deliveries" edges to the ReminderDelivery entity.
+func (_u *ShopUpdateOne) AddReminderDeliveries(v ...*ReminderDelivery) *ShopUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddReminderDeliveryIDs(ids...)
+}
+
 // Mutation returns the ShopMutation object of the builder.
 func (_u *ShopUpdateOne) Mutation() *ShopMutation {
 	return _u.mutation
@@ -854,6 +951,27 @@ func (_u *ShopUpdateOne) RemoveAvailabilities(v ...*Availability) *ShopUpdateOne
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveAvailabilityIDs(ids...)
+}
+
+// ClearReminderDeliveries clears all "reminder_deliveries" edges to the ReminderDelivery entity.
+func (_u *ShopUpdateOne) ClearReminderDeliveries() *ShopUpdateOne {
+	_u.mutation.ClearReminderDeliveries()
+	return _u
+}
+
+// RemoveReminderDeliveryIDs removes the "reminder_deliveries" edge to ReminderDelivery entities by IDs.
+func (_u *ShopUpdateOne) RemoveReminderDeliveryIDs(ids ...uuid.UUID) *ShopUpdateOne {
+	_u.mutation.RemoveReminderDeliveryIDs(ids...)
+	return _u
+}
+
+// RemoveReminderDeliveries removes "reminder_deliveries" edges to ReminderDelivery entities.
+func (_u *ShopUpdateOne) RemoveReminderDeliveries(v ...*ReminderDelivery) *ShopUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveReminderDeliveryIDs(ids...)
 }
 
 // Where appends a list predicates to the ShopUpdate builder.
@@ -1158,6 +1276,51 @@ func (_u *ShopUpdateOne) sqlSave(ctx context.Context) (_node *Shop, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(availability.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ReminderDeliveriesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   shop.ReminderDeliveriesTable,
+			Columns: []string{shop.ReminderDeliveriesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(reminderdelivery.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedReminderDeliveriesIDs(); len(nodes) > 0 && !_u.mutation.ReminderDeliveriesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   shop.ReminderDeliveriesTable,
+			Columns: []string{shop.ReminderDeliveriesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(reminderdelivery.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ReminderDeliveriesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   shop.ReminderDeliveriesTable,
+			Columns: []string{shop.ReminderDeliveriesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(reminderdelivery.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

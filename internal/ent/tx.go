@@ -16,6 +16,8 @@ type Tx struct {
 	Availability *AvailabilityClient
 	// Employee is the client for interacting with the Employee builders.
 	Employee *EmployeeClient
+	// ReminderDelivery is the client for interacting with the ReminderDelivery builders.
+	ReminderDelivery *ReminderDeliveryClient
 	// Rule is the client for interacting with the Rule builders.
 	Rule *RuleClient
 	// Schedule is the client for interacting with the Schedule builders.
@@ -161,6 +163,7 @@ func (tx *Tx) Client() *Client {
 func (tx *Tx) init() {
 	tx.Availability = NewAvailabilityClient(tx.config)
 	tx.Employee = NewEmployeeClient(tx.config)
+	tx.ReminderDelivery = NewReminderDeliveryClient(tx.config)
 	tx.Rule = NewRuleClient(tx.config)
 	tx.Schedule = NewScheduleClient(tx.config)
 	tx.ScheduleAssignment = NewScheduleAssignmentClient(tx.config)

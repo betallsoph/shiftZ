@@ -7,6 +7,7 @@ import (
 
 	"github.com/betallsoph/shiftz/internal/ent/availability"
 	"github.com/betallsoph/shiftz/internal/ent/employee"
+	"github.com/betallsoph/shiftz/internal/ent/reminderdelivery"
 	"github.com/betallsoph/shiftz/internal/ent/rule"
 	"github.com/betallsoph/shiftz/internal/ent/schedule"
 	"github.com/betallsoph/shiftz/internal/ent/scheduleassignment"
@@ -57,6 +58,20 @@ func init() {
 	employeeDescID := employeeFields[0].Descriptor()
 	// employee.DefaultID holds the default value on creation for the id field.
 	employee.DefaultID = employeeDescID.Default.(func() uuid.UUID)
+	reminderdeliveryFields := schema.ReminderDelivery{}.Fields()
+	_ = reminderdeliveryFields
+	// reminderdeliveryDescAttempts is the schema descriptor for attempts field.
+	reminderdeliveryDescAttempts := reminderdeliveryFields[6].Descriptor()
+	// reminderdelivery.DefaultAttempts holds the default value on creation for the attempts field.
+	reminderdelivery.DefaultAttempts = reminderdeliveryDescAttempts.Default.(int)
+	// reminderdeliveryDescCreatedAt is the schema descriptor for created_at field.
+	reminderdeliveryDescCreatedAt := reminderdeliveryFields[8].Descriptor()
+	// reminderdelivery.DefaultCreatedAt holds the default value on creation for the created_at field.
+	reminderdelivery.DefaultCreatedAt = reminderdeliveryDescCreatedAt.Default.(func() time.Time)
+	// reminderdeliveryDescID is the schema descriptor for id field.
+	reminderdeliveryDescID := reminderdeliveryFields[0].Descriptor()
+	// reminderdelivery.DefaultID holds the default value on creation for the id field.
+	reminderdelivery.DefaultID = reminderdeliveryDescID.Default.(func() uuid.UUID)
 	ruleFields := schema.Rule{}.Fields()
 	_ = ruleFields
 	// ruleDescDescription is the schema descriptor for description field.

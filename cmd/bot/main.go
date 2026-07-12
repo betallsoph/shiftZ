@@ -14,7 +14,7 @@ import (
 
 	"github.com/betallsoph/shiftz/internal/config"
 	"github.com/betallsoph/shiftz/internal/llm"
-	"github.com/betallsoph/shiftz/internal/scheduler"
+	"github.com/betallsoph/shiftz/internal/reminder"
 	"github.com/betallsoph/shiftz/internal/store"
 	"github.com/betallsoph/shiftz/internal/telegram"
 )
@@ -50,17 +50,17 @@ func run(log *slog.Logger) error {
 	drafts := telegram.NewMemoryAvailabilityDraftStore(30 * time.Minute)
 	bot := telegram.NewBot(tg, llmSvc, st.Shops, st.Employees, st.Availability, st.Votes, drafts, log)
 
-	// Cron: remind Thursdays 10:00, nag Saturdays 10:00, finalize Sundays 18:00.
-	runner := scheduler.NewRunner(log,
-		&scheduler.WeeklyReminderJob{
-			Weekday: time.Thursday, Hour: 10,
-			Targets: st.Employees,
-			Notify:  notifierFunc{c: tg},
-		},
-		&scheduler.NagJob{Weekday: time.Saturday, Hour: 10},
-		&scheduler.FinalizeJob{Weekday: time.Sunday, Hour: 18},
-	)
-	go runner.Start(ctx)
+	if cfg.RemindersEnabled {
+		rem := reminder.New(st.Shops, st.Shops, st.Employees, st.Availability, st.Reminders, reminderMessenger{c: tg}, log, reminder.Config{
+			TickInterval: cfg.ReminderTickInterval,
+		})
+		go func() {
+			if err := rem.Run(ctx); err != nil && !errors.Is(err, context.Canceled) {
+				log.Error("reminder loop stopped", "err", err)
+			}
+		}()
+		log.Info("reminder loop enabled", "tick", cfg.ReminderTickInterval)
+	}
 
 	mux := http.NewServeMux()
 	mux.Handle("POST /telegram/webhook", telegram.WebhookHandler(bot, cfg.TelegramWebhookSecret, log))
@@ -107,10 +107,9 @@ func newProvider(cfg *config.Config, log *slog.Logger) llm.Provider {
 	}
 }
 
-// notifierFunc adapts telegram.Client to the scheduler's Notifier interface
-// (drops the inline-keyboard argument).
-type notifierFunc struct{ c *telegram.Client }
+// reminderMessenger adapts telegram.Client to reminder.Messenger.
+type reminderMessenger struct{ c *telegram.Client }
 
-func (n notifierFunc) SendMessage(ctx context.Context, chatID int64, text string) error {
+func (n reminderMessenger) SendMessage(ctx context.Context, chatID int64, text string) error {
 	return n.c.SendMessage(ctx, chatID, text, nil)
 }

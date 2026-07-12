@@ -18,6 +18,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/betallsoph/shiftz/internal/ent/availability"
 	"github.com/betallsoph/shiftz/internal/ent/employee"
+	"github.com/betallsoph/shiftz/internal/ent/reminderdelivery"
 	"github.com/betallsoph/shiftz/internal/ent/rule"
 	"github.com/betallsoph/shiftz/internal/ent/schedule"
 	"github.com/betallsoph/shiftz/internal/ent/scheduleassignment"
@@ -35,6 +36,8 @@ type Client struct {
 	Availability *AvailabilityClient
 	// Employee is the client for interacting with the Employee builders.
 	Employee *EmployeeClient
+	// ReminderDelivery is the client for interacting with the ReminderDelivery builders.
+	ReminderDelivery *ReminderDeliveryClient
 	// Rule is the client for interacting with the Rule builders.
 	Rule *RuleClient
 	// Schedule is the client for interacting with the Schedule builders.
@@ -60,6 +63,7 @@ func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Availability = NewAvailabilityClient(c.config)
 	c.Employee = NewEmployeeClient(c.config)
+	c.ReminderDelivery = NewReminderDeliveryClient(c.config)
 	c.Rule = NewRuleClient(c.config)
 	c.Schedule = NewScheduleClient(c.config)
 	c.ScheduleAssignment = NewScheduleAssignmentClient(c.config)
@@ -160,6 +164,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		config:             cfg,
 		Availability:       NewAvailabilityClient(cfg),
 		Employee:           NewEmployeeClient(cfg),
+		ReminderDelivery:   NewReminderDeliveryClient(cfg),
 		Rule:               NewRuleClient(cfg),
 		Schedule:           NewScheduleClient(cfg),
 		ScheduleAssignment: NewScheduleAssignmentClient(cfg),
@@ -187,6 +192,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		config:             cfg,
 		Availability:       NewAvailabilityClient(cfg),
 		Employee:           NewEmployeeClient(cfg),
+		ReminderDelivery:   NewReminderDeliveryClient(cfg),
 		Rule:               NewRuleClient(cfg),
 		Schedule:           NewScheduleClient(cfg),
 		ScheduleAssignment: NewScheduleAssignmentClient(cfg),
@@ -222,8 +228,8 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Availability, c.Employee, c.Rule, c.Schedule, c.ScheduleAssignment,
-		c.ScheduleVote, c.Shift, c.Shop,
+		c.Availability, c.Employee, c.ReminderDelivery, c.Rule, c.Schedule,
+		c.ScheduleAssignment, c.ScheduleVote, c.Shift, c.Shop,
 	} {
 		n.Use(hooks...)
 	}
@@ -233,8 +239,8 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Availability, c.Employee, c.Rule, c.Schedule, c.ScheduleAssignment,
-		c.ScheduleVote, c.Shift, c.Shop,
+		c.Availability, c.Employee, c.ReminderDelivery, c.Rule, c.Schedule,
+		c.ScheduleAssignment, c.ScheduleVote, c.Shift, c.Shop,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -247,6 +253,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Availability.mutate(ctx, m)
 	case *EmployeeMutation:
 		return c.Employee.mutate(ctx, m)
+	case *ReminderDeliveryMutation:
+		return c.ReminderDelivery.mutate(ctx, m)
 	case *RuleMutation:
 		return c.Rule.mutate(ctx, m)
 	case *ScheduleMutation:
@@ -601,6 +609,22 @@ func (c *EmployeeClient) QueryVotes(_m *Employee) *ScheduleVoteQuery {
 	return query
 }
 
+// QueryReminderDeliveries queries the reminder_deliveries edge of a Employee.
+func (c *EmployeeClient) QueryReminderDeliveries(_m *Employee) *ReminderDeliveryQuery {
+	query := (&ReminderDeliveryClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(employee.Table, employee.FieldID, id),
+			sqlgraph.To(reminderdelivery.Table, reminderdelivery.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, employee.ReminderDeliveriesTable, employee.ReminderDeliveriesColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *EmployeeClient) Hooks() []Hook {
 	return c.hooks.Employee
@@ -623,6 +647,171 @@ func (c *EmployeeClient) mutate(ctx context.Context, m *EmployeeMutation) (Value
 		return (&EmployeeDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Employee mutation op: %q", m.Op())
+	}
+}
+
+// ReminderDeliveryClient is a client for the ReminderDelivery schema.
+type ReminderDeliveryClient struct {
+	config
+}
+
+// NewReminderDeliveryClient returns a client for the ReminderDelivery from the given config.
+func NewReminderDeliveryClient(c config) *ReminderDeliveryClient {
+	return &ReminderDeliveryClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `reminderdelivery.Hooks(f(g(h())))`.
+func (c *ReminderDeliveryClient) Use(hooks ...Hook) {
+	c.hooks.ReminderDelivery = append(c.hooks.ReminderDelivery, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `reminderdelivery.Intercept(f(g(h())))`.
+func (c *ReminderDeliveryClient) Intercept(interceptors ...Interceptor) {
+	c.inters.ReminderDelivery = append(c.inters.ReminderDelivery, interceptors...)
+}
+
+// Create returns a builder for creating a ReminderDelivery entity.
+func (c *ReminderDeliveryClient) Create() *ReminderDeliveryCreate {
+	mutation := newReminderDeliveryMutation(c.config, OpCreate)
+	return &ReminderDeliveryCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ReminderDelivery entities.
+func (c *ReminderDeliveryClient) CreateBulk(builders ...*ReminderDeliveryCreate) *ReminderDeliveryCreateBulk {
+	return &ReminderDeliveryCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *ReminderDeliveryClient) MapCreateBulk(slice any, setFunc func(*ReminderDeliveryCreate, int)) *ReminderDeliveryCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &ReminderDeliveryCreateBulk{err: fmt.Errorf("calling to ReminderDeliveryClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*ReminderDeliveryCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &ReminderDeliveryCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ReminderDelivery.
+func (c *ReminderDeliveryClient) Update() *ReminderDeliveryUpdate {
+	mutation := newReminderDeliveryMutation(c.config, OpUpdate)
+	return &ReminderDeliveryUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ReminderDeliveryClient) UpdateOne(_m *ReminderDelivery) *ReminderDeliveryUpdateOne {
+	mutation := newReminderDeliveryMutation(c.config, OpUpdateOne, withReminderDelivery(_m))
+	return &ReminderDeliveryUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ReminderDeliveryClient) UpdateOneID(id uuid.UUID) *ReminderDeliveryUpdateOne {
+	mutation := newReminderDeliveryMutation(c.config, OpUpdateOne, withReminderDeliveryID(id))
+	return &ReminderDeliveryUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ReminderDelivery.
+func (c *ReminderDeliveryClient) Delete() *ReminderDeliveryDelete {
+	mutation := newReminderDeliveryMutation(c.config, OpDelete)
+	return &ReminderDeliveryDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ReminderDeliveryClient) DeleteOne(_m *ReminderDelivery) *ReminderDeliveryDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ReminderDeliveryClient) DeleteOneID(id uuid.UUID) *ReminderDeliveryDeleteOne {
+	builder := c.Delete().Where(reminderdelivery.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ReminderDeliveryDeleteOne{builder}
+}
+
+// Query returns a query builder for ReminderDelivery.
+func (c *ReminderDeliveryClient) Query() *ReminderDeliveryQuery {
+	return &ReminderDeliveryQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeReminderDelivery},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a ReminderDelivery entity by its id.
+func (c *ReminderDeliveryClient) Get(ctx context.Context, id uuid.UUID) (*ReminderDelivery, error) {
+	return c.Query().Where(reminderdelivery.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ReminderDeliveryClient) GetX(ctx context.Context, id uuid.UUID) *ReminderDelivery {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryShop queries the shop edge of a ReminderDelivery.
+func (c *ReminderDeliveryClient) QueryShop(_m *ReminderDelivery) *ShopQuery {
+	query := (&ShopClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(reminderdelivery.Table, reminderdelivery.FieldID, id),
+			sqlgraph.To(shop.Table, shop.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, reminderdelivery.ShopTable, reminderdelivery.ShopColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryEmployee queries the employee edge of a ReminderDelivery.
+func (c *ReminderDeliveryClient) QueryEmployee(_m *ReminderDelivery) *EmployeeQuery {
+	query := (&EmployeeClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(reminderdelivery.Table, reminderdelivery.FieldID, id),
+			sqlgraph.To(employee.Table, employee.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, reminderdelivery.EmployeeTable, reminderdelivery.EmployeeColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *ReminderDeliveryClient) Hooks() []Hook {
+	return c.hooks.ReminderDelivery
+}
+
+// Interceptors returns the client interceptors.
+func (c *ReminderDeliveryClient) Interceptors() []Interceptor {
+	return c.inters.ReminderDelivery
+}
+
+func (c *ReminderDeliveryClient) mutate(ctx context.Context, m *ReminderDeliveryMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ReminderDeliveryCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ReminderDeliveryUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ReminderDeliveryUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ReminderDeliveryDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown ReminderDelivery mutation op: %q", m.Op())
 	}
 }
 
@@ -1688,6 +1877,22 @@ func (c *ShopClient) QueryAvailabilities(_m *Shop) *AvailabilityQuery {
 	return query
 }
 
+// QueryReminderDeliveries queries the reminder_deliveries edge of a Shop.
+func (c *ShopClient) QueryReminderDeliveries(_m *Shop) *ReminderDeliveryQuery {
+	query := (&ReminderDeliveryClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(shop.Table, shop.FieldID, id),
+			sqlgraph.To(reminderdelivery.Table, reminderdelivery.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, shop.ReminderDeliveriesTable, shop.ReminderDeliveriesColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *ShopClient) Hooks() []Hook {
 	return c.hooks.Shop
@@ -1716,11 +1921,11 @@ func (c *ShopClient) mutate(ctx context.Context, m *ShopMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Availability, Employee, Rule, Schedule, ScheduleAssignment, ScheduleVote, Shift,
-		Shop []ent.Hook
+		Availability, Employee, ReminderDelivery, Rule, Schedule, ScheduleAssignment,
+		ScheduleVote, Shift, Shop []ent.Hook
 	}
 	inters struct {
-		Availability, Employee, Rule, Schedule, ScheduleAssignment, ScheduleVote, Shift,
-		Shop []ent.Interceptor
+		Availability, Employee, ReminderDelivery, Rule, Schedule, ScheduleAssignment,
+		ScheduleVote, Shift, Shop []ent.Interceptor
 	}
 )
