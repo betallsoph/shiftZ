@@ -224,6 +224,30 @@ func TestHandleVoteCallbackStillWorks(t *testing.T) {
 	}
 }
 
+func TestHandleAvailabilityTextClarificationNoDraft(t *testing.T) {
+	shopID := uuid.New()
+	msgAPI := &fakeMessenger{}
+	parser := &fakeParser{err: &llm.ClarificationError{Questions: []string{"Did you mean next Monday morning or evening?"}}}
+	shops := &fakeShops{shop: &store.Shop{ID: shopID, Timezone: "UTC"}}
+	employees := &fakeEmployees{emp: &store.Employee{ID: uuid.New(), ShopID: shopID}}
+	drafts := NewMemoryAvailabilityDraftStore(30 * time.Minute)
+	bot := NewBot(msgAPI, parser, shops, employees, &fakeAvailability{}, &fakeVotes{}, drafts, testLogger())
+
+	msg := &Message{From: &User{ID: 42}, Chat: Chat{ID: 1}, Text: "maybe Monday"}
+	if err := bot.handleAvailabilityText(context.Background(), msg, msg.Text); err != nil {
+		t.Fatal(err)
+	}
+	if len(msgAPI.messages) != 1 {
+		t.Fatalf("messages = %d", len(msgAPI.messages))
+	}
+	if !strings.Contains(msgAPI.messages[0].text, "clarification") {
+		t.Fatalf("message = %q", msgAPI.messages[0].text)
+	}
+	if msgAPI.messages[0].markup != nil {
+		t.Fatal("should not send confirm keyboard")
+	}
+}
+
 func TestHandleAvailabilityTextNoProvider(t *testing.T) {
 	shopID := uuid.New()
 	msgAPI := &fakeMessenger{}

@@ -165,6 +165,10 @@ func (b *Bot) handleAvailabilityText(ctx context.Context, m *Message, text strin
 	if errors.Is(err, llm.ErrNoProvider) {
 		return b.api.SendMessage(ctx, m.Chat.ID, "Availability parsing isn't configured yet — ask your admin to set up the LLM provider.", nil)
 	}
+	var clarify *llm.ClarificationError
+	if errors.As(err, &clarify) {
+		return b.api.SendMessage(ctx, m.Chat.ID, formatClarificationMessage(clarify.Questions), nil)
+	}
 	if err != nil {
 		b.log.Warn("availability parse failed", "err", err, "employee", emp.ID)
 		return b.api.SendMessage(ctx, m.Chat.ID, "Sorry, I couldn't understand that. Try something like: \"I can work Mon-Fri mornings, not Wednesday, prefer Friday evening.\"", nil)
@@ -344,6 +348,19 @@ func preferenceLabel(pref int) string {
 	default:
 		return "available"
 	}
+}
+
+func formatClarificationMessage(questions []string) string {
+	var b strings.Builder
+	b.WriteString("I need one clarification before saving:\n")
+	for _, q := range questions {
+		q = strings.TrimSpace(q)
+		if q == "" {
+			continue
+		}
+		fmt.Fprintf(&b, "- %s\n", q)
+	}
+	return strings.TrimSpace(b.String())
 }
 
 func validateAvailabilitySlots(slots []store.AvailabilitySlot, weekStart time.Time) error {

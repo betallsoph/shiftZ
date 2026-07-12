@@ -18,38 +18,117 @@ func NewService(p Provider) *Service {
 	return &Service{provider: p}
 }
 
-const parseAvailabilitySystem = `You convert restaurant staff availability messages into JSON.
-Respond with ONLY a JSON array of slots, no prose, no code fences. Each slot:
-{"start":"RFC3339 timestamp","end":"RFC3339 timestamp","preference":0|1|2,"note":"optional"}
-preference: 0 = cannot work, 1 = can work, 2 = prefers to work.
-Timestamps must fall inside the week starting at the given date and use the given timezone offset.`
+const parseAvailabilitySystem = `You convert restaurant staff availability messages into structured JSON for shift scheduling.
 
-// ParseAvailability turns a free-text message ("I can do mornings except
-// Wednesday, prefer Friday evening") into structured slots for the week
+Rules:
+- Interpret all dates and times in the shop timezone given in the user message.
+- Every slot must fall inside the target week (Monday 00:00 through the following Monday 00:00).
+- Use RFC3339 timestamps with the correct timezone offset for start and end.
+- preference: 0 = unavailable, 1 = available, 2 = preferred.
+- Staff may write in Vietnamese or English.
+- If the message is ambiguous, vague ("maybe", "not sure"), or missing needed days/times, set uncertain=true and add short clarification questions.
+- Do not invent exact times when the employee did not provide them.
+- When uncertain, slots may be empty.`
+
+func availabilityResponseSchema() map[string]any {
+	return map[string]any{
+		"type": "OBJECT",
+		"properties": map[string]any{
+			"slots": map[string]any{
+				"type": "ARRAY",
+				"items": map[string]any{
+					"type": "OBJECT",
+					"properties": map[string]any{
+						"start":      map[string]any{"type": "STRING"},
+						"end":        map[string]any{"type": "STRING"},
+						"preference": map[string]any{"type": "INTEGER"},
+						"note":       map[string]any{"type": "STRING"},
+					},
+					"required": []string{"start", "end", "preference"},
+				},
+			},
+			"uncertain": map[string]any{"type": "BOOLEAN"},
+			"questions": map[string]any{
+				"type":  "ARRAY",
+				"items": map[string]any{"type": "STRING"},
+			},
+		},
+		"required": []string{"slots", "uncertain", "questions"},
+	}
+}
+
+type availabilityParseResult struct {
+	Slots []struct {
+		Start      string `json:"start"`
+		End        string `json:"end"`
+		Preference int    `json:"preference"`
+		Note       string `json:"note,omitempty"`
+	} `json:"slots"`
+	Uncertain bool     `json:"uncertain"`
+	Questions []string `json:"questions"`
+}
+
+// ParseAvailability turns a free-text message into structured slots for the week
 // starting at weekStart, interpreted in loc.
 func (s *Service) ParseAvailability(ctx context.Context, text string, weekStart time.Time, loc *time.Location) ([]AvailabilitySlot, error) {
 	if loc == nil {
 		loc = time.UTC
 	}
-	prompt := fmt.Sprintf("Week starts on %s (timezone %s).\nMessage:\n%s",
-		weekStart.In(loc).Format("Monday 2006-01-02"), loc.String(), text)
+	weekEnd := weekStart.AddDate(0, 0, 7)
+	prompt := fmt.Sprintf(`Target week starts %s and ends before %s.
+Shop timezone: %s
+
+Employee message:
+%s`,
+		weekStart.In(loc).Format(time.RFC3339),
+		weekEnd.In(loc).Format(time.RFC3339),
+		loc.String(),
+		text,
+	)
 
 	raw, err := s.provider.Complete(ctx, Request{
-		System:    parseAvailabilitySystem,
-		Prompt:    prompt,
-		MaxTokens: 2048,
+		System:           parseAvailabilitySystem,
+		Prompt:           prompt,
+		MaxTokens:        1200,
+		Temperature:      0,
+		ResponseMIMEType: "application/json",
+		ResponseSchema:   availabilityResponseSchema(),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("llm: parse availability: %w", err)
 	}
-	var slots []AvailabilitySlot
-	if err := json.Unmarshal([]byte(extractJSON(raw)), &slots); err != nil {
+
+	var parsed availabilityParseResult
+	if err := json.Unmarshal([]byte(extractJSON(raw)), &parsed); err != nil {
 		return nil, fmt.Errorf("llm: availability response is not valid JSON: %w", err)
 	}
-	for i, slot := range slots {
-		if !slot.End.After(slot.Start) {
+	if parsed.Uncertain {
+		questions := parsed.Questions
+		if len(questions) == 0 {
+			questions = []string{"Could you clarify your availability with specific days and times?"}
+		}
+		return nil, &ClarificationError{Questions: questions}
+	}
+
+	slots := make([]AvailabilitySlot, 0, len(parsed.Slots))
+	for i, slot := range parsed.Slots {
+		start, err := time.Parse(time.RFC3339, slot.Start)
+		if err != nil {
+			return nil, fmt.Errorf("llm: availability slot %d has invalid start: %w", i, err)
+		}
+		end, err := time.Parse(time.RFC3339, slot.End)
+		if err != nil {
+			return nil, fmt.Errorf("llm: availability slot %d has invalid end: %w", i, err)
+		}
+		if !end.After(start) {
 			return nil, fmt.Errorf("llm: availability slot %d has end before start", i)
 		}
+		slots = append(slots, AvailabilitySlot{
+			Start:      start,
+			End:        end,
+			Preference: slot.Preference,
+			Note:       slot.Note,
+		})
 	}
 	return slots, nil
 }
@@ -63,8 +142,7 @@ Known kinds:
 - custom: params free-form when the rule fits neither kind.
 weight expresses importance from 1 (nice to have) to 10 (very important).`
 
-// TranslateRule turns owner text ("never put Anna and Bob on the same
-// shift") into a RuleSpec the caller can map onto solver penalty rules.
+// TranslateRule turns owner text into a RuleSpec the caller can map onto solver penalty rules.
 func (s *Service) TranslateRule(ctx context.Context, text string) (*RuleSpec, error) {
 	raw, err := s.provider.Complete(ctx, Request{
 		System:    translateRuleSystem,
@@ -88,8 +166,7 @@ const formatAnnouncementSystem = `You write short, friendly Telegram announcemen
 Given a plain-text schedule summary, produce a concise message listing each day's assignments.
 Plain text only (no markdown tables), suitable for a group chat.`
 
-// FormatAnnouncement renders a finalized schedule summary into a
-// human-friendly announcement message.
+// FormatAnnouncement renders a finalized schedule summary into a human-friendly message.
 func (s *Service) FormatAnnouncement(ctx context.Context, scheduleSummary string) (string, error) {
 	out, err := s.provider.Complete(ctx, Request{
 		System:    formatAnnouncementSystem,
@@ -102,8 +179,7 @@ func (s *Service) FormatAnnouncement(ctx context.Context, scheduleSummary string
 	return strings.TrimSpace(out), nil
 }
 
-// extractJSON strips code fences and any prose around the first JSON value
-// in a model response.
+// extractJSON strips code fences and any prose around the first JSON value in a model response.
 func extractJSON(s string) string {
 	s = strings.TrimSpace(s)
 	if strings.HasPrefix(s, "```") {

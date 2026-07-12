@@ -26,6 +26,12 @@ type Request struct {
 	Prompt string
 	// MaxTokens caps the response length; 0 lets the provider choose.
 	MaxTokens int
+	// Temperature controls randomness; providers may ignore zero value.
+	Temperature float64
+	// ResponseMIMEType requests structured output MIME type (e.g. application/json).
+	ResponseMIMEType string
+	// ResponseSchema is a provider-specific JSON schema for structured output.
+	ResponseSchema map[string]any
 }
 
 // Provider is the minimal surface a model backend must implement.
@@ -62,6 +68,15 @@ type AvailabilitySlot struct {
 	// 2 preferred.
 	Preference int    `json:"preference"`
 	Note       string `json:"note,omitempty"`
+}
+
+// ClarificationError means the model needs more information before parsing.
+type ClarificationError struct {
+	Questions []string
+}
+
+func (e *ClarificationError) Error() string {
+	return "llm: clarification needed"
 }
 
 // RuleSpec is a structured description of an owner rule ("Anna and Bob

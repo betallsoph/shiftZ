@@ -117,6 +117,14 @@ curl "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/setWebhook" \
 
 LLM provider setup is not required to boot the bot; without a provider the bot explains that parsing is not configured yet.
 
+To enable Gemini parsing:
+
+```sh
+export LLM_PROVIDER=gemini
+export LLM_API_KEY='...'
+export LLM_MODEL='gemini-3.5-flash'   # optional; swap for cheaper Flash-Lite-style models later
+```
+
 ## Environment variables
 
 | Variable                  | Required by     | Default | Description                                    |
@@ -126,7 +134,7 @@ LLM provider setup is not required to boot the bot; without a provider the bot e
 | `BOT_ADDR`                | bot             | `:8081` | Webhook listen address                         |
 | `TELEGRAM_BOT_TOKEN`      | bot             | —       | Bot token from @BotFather                      |
 | `TELEGRAM_WEBHOOK_SECRET` | bot (optional)  | —       | Must match `secret_token` given to setWebhook  |
-| `LLM_PROVIDER`            | bot (optional)  | —       | Model backend; empty disables LLM features     |
+| `LLM_PROVIDER`            | bot (optional)  | —       | Model backend (`gemini`); empty disables LLM features |
 | `LLM_API_KEY`             | bot (optional)  | —       | API key for the selected provider              |
 | `LLM_MODEL`               | bot (optional)  | —       | Model id for the selected provider             |
 | `ENT_DEBUG`               | all (optional)  | —       | `1`/`true` logs every generated SQL statement (dev only) |
@@ -187,8 +195,8 @@ them in the dashboard, and approve one variant. Generation is atomic
 database level (unique index on shop, week, variant).
 
 Still skeleton / not wired: schedule generation from Telegram, employee voting
-beyond inline callbacks, real LLM providers (plug into `internal/llm.Provider`
-in `cmd/bot/main.go`), auth, and manual schedule editing.
+beyond inline callbacks, auth, and manual schedule editing.
 
-Telegram availability intake uses a confirm-before-save flow with in-memory
-drafts (30-minute TTL).
+Telegram availability uses Gemini when `LLM_PROVIDER=gemini` is set, with
+structured JSON parsing, clarification questions for ambiguous input, and a
+confirm-before-save flow (in-memory drafts, 30-minute TTL).

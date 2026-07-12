@@ -95,6 +95,12 @@ func newProvider(cfg *config.Config, log *slog.Logger) llm.Provider {
 	case "":
 		log.Warn("LLM_PROVIDER not set; availability parsing disabled")
 		return llm.Unconfigured()
+	case "gemini":
+		if cfg.LLMAPIKey == "" {
+			log.Warn("LLM_API_KEY not set; availability parsing disabled")
+			return llm.Unconfigured()
+		}
+		return llm.NewGeminiProvider(cfg.LLMAPIKey, cfg.LLMModel)
 	default:
 		log.Warn("unknown LLM provider; availability parsing disabled", "provider", cfg.LLMProvider)
 		return llm.Unconfigured()
