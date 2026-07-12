@@ -12,6 +12,7 @@ import (
 
 	"github.com/betallsoph/shiftz/internal/ent"
 	"github.com/betallsoph/shiftz/internal/ent/enttest"
+	"github.com/betallsoph/shiftz/internal/ent/schedule"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -149,6 +150,92 @@ func TestScheduleRepo(t *testing.T) {
 	}
 	if _, err := repo.Approve(ctx, shopRow.ID, uuid.New()); !errors.Is(err, ErrNotFound) {
 		t.Fatalf("Approve missing: got %v, want ErrNotFound", err)
+	}
+}
+
+func TestCreateCandidatesAtomic(t *testing.T) {
+	ctx := context.Background()
+	client := newTestClient(t)
+	repo := &ScheduleRepo{client: client}
+
+	loc, err := time.LoadLocation("Asia/Ho_Chi_Minh")
+	if err != nil {
+		t.Fatal(err)
+	}
+	weekStart := WeekStart(time.Date(2026, 7, 8, 0, 0, 0, 0, loc), loc)
+	shiftDate := weekStart.AddDate(0, 0, 2)
+
+	shopRow, err := client.Shop.Create().
+		SetName("Atomic Cafe").
+		SetTimezone("Asia/Ho_Chi_Minh").
+		SetInviteCode("atomic1").
+		SetTelegramGroupID(10).
+		Save(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	emp, err := client.Employee.Create().
+		SetShopID(shopRow.ID).
+		SetTelegramUserID(99).
+		SetDisplayName("Anna").
+		Save(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	shift, err := client.Shift.Create().
+		SetShopID(shopRow.ID).
+		SetName("morning").
+		SetWeekday(int(shiftDate.Weekday())).
+		SetStartTime("08:00").
+		SetEndTime("14:00").
+		SetMinStaff(1).
+		SetMaxStaff(2).
+		Save(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	validAssignment := NewScheduleAssignment{ShiftID: shift.ID, EmployeeID: emp.ID, Date: shiftDate}
+	saved, err := repo.CreateCandidates(ctx, shopRow.ID, weekStart, []NewScheduleCandidate{
+		{VariantLabel: "A", Score: 10, Assignments: []NewScheduleAssignment{validAssignment}},
+		{VariantLabel: "B", Score: 9, Assignments: []NewScheduleAssignment{validAssignment}},
+		{VariantLabel: "C", Score: 8, Assignments: []NewScheduleAssignment{validAssignment}},
+	})
+	if err != nil {
+		t.Fatalf("CreateCandidates: %v", err)
+	}
+	if len(saved) != 3 {
+		t.Fatalf("saved = %d, want 3", len(saved))
+	}
+
+	// Rollback: invalid employee on second candidate must leave no rows.
+	badWeek := weekStart.AddDate(0, 0, 7)
+	_, err = repo.CreateCandidates(ctx, shopRow.ID, badWeek, []NewScheduleCandidate{
+		{VariantLabel: "A", Score: 10, Assignments: []NewScheduleAssignment{validAssignment}},
+		{VariantLabel: "B", Score: 9, Assignments: []NewScheduleAssignment{
+			{ShiftID: shift.ID, EmployeeID: uuid.New(), Date: shiftDate},
+		}},
+	})
+	if err == nil {
+		t.Fatal("expected error for invalid assignment")
+	}
+	count, err := client.Schedule.Query().
+		Where(schedule.ShopID(shopRow.ID), schedule.WeekStart(badWeek)).
+		Count(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 0 {
+		t.Fatalf("partial schedule persisted after failed CreateCandidates: count = %d", count)
+	}
+
+	// Duplicate protection.
+	_, err = repo.CreateCandidates(ctx, shopRow.ID, weekStart, []NewScheduleCandidate{
+		{VariantLabel: "A", Score: 1},
+	})
+	if !errors.Is(err, ErrAlreadyExists) {
+		t.Fatalf("duplicate CreateCandidates: got %v, want ErrAlreadyExists", err)
 	}
 }
 

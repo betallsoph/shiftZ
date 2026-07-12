@@ -58,14 +58,6 @@ func (s *Service) GenerateWeek(ctx context.Context, shopID uuid.UUID, weekStart 
 	}
 	weekStart = store.WeekStart(weekStart, loc)
 
-	existing, err := s.store.Schedules.ListByShopWeek(ctx, shopID, weekStart)
-	if err != nil {
-		return nil, fmt.Errorf("planner: check existing schedules: %w", err)
-	}
-	if len(existing) > 0 {
-		return nil, ErrSchedulesExist
-	}
-
 	employees, err := s.store.Employees.ListActiveByShop(ctx, shopID)
 	if err != nil {
 		return nil, fmt.Errorf("planner: load employees: %w", err)
@@ -111,28 +103,37 @@ func (s *Service) GenerateWeek(ctx context.Context, shopID uuid.UUID, weekStart 
 		Warnings:  append([]string(nil), ruleWarnings...),
 	}
 
+	newCandidates := make([]store.NewScheduleCandidate, 0, len(candidates))
+	summaries := make([]CandidateSummary, 0, len(candidates))
 	for i, cand := range candidates {
 		label := uiLabels[i%len(uiLabels)]
 		violations := violationStrings(solver.Validate(problem, cand.Schedule))
-
-		saved, err := s.store.Schedules.CreateCandidate(ctx, shopID, weekStart, label, cand.Score)
-		if err != nil {
-			return nil, fmt.Errorf("planner: save candidate %s: %w", label, err)
-		}
-
 		assignments, count := assignmentsFromSchedule(cand.Schedule, occurrences)
-		if err := s.store.Schedules.AddAssignments(ctx, shopID, saved.ID, assignments); err != nil {
-			return nil, fmt.Errorf("planner: save assignments for %s: %w", label, err)
-		}
 
-		result.Candidates = append(result.Candidates, CandidateSummary{
-			ID:              saved.ID,
+		newCandidates = append(newCandidates, store.NewScheduleCandidate{
+			VariantLabel: label,
+			Score:        cand.Score,
+			Assignments:  assignments,
+		})
+		summaries = append(summaries, CandidateSummary{
 			VariantLabel:    label,
 			SolverLabel:     cand.Label,
 			Score:           cand.Score,
 			AssignmentCount: count,
 			Violations:      violations,
 		})
+	}
+
+	saved, err := s.store.Schedules.CreateCandidates(ctx, shopID, weekStart, newCandidates)
+	if err != nil {
+		if errors.Is(err, store.ErrAlreadyExists) {
+			return nil, ErrSchedulesExist
+		}
+		return nil, fmt.Errorf("planner: save candidates: %w", err)
+	}
+	for i, row := range saved {
+		summaries[i].ID = row.ID
+		result.Candidates = append(result.Candidates, summaries[i])
 	}
 	return result, nil
 }

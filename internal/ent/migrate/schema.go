@@ -152,6 +152,11 @@ var (
 				Unique:  false,
 				Columns: []*schema.Column{SchedulesColumns[6], SchedulesColumns[1]},
 			},
+			{
+				Name:    "schedule_shop_id_week_start_variant_label",
+				Unique:  true,
+				Columns: []*schema.Column{SchedulesColumns[6], SchedulesColumns[1], SchedulesColumns[3]},
+			},
 		},
 	}
 	// ScheduleAssignmentsColumns holds the columns for the "schedule_assignments" table.

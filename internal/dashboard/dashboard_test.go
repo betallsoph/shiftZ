@@ -83,6 +83,12 @@ func TestHandleWeekBadShopID(t *testing.T) {
 	if !strings.Contains(body, "mã cửa hàng không hợp lệ") {
 		t.Fatalf("body = %q", body)
 	}
+	if strings.Contains(body, "Tạo lịch") {
+		t.Fatalf("error state should not render generate button, body = %q", body)
+	}
+	if strings.Contains(body, `name="shop_id"`) {
+		t.Fatalf("error state should not render hidden shop_id field, body = %q", body)
+	}
 }
 
 func TestHandleApproveNotFound(t *testing.T) {

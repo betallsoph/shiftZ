@@ -18,6 +18,13 @@ type NewScheduleAssignment struct {
 	Date       time.Time
 }
 
+// NewScheduleCandidate is one schedule variant and its assignments to persist.
+type NewScheduleCandidate struct {
+	VariantLabel string
+	Score        float64
+	Assignments  []NewScheduleAssignment
+}
+
 // ScheduleRepo persists generated schedule candidates and their assignments.
 type ScheduleRepo struct {
 	client *ent.Client
@@ -41,6 +48,78 @@ func (r *ScheduleRepo) CreateCandidate(
 		return nil, fmt.Errorf("store: create schedule candidate: %w", err)
 	}
 	return scheduleFromEnt(row), nil
+}
+
+// CreateCandidates persists all schedule variants and assignments atomically.
+func (r *ScheduleRepo) CreateCandidates(
+	ctx context.Context,
+	shopID uuid.UUID,
+	weekStart time.Time,
+	candidates []NewScheduleCandidate,
+) ([]*Schedule, error) {
+	if len(candidates) == 0 {
+		return nil, nil
+	}
+
+	tx, err := r.client.Tx(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("store: create candidates: begin tx: %w", err)
+	}
+	defer rollbackTx(tx)
+
+	exists, err := tx.Schedule.Query().
+		Where(schedule.ShopID(shopID), schedule.WeekStart(weekStart)).
+		Exist(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("store: create candidates: check existing: %w", err)
+	}
+	if exists {
+		return nil, ErrAlreadyExists
+	}
+
+	saved := make([]*Schedule, 0, len(candidates))
+	for _, cand := range candidates {
+		row, err := tx.Schedule.Create().
+			SetShopID(shopID).
+			SetWeekStart(weekStart).
+			SetVariantLabel(cand.VariantLabel).
+			SetScore(cand.Score).
+			Save(ctx)
+		if err != nil {
+			if isAlreadyExists(err) {
+				return nil, ErrAlreadyExists
+			}
+			return nil, fmt.Errorf("store: create candidates: schedule %s: %w", cand.VariantLabel, err)
+		}
+
+		if len(cand.Assignments) > 0 {
+			builders := make([]*ent.ScheduleAssignmentCreate, len(cand.Assignments))
+			for i, a := range cand.Assignments {
+				builders[i] = tx.ScheduleAssignment.Create().
+					SetShopID(shopID).
+					SetScheduleID(row.ID).
+					SetShiftID(a.ShiftID).
+					SetEmployeeID(a.EmployeeID).
+					SetDate(a.Date)
+			}
+			if _, err := tx.ScheduleAssignment.CreateBulk(builders...).Save(ctx); err != nil {
+				return nil, fmt.Errorf("store: create candidates: assignments %s: %w", cand.VariantLabel, err)
+			}
+		}
+		saved = append(saved, scheduleFromEnt(row))
+	}
+
+	if err := tx.Commit(); err != nil {
+		if isAlreadyExists(err) {
+			return nil, ErrAlreadyExists
+		}
+		return nil, fmt.Errorf("store: create candidates: commit: %w", err)
+	}
+	return saved, nil
+}
+
+func isAlreadyExists(err error) bool {
+	return ent.IsConstraintError(err)
 }
 
 // AddAssignments bulk-inserts assignments under a shop-scoped schedule.

@@ -46,5 +46,7 @@ func (Schedule) Indexes() []ent.Index {
 	return []ent.Index{
 		// Voting flow: "this shop's variants for this week".
 		index.Fields("shop_id", "week_start"),
+		// One variant label per shop/week; prevents duplicate generate races.
+		index.Fields("shop_id", "week_start", "variant_label").Unique(),
 	}
 }

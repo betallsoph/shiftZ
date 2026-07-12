@@ -1,7 +1,7 @@
 <div class="week-panel-inner">
   {{if .Error}}
   <div class="alert alert-error"><strong>Lỗi</strong> — {{.Error}}</div>
-  {{end}}
+  {{else}}
   {{if .Notice}}
   <div class="alert alert-notice"><strong>Lưu ý</strong> — {{.Notice}}</div>
   {{end}}
@@ -22,19 +22,21 @@
   {{end}}
 
   {{if not .Schedules}}
-  <div class="empty-state">
-    <p>Chưa có lịch cho tuần này.</p>
-    <form
-      hx-post="/dashboard/generate"
-      hx-target="#week-panel"
-      hx-swap="innerHTML"
-      class="inline-form"
-    >
-      <input type="hidden" name="shop_id" value="{{.ShopID}}" />
-      <input type="hidden" name="week_start" value="{{.WeekStart}}" />
-      <button type="submit" class="btn btn-primary btn-sm">Tạo lịch</button>
-    </form>
-  </div>
+    {{if and .ShopID .WeekStart}}
+    <div class="empty-state">
+      <p>Chưa có lịch cho tuần này.</p>
+      <form
+        hx-post="/dashboard/generate"
+        hx-target="#week-panel"
+        hx-swap="innerHTML"
+        class="inline-form"
+      >
+        <input type="hidden" name="shop_id" value="{{.ShopID}}" />
+        <input type="hidden" name="week_start" value="{{.WeekStart}}" />
+        <button type="submit" class="btn btn-primary btn-sm">Tạo lịch</button>
+      </form>
+    </div>
+    {{end}}
   {{else}}
   <div class="schedules">
     {{range .Schedules}}
@@ -95,5 +97,6 @@
     </article>
     {{end}}
   </div>
+  {{end}}
   {{end}}
 </div>

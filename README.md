@@ -29,7 +29,7 @@ internal/
   scheduler/    cron runner: weekly reminder, nag non-responders,
                 close voting & finalize
   config/       env-based configuration
-web/            frontend placeholder, embedded into cmd/server via go:embed
+web/            frontend assets, embedded into cmd/server via go:embed
 migrations/     versioned Atlas migrations (generated, don't hand-edit)
 ```
 
@@ -170,9 +170,12 @@ Run its tests with `go test ./internal/solver`.
 
 ## Status
 
-Initial project structure. The solver is real working code; the other
-packages are compiling skeletons: interface definitions, one end-to-end
-example bot handler (availability intake), repositories for the core tables
-(ent-backed), and a placeholder dashboard wired for `go:embed`. Concrete LLM
-providers plug into `internal/llm.Provider` and are selected in
-`cmd/bot/main.go`.
+The solver, store layer, planner, dev JSON API, and HTMX dashboard form a
+working vertical slice: seed data, generate A/B/C schedule candidates, list
+them in the dashboard, and approve one variant. Generation is atomic
+(all candidates persist in one transaction) and duplicate-protected at the
+database level (unique index on shop, week, variant).
+
+Still skeleton / not wired: Telegram bot flows beyond availability intake,
+LLM providers (plug into `internal/llm.Provider` in `cmd/bot/main.go`), auth,
+and manual schedule editing.
