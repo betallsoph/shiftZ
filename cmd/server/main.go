@@ -15,6 +15,7 @@ import (
 	"github.com/betallsoph/shiftz/internal/api"
 	"github.com/betallsoph/shiftz/internal/config"
 	"github.com/betallsoph/shiftz/internal/dashboard"
+	"github.com/betallsoph/shiftz/internal/health"
 	"github.com/betallsoph/shiftz/internal/store"
 	"github.com/betallsoph/shiftz/web"
 )
@@ -36,20 +37,14 @@ func run(log *slog.Logger) error {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
-	st, err := store.New(ctx, cfg.DatabaseURL, cfg.EntDebug)
+	st, err := store.NewWithOptions(ctx, cfg.DatabaseURL, cfg.EntDebug, cfg.DBOptions())
 	if err != nil {
 		return err
 	}
 	defer st.Close()
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
-		if err := st.Ping(r.Context()); err != nil {
-			http.Error(w, "db unreachable", http.StatusServiceUnavailable)
-			return
-		}
-		w.WriteHeader(http.StatusOK)
-	})
+	health.Register(mux, st)
 	api.New(st, log).Register(mux)
 
 	dash, err := dashboard.New(st, log)

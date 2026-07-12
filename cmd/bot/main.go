@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/betallsoph/shiftz/internal/config"
+	"github.com/betallsoph/shiftz/internal/health"
 	"github.com/betallsoph/shiftz/internal/llm"
 	"github.com/betallsoph/shiftz/internal/reminder"
 	"github.com/betallsoph/shiftz/internal/store"
@@ -39,7 +40,7 @@ func run(log *slog.Logger) error {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
-	st, err := store.New(ctx, cfg.DatabaseURL, cfg.EntDebug)
+	st, err := store.NewWithOptions(ctx, cfg.DatabaseURL, cfg.EntDebug, cfg.DBOptions())
 	if err != nil {
 		return err
 	}
@@ -64,9 +65,7 @@ func run(log *slog.Logger) error {
 
 	mux := http.NewServeMux()
 	mux.Handle("POST /telegram/webhook", telegram.WebhookHandler(bot, cfg.TelegramWebhookSecret, log))
-	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-	})
+	health.Register(mux, st)
 
 	srv := &http.Server{
 		Addr:              cfg.BotAddr,

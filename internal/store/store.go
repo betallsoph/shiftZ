@@ -54,10 +54,16 @@ type Store struct {
 // ready Store. With debug true, every generated SQL statement is logged
 // (dev only — it's verbose and logs parameters).
 func New(ctx context.Context, databaseURL string, debug bool) (*Store, error) {
+	return NewWithOptions(ctx, databaseURL, debug, DefaultOptions())
+}
+
+// NewWithOptions connects to Postgres with explicit pool settings.
+func NewWithOptions(ctx context.Context, databaseURL string, debug bool, opts Options) (*Store, error) {
 	db, err := sql.Open("pgx", databaseURL)
 	if err != nil {
 		return nil, fmt.Errorf("store: open: %w", err)
 	}
+	applyPool(db, opts)
 	pingCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 	if err := db.PingContext(pingCtx); err != nil {
