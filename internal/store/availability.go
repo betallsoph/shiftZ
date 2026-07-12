@@ -55,3 +55,20 @@ func (r *AvailabilityRepo) ReplaceWeek(ctx context.Context, shopID, employeeID u
 	}
 	return nil
 }
+
+// ListByShopWeek returns all availability submissions for a shop and week,
+// ordered by employee id.
+func (r *AvailabilityRepo) ListByShopWeek(ctx context.Context, shopID uuid.UUID, weekStart time.Time) ([]*Availability, error) {
+	rows, err := r.client.Availability.Query().
+		Where(availability.ShopID(shopID), availability.WeekStart(weekStart)).
+		Order(availability.ByEmployeeID()).
+		All(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("store: list availability by shop week: %w", err)
+	}
+	out := make([]*Availability, len(rows))
+	for i, row := range rows {
+		out[i] = availabilityFromEnt(row)
+	}
+	return out, nil
+}

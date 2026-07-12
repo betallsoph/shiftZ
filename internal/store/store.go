@@ -37,7 +37,10 @@ type Store struct {
 
 	Shops        *ShopRepo
 	Employees    *EmployeeRepo
+	Shifts       *ShiftRepo
 	Availability *AvailabilityRepo
+	Schedules    *ScheduleRepo
+	Rules        *RuleRepo
 	Votes        *VoteRepo
 
 	db *sql.DB
@@ -65,7 +68,10 @@ func New(ctx context.Context, databaseURL string, debug bool) (*Store, error) {
 		Client:       client,
 		Shops:        &ShopRepo{client: client},
 		Employees:    &EmployeeRepo{client: client},
+		Shifts:       &ShiftRepo{client: client},
 		Availability: &AvailabilityRepo{client: client},
+		Schedules:    &ScheduleRepo{client: client},
+		Rules:        &RuleRepo{client: client},
 		Votes:        &VoteRepo{client: client},
 		db:           db,
 	}, nil

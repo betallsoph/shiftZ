@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"entgo.io/ent/dialect/sql"
+	"github.com/google/uuid"
 
 	"github.com/betallsoph/shiftz/internal/ent"
 	"github.com/betallsoph/shiftz/internal/ent/employee"
@@ -80,4 +81,21 @@ func (r *EmployeeRepo) ActiveTelegramIDs(ctx context.Context) ([]int64, error) {
 		return nil, fmt.Errorf("store: active telegram ids: %w", err)
 	}
 	return ids, nil
+}
+
+// ListActiveByShop returns active employees for a shop, ordered by display
+// name.
+func (r *EmployeeRepo) ListActiveByShop(ctx context.Context, shopID uuid.UUID) ([]*Employee, error) {
+	rows, err := r.client.Employee.Query().
+		Where(employee.ShopID(shopID), employee.IsActive(true)).
+		Order(employee.ByDisplayName()).
+		All(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("store: list active employees: %w", err)
+	}
+	out := make([]*Employee, len(rows))
+	for i, row := range rows {
+		out[i] = employeeFromEnt(row)
+	}
+	return out, nil
 }
