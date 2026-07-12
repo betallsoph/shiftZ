@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/google/uuid"
+
 	"github.com/betallsoph/shiftz/internal/planner"
 	"github.com/betallsoph/shiftz/internal/store"
 )
@@ -20,14 +22,37 @@ type PageData struct {
 
 // WeekView is the HTMX-swapped week panel.
 type WeekView struct {
-	ShopID    string
-	ShopName  string
-	WeekStart string
-	Notice    string
-	Error     string
-	Warnings  []string
-	Schedules     []ScheduleView
-	HasApproved   bool
+	ShopID         string
+	ShopName       string
+	WeekStart      string
+	Notice         string
+	Error          string
+	Warnings       []string
+	Schedules      []ScheduleView
+	HasApproved    bool
+	Availability   []AvailabilityEmployeeView
+	SubmittedCount int
+	EmployeeCount  int
+}
+
+// AvailabilityEmployeeView is one employee's weekly availability status.
+type AvailabilityEmployeeView struct {
+	EmployeeID string
+	Name       string
+	Role       string
+	Submitted  bool
+	Status     string
+	RawMessage string
+	Slots      []AvailabilitySlotView
+}
+
+// AvailabilitySlotView is one parsed availability span for display.
+type AvailabilitySlotView struct {
+	Date       string
+	DayLabel   string
+	TimeRange  string
+	Preference string
+	Note       string
 }
 
 // ScheduleView is one schedule candidate card.
@@ -61,10 +86,16 @@ func buildWeekView(
 	shop *store.Shop,
 	weekStart time.Time,
 	schedules []*store.Schedule,
+	employees []*store.Employee,
+	availabilities []*store.Availability,
 	warnings []string,
 	notice string,
 	generated *planner.GenerateResult,
 ) WeekView {
+	loc, err := time.LoadLocation(shop.Timezone)
+	if err != nil {
+		loc = time.UTC
+	}
 	violationsByID := map[string][]string{}
 	if generated != nil {
 		for _, c := range generated.Candidates {
@@ -102,14 +133,88 @@ func buildWeekView(
 		warnings = []string{}
 	}
 
+	availabilityViews, submittedCount, employeeCount := buildAvailabilityEmployeeViews(employees, availabilities, loc)
+
 	return WeekView{
-		ShopID:      shop.ID.String(),
-		ShopName:    shop.Name,
-		WeekStart:   weekStart.Format(dateLayout),
-		Notice:      notice,
-		Warnings:    warnings,
-		Schedules:   views,
-		HasApproved: hasApproved,
+		ShopID:         shop.ID.String(),
+		ShopName:       shop.Name,
+		WeekStart:      weekStart.Format(dateLayout),
+		Notice:         notice,
+		Warnings:       warnings,
+		Schedules:      views,
+		HasApproved:    hasApproved,
+		Availability:   availabilityViews,
+		SubmittedCount: submittedCount,
+		EmployeeCount:  employeeCount,
+	}
+}
+
+func buildAvailabilityEmployeeViews(
+	employees []*store.Employee,
+	availabilities []*store.Availability,
+	loc *time.Location,
+) ([]AvailabilityEmployeeView, int, int) {
+	if loc == nil {
+		loc = time.UTC
+	}
+	byEmployee := make(map[uuid.UUID]*store.Availability, len(availabilities))
+	for _, row := range availabilities {
+		byEmployee[row.EmployeeID] = row
+	}
+
+	views := make([]AvailabilityEmployeeView, len(employees))
+	submitted := 0
+	for i, emp := range employees {
+		view := AvailabilityEmployeeView{
+			EmployeeID: emp.ID.String(),
+			Name:       emp.DisplayName,
+			Role:       emp.Role,
+			Status:     "chưa gửi",
+		}
+		if row, ok := byEmployee[emp.ID]; ok {
+			view.Submitted = true
+			view.Status = "đã gửi"
+			view.RawMessage = row.RawMessage
+			view.Slots = buildAvailabilitySlotViews(row.Slots, loc)
+			submitted++
+		}
+		views[i] = view
+	}
+	return views, submitted, len(employees)
+}
+
+func buildAvailabilitySlotViews(slots []store.AvailabilitySlot, loc *time.Location) []AvailabilitySlotView {
+	if len(slots) == 0 {
+		return nil
+	}
+	sorted := append([]store.AvailabilitySlot(nil), slots...)
+	sort.Slice(sorted, func(i, j int) bool {
+		return sorted[i].Start.Before(sorted[j].Start)
+	})
+
+	views := make([]AvailabilitySlotView, len(sorted))
+	for i, slot := range sorted {
+		start := slot.Start.In(loc)
+		end := slot.End.In(loc)
+		views[i] = AvailabilitySlotView{
+			Date:       start.Format(dateLayout),
+			DayLabel:   start.Format("Mon"),
+			TimeRange:  fmt.Sprintf("%s-%s", start.Format("15:04"), end.Format("15:04")),
+			Preference: availabilityPreferenceLabel(slot.Preference),
+			Note:       slot.Note,
+		}
+	}
+	return views
+}
+
+func availabilityPreferenceLabel(pref int) string {
+	switch pref {
+	case 0:
+		return "không có"
+	case 2:
+		return "ưu tiên"
+	default:
+		return "có thể"
 	}
 }
 

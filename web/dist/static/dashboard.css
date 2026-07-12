@@ -305,6 +305,102 @@ body {
   color: #333;
 }
 
+.availability-section {
+  margin-bottom: 4px;
+}
+
+.availability-heading {
+  margin: 0 0 10px;
+  font-size: 0.9rem;
+  font-weight: 900;
+}
+
+.availability-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 10px;
+}
+
+.availability-row {
+  padding: 10px 12px;
+  border: 2px solid #000;
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: 1px 1px 0 -1px #000;
+}
+
+.availability-row.is-missing {
+  background: #f9fafb;
+}
+
+.availability-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.availability-name {
+  font-weight: 900;
+}
+
+.availability-role {
+  color: #444;
+}
+
+.badge-availability-submitted {
+  background: var(--blue-200);
+}
+
+.badge-availability-missing {
+  background: #e5e7eb;
+}
+
+.availability-slots {
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 4px;
+}
+
+.availability-slot {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.slot-day {
+  display: inline-block;
+  min-width: 2.2rem;
+  font-weight: 900;
+  color: #2563eb;
+}
+
+.slot-time {
+  font-weight: 700;
+}
+
+.slot-pref {
+  font-weight: 800;
+  color: #1d4ed8;
+}
+
+.slot-note {
+  color: #555;
+}
+
+.availability-raw {
+  margin: 8px 0 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #555;
+  font-style: italic;
+}
+
 .schedules {
   display: grid;
   gap: 14px;

@@ -90,6 +90,7 @@ Open `http://localhost:8080` after `go run ./cmd/server`.
 4. Click **Approve** on the variant you want.
 
 The dashboard uses HTMX and calls the Go planner/store layer directly (no JSON API from the browser).
+The dashboard also shows weekly availability submission status and parsed slots.
 
 ```sh
 # 6. Run the Telegram bot (webhook mode)

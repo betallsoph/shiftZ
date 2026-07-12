@@ -22,17 +22,27 @@ type scheduleRepo interface {
 	Approve(ctx context.Context, shopID, scheduleID uuid.UUID) (*store.Schedule, error)
 }
 
+type employeeLister interface {
+	ListActiveByShop(ctx context.Context, shopID uuid.UUID) ([]*store.Employee, error)
+}
+
+type availabilityLister interface {
+	ListByShopWeek(ctx context.Context, shopID uuid.UUID, weekStart time.Time) ([]*store.Availability, error)
+}
+
 type weekGenerator interface {
 	GenerateWeek(ctx context.Context, shopID uuid.UUID, weekStart time.Time) (*planner.GenerateResult, error)
 }
 
 // Server renders the owner dashboard with HTMX partials.
 type Server struct {
-	shops     shopReader
-	schedules scheduleRepo
-	planner   weekGenerator
-	log       *slog.Logger
-	tmpl      *templateSet
+	shops        shopReader
+	schedules    scheduleRepo
+	employees    employeeLister
+	availability availabilityLister
+	planner      weekGenerator
+	log          *slog.Logger
+	tmpl         *templateSet
 }
 
 // New wires the dashboard on top of the store and planner.
@@ -45,11 +55,13 @@ func New(st *store.Store, log *slog.Logger) (*Server, error) {
 		log = slog.Default()
 	}
 	return &Server{
-		shops:     st.Shops,
-		schedules: st.Schedules,
-		planner:   planner.New(st),
-		log:       log,
-		tmpl:      &templateSet{tmpl},
+		shops:        st.Shops,
+		schedules:    st.Schedules,
+		employees:    st.Employees,
+		availability: st.Availability,
+		planner:      planner.New(st),
+		log:          log,
+		tmpl:         &templateSet{tmpl},
 	}, nil
 }
 

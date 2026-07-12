@@ -1,7 +1,9 @@
 package dashboard
 
 import (
+	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -34,13 +36,13 @@ func (s *Server) handleGenerate(w http.ResponseWriter, r *http.Request) {
 	result, err := s.planner.GenerateWeek(r.Context(), shopID, weekStart)
 	if err != nil {
 		if errors.Is(err, planner.ErrSchedulesExist) {
-			schedules, listErr := s.schedules.ListByShopWeek(r.Context(), shopID, weekStart)
-			if listErr != nil {
-				s.log.Error("list schedules after exist", "err", listErr)
+			data, loadErr := s.loadWeekData(r.Context(), shopID, weekStart)
+			if loadErr != nil {
+				s.log.Error("load week after exist", "err", loadErr)
 				s.renderWeekView(w, WeekView{Error: "không tải được lịch hiện có"})
 				return
 			}
-			s.renderWeekView(w, buildWeekView(shop, weekStart, schedules, nil,
+			s.renderWeekView(w, buildWeekView(shop, weekStart, data.schedules, data.employees, data.availabilities, nil,
 				"Tuần này đã có lịch.", nil))
 			return
 		}
@@ -53,13 +55,13 @@ func (s *Server) handleGenerate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	schedules, err := s.schedules.ListByShopWeek(r.Context(), shopID, weekStart)
+	data, err := s.loadWeekData(r.Context(), shopID, weekStart)
 	if err != nil {
-		s.log.Error("list schedules after generate", "err", err)
+		s.log.Error("load week after generate", "err", err)
 		s.renderWeekView(w, WeekView{Error: "không tải được lịch vừa tạo"})
 		return
 	}
-	s.renderWeekView(w, buildWeekView(shop, weekStart, schedules, result.Warnings, "", result))
+	s.renderWeekView(w, buildWeekView(shop, weekStart, data.schedules, data.employees, data.availabilities, result.Warnings, "", result))
 }
 
 func (s *Server) handleApprove(w http.ResponseWriter, r *http.Request) {
@@ -93,6 +95,32 @@ func (s *Server) handleApprove(w http.ResponseWriter, r *http.Request) {
 	s.renderWeek(w, r, "", nil)
 }
 
+type weekPanelData struct {
+	schedules      []*store.Schedule
+	employees      []*store.Employee
+	availabilities []*store.Availability
+}
+
+func (s *Server) loadWeekData(ctx context.Context, shopID uuid.UUID, weekStart time.Time) (*weekPanelData, error) {
+	schedules, err := s.schedules.ListByShopWeek(ctx, shopID, weekStart)
+	if err != nil {
+		return nil, fmt.Errorf("list schedules: %w", err)
+	}
+	employees, err := s.employees.ListActiveByShop(ctx, shopID)
+	if err != nil {
+		return nil, fmt.Errorf("list employees: %w", err)
+	}
+	availabilities, err := s.availability.ListByShopWeek(ctx, shopID, weekStart)
+	if err != nil {
+		return nil, fmt.Errorf("list availability: %w", err)
+	}
+	return &weekPanelData{
+		schedules:      schedules,
+		employees:      employees,
+		availabilities: availabilities,
+	}, nil
+}
+
 func (s *Server) renderWeek(w http.ResponseWriter, r *http.Request, notice string, generated *planner.GenerateResult) {
 	shop, shopID, weekStart, errMsg := s.parseShopWeekForm(r)
 	if errMsg != "" {
@@ -100,14 +128,14 @@ func (s *Server) renderWeek(w http.ResponseWriter, r *http.Request, notice strin
 		return
 	}
 
-	schedules, err := s.schedules.ListByShopWeek(r.Context(), shopID, weekStart)
+	data, err := s.loadWeekData(r.Context(), shopID, weekStart)
 	if err != nil {
-		s.log.Error("list schedules", "err", err)
-		s.renderWeekView(w, WeekView{Error: "không tải được lịch"})
+		s.log.Error("load week panel", "err", err)
+		s.renderWeekView(w, WeekView{Error: "không tải được dữ liệu tuần"})
 		return
 	}
 
-	view := buildWeekView(shop, weekStart, schedules, nil, notice, generated)
+	view := buildWeekView(shop, weekStart, data.schedules, data.employees, data.availabilities, nil, notice, generated)
 	s.renderWeekView(w, view)
 }
 

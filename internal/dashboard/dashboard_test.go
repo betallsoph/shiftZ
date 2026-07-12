@@ -68,7 +68,7 @@ func TestGroupAssignments(t *testing.T) {
 }
 
 func TestHandleWeekBadShopID(t *testing.T) {
-	srv := testDashboard(t, &fakeShops{}, &fakeSchedules{}, &fakePlanner{})
+	srv := testDashboard(t, &fakeShops{}, &fakeSchedules{}, &fakeEmployees{}, &fakeAvailabilityRepo{}, &fakePlanner{})
 	mux := http.NewServeMux()
 	srv.Register(mux)
 
@@ -98,6 +98,8 @@ func TestHandleApproveNotFound(t *testing.T) {
 		&fakeSchedules{approveFn: func(ctx context.Context, sid, schedID uuid.UUID) (*store.Schedule, error) {
 			return nil, store.ErrNotFound
 		}},
+		&fakeEmployees{},
+		&fakeAvailabilityRepo{},
 		&fakePlanner{},
 	)
 	mux := http.NewServeMux()
@@ -115,6 +117,97 @@ func TestHandleApproveNotFound(t *testing.T) {
 	body := rec.Body.String()
 	if !strings.Contains(body, "không tìm thấy lịch") {
 		t.Fatalf("body = %q", body)
+	}
+}
+
+func TestBuildAvailabilityEmployeeViews(t *testing.T) {
+	loc := time.FixedZone("ICT", 7*3600)
+	weekStart := time.Date(2026, 7, 13, 0, 0, 0, 0, loc)
+
+	annaID := uuid.New()
+	bobID := uuid.New()
+	employees := []*store.Employee{
+		{ID: annaID, DisplayName: "Anna", Role: "barista"},
+		{ID: bobID, DisplayName: "Bob", Role: "floor"},
+	}
+	availabilities := []*store.Availability{{
+		EmployeeID: annaID,
+		RawMessage: `Mon mornings, prefer Wed evening`,
+		Slots: []store.AvailabilitySlot{
+			{
+				Start:      weekStart.Add(18 * time.Hour),
+				End:        weekStart.Add(22 * time.Hour),
+				Preference: 2,
+			},
+			{
+				Start:      weekStart.Add(8 * time.Hour),
+				End:        weekStart.Add(14 * time.Hour),
+				Preference: 1,
+			},
+		},
+	}}
+
+	views, submitted, total := buildAvailabilityEmployeeViews(employees, availabilities, loc)
+	if submitted != 1 || total != 2 {
+		t.Fatalf("counts = %d/%d, want 1/2", submitted, total)
+	}
+	if !views[0].Submitted || views[0].RawMessage == "" {
+		t.Fatalf("anna = %+v", views[0])
+	}
+	if views[1].Submitted {
+		t.Fatalf("bob should be missing: %+v", views[1])
+	}
+	if views[1].Status != "chưa gửi" {
+		t.Fatalf("bob status = %q", views[1].Status)
+	}
+	if len(views[0].Slots) != 2 {
+		t.Fatalf("slots = %d", len(views[0].Slots))
+	}
+	if views[0].Slots[0].TimeRange != "08:00-14:00" || views[0].Slots[0].Preference != "có thể" {
+		t.Fatalf("first slot = %+v", views[0].Slots[0])
+	}
+	if views[0].Slots[1].Preference != "ưu tiên" {
+		t.Fatalf("second slot = %+v", views[0].Slots[1])
+	}
+}
+
+func TestHandleWeekRendersAvailability(t *testing.T) {
+	shopID := uuid.New()
+	empID := uuid.New()
+	weekStart := time.Date(2026, 7, 13, 0, 0, 0, 0, time.UTC)
+
+	srv := testDashboard(t,
+		&fakeShops{shop: &store.Shop{ID: shopID, Name: "Cafe", Timezone: "UTC"}},
+		&fakeSchedules{},
+		&fakeEmployees{employees: []*store.Employee{
+			{ID: empID, DisplayName: "Anna", Role: "barista"},
+			{ID: uuid.New(), DisplayName: "Bob", Role: "floor"},
+		}},
+		&fakeAvailabilityRepo{rows: []*store.Availability{{
+			EmployeeID: empID,
+			RawMessage: "Mon mornings",
+			Slots: []store.AvailabilitySlot{{
+				Start: weekStart.Add(8 * time.Hour), End: weekStart.Add(14 * time.Hour), Preference: 1,
+			}},
+		}}},
+		&fakePlanner{},
+	)
+	mux := http.NewServeMux()
+	srv.Register(mux)
+
+	req := httptest.NewRequest(http.MethodGet, "/dashboard/week?shop_id="+shopID.String()+"&week_start=2026-07-13", nil)
+	rec := httptest.NewRecorder()
+	mux.ServeHTTP(rec, req)
+
+	body := rec.Body.String()
+	if !strings.Contains(body, "1/2 đã gửi") {
+		t.Fatalf("missing count, body = %q", body)
+	}
+	if !strings.Contains(body, "đã gửi") || !strings.Contains(body, "chưa gửi") {
+		t.Fatalf("missing status labels, body = %q", body)
+	}
+	if !strings.Contains(body, "Mon mornings") {
+		t.Fatalf("missing raw message, body = %q", body)
 	}
 }
 
@@ -142,23 +235,41 @@ func (f *fakeSchedules) Approve(ctx context.Context, shopID, scheduleID uuid.UUI
 	return f.approveFn(ctx, shopID, scheduleID)
 }
 
+type fakeEmployees struct {
+	employees []*store.Employee
+}
+
+func (f *fakeEmployees) ListActiveByShop(ctx context.Context, shopID uuid.UUID) ([]*store.Employee, error) {
+	return f.employees, nil
+}
+
+type fakeAvailabilityRepo struct {
+	rows []*store.Availability
+}
+
+func (f *fakeAvailabilityRepo) ListByShopWeek(ctx context.Context, shopID uuid.UUID, weekStart time.Time) ([]*store.Availability, error) {
+	return f.rows, nil
+}
+
 type fakePlanner struct{}
 
 func (f *fakePlanner) GenerateWeek(ctx context.Context, shopID uuid.UUID, weekStart time.Time) (*planner.GenerateResult, error) {
 	return nil, nil
 }
 
-func testDashboard(t *testing.T, shops shopReader, schedules scheduleRepo, gen weekGenerator) *Server {
+func testDashboard(t *testing.T, shops shopReader, schedules scheduleRepo, employees employeeLister, availability availabilityLister, gen weekGenerator) *Server {
 	t.Helper()
 	tmpl, err := loadTemplates()
 	if err != nil {
 		t.Fatal(err)
 	}
 	return &Server{
-		shops:     shops,
-		schedules: schedules,
-		planner:   gen,
-		log:       slog.New(slog.NewTextHandler(io.Discard, nil)),
-		tmpl:      &templateSet{tmpl},
+		shops:        shops,
+		schedules:    schedules,
+		employees:    employees,
+		availability: availability,
+		planner:      gen,
+		log:          slog.New(slog.NewTextHandler(io.Discard, nil)),
+		tmpl:         &templateSet{tmpl},
 	}
 }

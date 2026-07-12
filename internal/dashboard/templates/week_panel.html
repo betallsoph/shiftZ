@@ -21,6 +21,40 @@
   </div>
   {{end}}
 
+  {{if gt .EmployeeCount 0}}
+  <section class="availability-section">
+    <h3 class="availability-heading">Lịch rảnh: {{.SubmittedCount}}/{{.EmployeeCount}} đã gửi</h3>
+    <ul class="availability-list">
+      {{range .Availability}}
+      <li class="availability-row{{if not .Submitted}} is-missing{{end}}">
+        <div class="availability-meta">
+          <span class="availability-name">{{.Name}}</span>
+          {{if .Role}}<span class="availability-role">· {{.Role}}</span>{{end}}
+          <span class="badge badge-availability-{{if .Submitted}}submitted{{else}}missing{{end}}">{{.Status}}</span>
+        </div>
+        {{if .Submitted}}
+        {{if .Slots}}
+        <ul class="availability-slots">
+          {{range .Slots}}
+          <li class="availability-slot">
+            <span class="slot-day">{{.DayLabel}}</span>
+            <span class="slot-time">{{.TimeRange}}</span>
+            <span class="slot-pref">{{.Preference}}</span>
+            {{if .Note}}<span class="slot-note">— {{.Note}}</span>{{end}}
+          </li>
+          {{end}}
+        </ul>
+        {{end}}
+        {{if .RawMessage}}
+        <p class="availability-raw">Gốc: &ldquo;{{.RawMessage}}&rdquo;</p>
+        {{end}}
+        {{end}}
+      </li>
+      {{end}}
+    </ul>
+  </section>
+  {{end}}
+
   {{if not .Schedules}}
     {{if and .ShopID .WeekStart}}
     <div class="empty-state">
