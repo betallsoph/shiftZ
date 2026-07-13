@@ -25,3 +25,19 @@ func TestDevAPIEnabledOne(t *testing.T) {
 		t.Fatal("want DevAPIEnabled true for DEV_API_ENABLED=1")
 	}
 }
+
+func TestOwnerSignupEnabledDefault(t *testing.T) {
+	t.Setenv("OWNER_SIGNUP_ENABLED", "")
+	cfg := Load()
+	if cfg.OwnerSignupEnabled {
+		t.Fatal("want OwnerSignupEnabled false by default")
+	}
+}
+
+func TestOwnerSignupEnabledTrue(t *testing.T) {
+	t.Setenv("OWNER_SIGNUP_ENABLED", "true")
+	cfg := Load()
+	if !cfg.OwnerSignupEnabled {
+		t.Fatal("want OwnerSignupEnabled true")
+	}
+}

@@ -94,7 +94,26 @@ Generating again for the same shop/week returns `409 Conflict`.
 
 Open `http://localhost:8080` after `go run ./cmd/server`.
 
-1. Sign in at `/login` with the shop `id` and **Owner dashboard token** printed by `go run ./cmd/seed`.
+### Owner signup (beta)
+
+Owner self-service signup is disabled by default. Enable for beta onboarding:
+
+```sh
+export OWNER_SIGNUP_ENABLED=true
+go run ./cmd/server
+```
+
+Then open `http://localhost:8080/signup` to create a shop. The success page shows (once):
+
+- Shop ID
+- Owner dashboard token
+- Employee invite code
+
+Optional default shift templates (morning/evening every day) are created when selected.
+
+### Login
+
+1. Sign in at `/login` with the shop `id` and **Owner dashboard token** from signup or `go run ./cmd/seed`.
 2. Pick a week start (next Monday works well with seeded availability).
 3. Click **Tải lịch** to view existing candidates, or **Tạo lịch** to run the planner.
 4. Click **Duyệt** on the variant you want.
@@ -178,6 +197,7 @@ export LLM_MODEL='gemini-3.5-flash'   # optional; swap for cheaper Flash-Lite-st
 | `SESSION_SECRET`          | server (prod)   | —       | HMAC secret for owner dashboard session cookies |
 | `COOKIE_SECURE`           | server (optional)| `false`| `true` sets Secure on dashboard session cookies |
 | `DEV_API_ENABLED`         | server (optional)| `false` | Enables unauthenticated dev JSON API          |
+| `OWNER_SIGNUP_ENABLED`    | server (optional)| `false` | Enables `/signup` owner onboarding flow       |
 | `ENT_DEBUG`               | all (optional)  | —       | `1`/`true` logs every generated SQL statement (dev only) |
 
 ## Production / beta deployment
@@ -199,6 +219,7 @@ COOKIE_SECURE=true            # HTTPS deployments
 ```
 
 Keep `DEV_API_ENABLED` unset or `false` in production.
+Keep `OWNER_SIGNUP_ENABLED` unset or `false` in production unless you want open shop creation.
 
 ### Optional runtime env
 

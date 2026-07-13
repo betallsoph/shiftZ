@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>shiftZ — Quán đã tạo</title>
+    <link rel="stylesheet" href="/static/dashboard.css" />
+  </head>
+  <body class="roomio-grid-bg">
+    <header class="site-header">
+      <h1>shiftZ</h1>
+      <p>Quán của bạn đã sẵn sàng</p>
+    </header>
+    <main class="container">
+      <section class="controls card">
+        <div class="alert alert-notice">
+          <strong>Lưu ý</strong> — Token chủ quán chỉ hiển thị một lần. Sao chép ngay. Nếu mất token, hiện chưa có cách khôi phục tự động.
+        </div>
+        <dl class="credential-list">
+          <div class="credential-row">
+            <dt>Mã cửa hàng</dt>
+            <dd><code>{{.ShopID}}</code></dd>
+          </div>
+          <div class="credential-row">
+            <dt>Token chủ quán</dt>
+            <dd><code>{{.OwnerToken}}</code></dd>
+          </div>
+          <div class="credential-row">
+            <dt>Mã mời nhân viên</dt>
+            <dd><code>{{.InviteCode}}</code></dd>
+          </div>
+        </dl>
+        <p class="meta">Nhân viên tham gia Telegram bot bằng lệnh: <code>/start {{.InviteCode}}</code></p>
+        <div class="control-actions">
+          <a href="/login" class="btn btn-primary">Đăng nhập bảng xếp lịch</a>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

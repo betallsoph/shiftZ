@@ -16,7 +16,8 @@ type shopAuthenticator interface {
 }
 
 type loginPageData struct {
-	Error string
+	Error         string
+	SignupEnabled bool
 }
 
 func (s *Server) handleLoginGET(w http.ResponseWriter, r *http.Request) {
@@ -24,7 +25,7 @@ func (s *Server) handleLoginGET(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
-	if err := s.tmpl.render(w, "login.html", loginPageData{}); err != nil {
+	if err := s.tmpl.render(w, "login.html", loginPageData{SignupEnabled: s.signupEnabled}); err != nil {
 		s.log.Error("render login", "err", err)
 		http.Error(w, "template error", http.StatusInternalServerError)
 	}
@@ -74,7 +75,7 @@ func (s *Server) handleLogout(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) renderLoginError(w http.ResponseWriter, msg string) {
-	if err := s.tmpl.render(w, "login.html", loginPageData{Error: msg}); err != nil {
+	if err := s.tmpl.render(w, "login.html", loginPageData{Error: msg, SignupEnabled: s.signupEnabled}); err != nil {
 		s.log.Error("render login error", "err", err)
 		http.Error(w, "template error", http.StatusInternalServerError)
 	}

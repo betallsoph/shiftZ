@@ -55,6 +55,8 @@ type Config struct {
 	CookieSecure bool
 	// DevAPIEnabled exposes unauthenticated JSON API routes (local dev only).
 	DevAPIEnabled bool
+	// OwnerSignupEnabled exposes the /signup owner onboarding flow.
+	OwnerSignupEnabled bool
 }
 
 // Load reads all settings from the environment, applying defaults for
@@ -81,6 +83,7 @@ func Load() *Config {
 		SessionSecret:         os.Getenv("SESSION_SECRET"),
 		CookieSecure:          envBool("COOKIE_SECURE"),
 		DevAPIEnabled:         envBool("DEV_API_ENABLED"),
+		OwnerSignupEnabled:    envBool("OWNER_SIGNUP_ENABLED"),
 	}
 }
 

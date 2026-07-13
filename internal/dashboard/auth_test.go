@@ -210,13 +210,15 @@ func testDashboardWithAuth(t *testing.T, shopID uuid.UUID, validToken string, sh
 		t.Fatal(err)
 	}
 	srv := &Server{
-		shops:        shops,
-		shopAuth:     &fakeShopAuth{shopID: shopID, token: validToken, shop: shops.shop},
-		schedules:    &fakeSchedules{},
-		employees:    &fakeEmployees{},
-		availability: &fakeAvailabilityRepo{},
-		planner:      &fakePlanner{},
-		sessions:     sessions,
+		shops:         shops,
+		shopAuth:      &fakeShopAuth{shopID: shopID, token: validToken, shop: shops.shop},
+		schedules:     &fakeSchedules{},
+		employees:     &fakeEmployees{},
+		availability:  &fakeAvailabilityRepo{},
+		planner:       &fakePlanner{},
+		onboarding:    &noopOnboarder{},
+		signupEnabled: false,
+		sessions:      sessions,
 		log:          slog.New(slog.NewTextHandler(io.Discard, nil)),
 		tmpl:         &templateSet{tmpl},
 	}

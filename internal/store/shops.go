@@ -17,6 +17,12 @@ type ShopRepo struct {
 	client *ent.Client
 }
 
+// CreatedShopCredentials is returned once when a shop is created with a dashboard token.
+type CreatedShopCredentials struct {
+	Shop       *Shop
+	OwnerToken string
+}
+
 // Create inserts a new shop with a fresh invite code and returns it.
 // telegramGroupID is the group chat the bot posts schedules and votes into.
 func (r *ShopRepo) Create(ctx context.Context, name, timezone string, telegramGroupID int64) (*Shop, error) {
@@ -34,6 +40,33 @@ func (r *ShopRepo) Create(ctx context.Context, name, timezone string, telegramGr
 		return nil, fmt.Errorf("store: create shop: %w", err)
 	}
 	return shopFromEnt(row), nil
+}
+
+// CreateWithDashboardToken inserts a shop with invite code and hashed owner token.
+func (r *ShopRepo) CreateWithDashboardToken(ctx context.Context, name, timezone string, telegramGroupID int64) (*CreatedShopCredentials, error) {
+	code, err := newInviteCode()
+	if err != nil {
+		return nil, err
+	}
+	token, err := NewDashboardToken()
+	if err != nil {
+		return nil, err
+	}
+	hash := HashDashboardToken(token)
+	row, err := r.client.Shop.Create().
+		SetName(name).
+		SetTimezone(timezone).
+		SetInviteCode(code).
+		SetTelegramGroupID(telegramGroupID).
+		SetDashboardTokenHash(hash).
+		Save(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("store: create shop with dashboard token: %w", err)
+	}
+	return &CreatedShopCredentials{
+		Shop:       shopFromEnt(row),
+		OwnerToken: token,
+	}, nil
 }
 
 // ByID fetches a shop by primary key.

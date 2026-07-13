@@ -242,13 +242,15 @@ func testDashboard(t *testing.T, shops shopReader, schedules scheduleRepo, emplo
 	}
 	sessions := NewSessionManager("test-dashboard-secret", false)
 	srv := &Server{
-		shops:        shops,
-		shopAuth:     &noopShopAuth{},
-		schedules:    schedules,
-		employees:    employees,
-		availability: availability,
-		planner:      gen,
-		sessions:     sessions,
+		shops:         shops,
+		shopAuth:      &noopShopAuth{},
+		schedules:     schedules,
+		employees:     employees,
+		availability:  availability,
+		planner:       gen,
+		onboarding:    &noopOnboarder{},
+		signupEnabled: false,
+		sessions:      sessions,
 		log:          slog.New(slog.NewTextHandler(io.Discard, nil)),
 		tmpl:         &templateSet{tmpl},
 	}

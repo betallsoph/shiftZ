@@ -18,6 +18,7 @@ import (
 	"github.com/betallsoph/shiftz/internal/config"
 	"github.com/betallsoph/shiftz/internal/dashboard"
 	"github.com/betallsoph/shiftz/internal/health"
+	"github.com/betallsoph/shiftz/internal/onboarding"
 	"github.com/betallsoph/shiftz/internal/store"
 	"github.com/betallsoph/shiftz/web"
 )
@@ -66,9 +67,13 @@ func run(log *slog.Logger) error {
 	}
 	sessions := dashboard.NewSessionManager(sessionSecret, cfg.CookieSecure)
 
-	dash, err := dashboard.New(st, sessions, log)
+	onboard := onboarding.New(st)
+	dash, err := dashboard.New(st, sessions, onboard, cfg.OwnerSignupEnabled, log)
 	if err != nil {
 		return err
+	}
+	if cfg.OwnerSignupEnabled {
+		log.Info("owner signup enabled")
 	}
 	dash.Register(mux)
 

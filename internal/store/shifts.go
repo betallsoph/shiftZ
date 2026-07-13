@@ -31,3 +31,29 @@ func (r *ShiftRepo) ListByShop(ctx context.Context, shopID uuid.UUID) ([]*Shift,
 	}
 	return out, nil
 }
+
+// CreateDefaultsForShop inserts morning/evening shift templates for every weekday.
+func (r *ShiftRepo) CreateDefaultsForShop(ctx context.Context, shopID uuid.UUID) error {
+	for weekday := 0; weekday < 7; weekday++ {
+		for _, tpl := range []struct {
+			name, from, to string
+		}{
+			{"morning", "08:00", "14:00"},
+			{"evening", "14:00", "20:00"},
+		} {
+			_, err := r.client.Shift.Create().
+				SetShopID(shopID).
+				SetName(tpl.name).
+				SetWeekday(weekday).
+				SetStartTime(tpl.from).
+				SetEndTime(tpl.to).
+				SetMinStaff(1).
+				SetMaxStaff(2).
+				Save(ctx)
+			if err != nil {
+				return fmt.Errorf("store: create default shift: %w", err)
+			}
+		}
+	}
+	return nil
+}

@@ -41,6 +41,9 @@
           </label>
           <div class="control-actions">
             <button type="submit" class="btn btn-primary">Đăng nhập</button>
+            {{if .SignupEnabled}}
+            <a href="/signup" class="btn btn-ghost">Tạo quán mới</a>
+            {{end}}
           </div>
         </form>
       </section>
