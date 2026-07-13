@@ -43,6 +43,8 @@ const (
 	EdgeRules = "rules"
 	// EdgeAvailabilities holds the string denoting the availabilities edge name in mutations.
 	EdgeAvailabilities = "availabilities"
+	// EdgeAvailabilityDrafts holds the string denoting the availability_drafts edge name in mutations.
+	EdgeAvailabilityDrafts = "availability_drafts"
 	// EdgeReminderDeliveries holds the string denoting the reminder_deliveries edge name in mutations.
 	EdgeReminderDeliveries = "reminder_deliveries"
 	// Table holds the table name of the shop in the database.
@@ -82,6 +84,13 @@ const (
 	AvailabilitiesInverseTable = "availabilities"
 	// AvailabilitiesColumn is the table column denoting the availabilities relation/edge.
 	AvailabilitiesColumn = "shop_id"
+	// AvailabilityDraftsTable is the table that holds the availability_drafts relation/edge.
+	AvailabilityDraftsTable = "availability_drafts"
+	// AvailabilityDraftsInverseTable is the table name for the AvailabilityDraft entity.
+	// It exists in this package in order to avoid circular dependency with the "availabilitydraft" package.
+	AvailabilityDraftsInverseTable = "availability_drafts"
+	// AvailabilityDraftsColumn is the table column denoting the availability_drafts relation/edge.
+	AvailabilityDraftsColumn = "shop_id"
 	// ReminderDeliveriesTable is the table that holds the reminder_deliveries relation/edge.
 	ReminderDeliveriesTable = "reminder_deliveries"
 	// ReminderDeliveriesInverseTable is the table name for the ReminderDelivery entity.
@@ -249,6 +258,20 @@ func ByAvailabilities(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
+// ByAvailabilityDraftsCount orders the results by availability_drafts count.
+func ByAvailabilityDraftsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newAvailabilityDraftsStep(), opts...)
+	}
+}
+
+// ByAvailabilityDrafts orders the results by availability_drafts terms.
+func ByAvailabilityDrafts(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newAvailabilityDraftsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // ByReminderDeliveriesCount orders the results by reminder_deliveries count.
 func ByReminderDeliveriesCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -295,6 +318,13 @@ func newAvailabilitiesStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(AvailabilitiesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, AvailabilitiesTable, AvailabilitiesColumn),
+	)
+}
+func newAvailabilityDraftsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(AvailabilityDraftsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, AvailabilityDraftsTable, AvailabilityDraftsColumn),
 	)
 }
 func newReminderDeliveriesStep() *sqlgraph.Step {

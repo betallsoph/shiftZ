@@ -10,42 +10,21 @@ import (
 	"github.com/betallsoph/shiftz/internal/store"
 )
 
-// AvailabilityDraft is a pending availability confirmation.
-type AvailabilityDraft struct {
-	ID             uuid.UUID
-	TelegramUserID int64
-	ChatID         int64
-	ShopID         uuid.UUID
-	EmployeeID     uuid.UUID
-	WeekStart      time.Time
-	Timezone       string
-	Slots          []store.AvailabilitySlot
-	RawMessage     string
-	CreatedAt      time.Time
-}
-
-// AvailabilityDraftStore holds pending availability confirmations.
-type AvailabilityDraftStore interface {
-	Create(ctx context.Context, draft AvailabilityDraft) (uuid.UUID, error)
-	Get(ctx context.Context, id uuid.UUID) (*AvailabilityDraft, bool, error)
-	Delete(ctx context.Context, id uuid.UUID) error
-}
-
 // MemoryAvailabilityDraftStore stores drafts in memory with TTL expiry.
 type MemoryAvailabilityDraftStore struct {
-	ttl   time.Duration
-	mu    sync.Mutex
-	drafts map[uuid.UUID]AvailabilityDraft
+	ttl    time.Duration
+	mu     sync.Mutex
+	drafts map[uuid.UUID]store.AvailabilityDraft
 }
 
 // NewMemoryAvailabilityDraftStore returns an in-memory draft store.
 func NewMemoryAvailabilityDraftStore(ttl time.Duration) *MemoryAvailabilityDraftStore {
 	if ttl <= 0 {
-		ttl = 30 * time.Minute
+		ttl = store.DefaultAvailabilityDraftTTL
 	}
 	return &MemoryAvailabilityDraftStore{
 		ttl:    ttl,
-		drafts: make(map[uuid.UUID]AvailabilityDraft),
+		drafts: make(map[uuid.UUID]store.AvailabilityDraft),
 	}
 }
 

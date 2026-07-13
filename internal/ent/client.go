@@ -17,6 +17,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/betallsoph/shiftz/internal/ent/availability"
+	"github.com/betallsoph/shiftz/internal/ent/availabilitydraft"
 	"github.com/betallsoph/shiftz/internal/ent/employee"
 	"github.com/betallsoph/shiftz/internal/ent/reminderdelivery"
 	"github.com/betallsoph/shiftz/internal/ent/rule"
@@ -34,6 +35,8 @@ type Client struct {
 	Schema *migrate.Schema
 	// Availability is the client for interacting with the Availability builders.
 	Availability *AvailabilityClient
+	// AvailabilityDraft is the client for interacting with the AvailabilityDraft builders.
+	AvailabilityDraft *AvailabilityDraftClient
 	// Employee is the client for interacting with the Employee builders.
 	Employee *EmployeeClient
 	// ReminderDelivery is the client for interacting with the ReminderDelivery builders.
@@ -62,6 +65,7 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Availability = NewAvailabilityClient(c.config)
+	c.AvailabilityDraft = NewAvailabilityDraftClient(c.config)
 	c.Employee = NewEmployeeClient(c.config)
 	c.ReminderDelivery = NewReminderDeliveryClient(c.config)
 	c.Rule = NewRuleClient(c.config)
@@ -163,6 +167,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ctx:                ctx,
 		config:             cfg,
 		Availability:       NewAvailabilityClient(cfg),
+		AvailabilityDraft:  NewAvailabilityDraftClient(cfg),
 		Employee:           NewEmployeeClient(cfg),
 		ReminderDelivery:   NewReminderDeliveryClient(cfg),
 		Rule:               NewRuleClient(cfg),
@@ -191,6 +196,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		ctx:                ctx,
 		config:             cfg,
 		Availability:       NewAvailabilityClient(cfg),
+		AvailabilityDraft:  NewAvailabilityDraftClient(cfg),
 		Employee:           NewEmployeeClient(cfg),
 		ReminderDelivery:   NewReminderDeliveryClient(cfg),
 		Rule:               NewRuleClient(cfg),
@@ -228,8 +234,8 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Availability, c.Employee, c.ReminderDelivery, c.Rule, c.Schedule,
-		c.ScheduleAssignment, c.ScheduleVote, c.Shift, c.Shop,
+		c.Availability, c.AvailabilityDraft, c.Employee, c.ReminderDelivery, c.Rule,
+		c.Schedule, c.ScheduleAssignment, c.ScheduleVote, c.Shift, c.Shop,
 	} {
 		n.Use(hooks...)
 	}
@@ -239,8 +245,8 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Availability, c.Employee, c.ReminderDelivery, c.Rule, c.Schedule,
-		c.ScheduleAssignment, c.ScheduleVote, c.Shift, c.Shop,
+		c.Availability, c.AvailabilityDraft, c.Employee, c.ReminderDelivery, c.Rule,
+		c.Schedule, c.ScheduleAssignment, c.ScheduleVote, c.Shift, c.Shop,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -251,6 +257,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
 	case *AvailabilityMutation:
 		return c.Availability.mutate(ctx, m)
+	case *AvailabilityDraftMutation:
+		return c.AvailabilityDraft.mutate(ctx, m)
 	case *EmployeeMutation:
 		return c.Employee.mutate(ctx, m)
 	case *ReminderDeliveryMutation:
@@ -437,6 +445,171 @@ func (c *AvailabilityClient) mutate(ctx context.Context, m *AvailabilityMutation
 	}
 }
 
+// AvailabilityDraftClient is a client for the AvailabilityDraft schema.
+type AvailabilityDraftClient struct {
+	config
+}
+
+// NewAvailabilityDraftClient returns a client for the AvailabilityDraft from the given config.
+func NewAvailabilityDraftClient(c config) *AvailabilityDraftClient {
+	return &AvailabilityDraftClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `availabilitydraft.Hooks(f(g(h())))`.
+func (c *AvailabilityDraftClient) Use(hooks ...Hook) {
+	c.hooks.AvailabilityDraft = append(c.hooks.AvailabilityDraft, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `availabilitydraft.Intercept(f(g(h())))`.
+func (c *AvailabilityDraftClient) Intercept(interceptors ...Interceptor) {
+	c.inters.AvailabilityDraft = append(c.inters.AvailabilityDraft, interceptors...)
+}
+
+// Create returns a builder for creating a AvailabilityDraft entity.
+func (c *AvailabilityDraftClient) Create() *AvailabilityDraftCreate {
+	mutation := newAvailabilityDraftMutation(c.config, OpCreate)
+	return &AvailabilityDraftCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of AvailabilityDraft entities.
+func (c *AvailabilityDraftClient) CreateBulk(builders ...*AvailabilityDraftCreate) *AvailabilityDraftCreateBulk {
+	return &AvailabilityDraftCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *AvailabilityDraftClient) MapCreateBulk(slice any, setFunc func(*AvailabilityDraftCreate, int)) *AvailabilityDraftCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &AvailabilityDraftCreateBulk{err: fmt.Errorf("calling to AvailabilityDraftClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*AvailabilityDraftCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &AvailabilityDraftCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for AvailabilityDraft.
+func (c *AvailabilityDraftClient) Update() *AvailabilityDraftUpdate {
+	mutation := newAvailabilityDraftMutation(c.config, OpUpdate)
+	return &AvailabilityDraftUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *AvailabilityDraftClient) UpdateOne(_m *AvailabilityDraft) *AvailabilityDraftUpdateOne {
+	mutation := newAvailabilityDraftMutation(c.config, OpUpdateOne, withAvailabilityDraft(_m))
+	return &AvailabilityDraftUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *AvailabilityDraftClient) UpdateOneID(id uuid.UUID) *AvailabilityDraftUpdateOne {
+	mutation := newAvailabilityDraftMutation(c.config, OpUpdateOne, withAvailabilityDraftID(id))
+	return &AvailabilityDraftUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for AvailabilityDraft.
+func (c *AvailabilityDraftClient) Delete() *AvailabilityDraftDelete {
+	mutation := newAvailabilityDraftMutation(c.config, OpDelete)
+	return &AvailabilityDraftDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *AvailabilityDraftClient) DeleteOne(_m *AvailabilityDraft) *AvailabilityDraftDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *AvailabilityDraftClient) DeleteOneID(id uuid.UUID) *AvailabilityDraftDeleteOne {
+	builder := c.Delete().Where(availabilitydraft.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &AvailabilityDraftDeleteOne{builder}
+}
+
+// Query returns a query builder for AvailabilityDraft.
+func (c *AvailabilityDraftClient) Query() *AvailabilityDraftQuery {
+	return &AvailabilityDraftQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeAvailabilityDraft},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a AvailabilityDraft entity by its id.
+func (c *AvailabilityDraftClient) Get(ctx context.Context, id uuid.UUID) (*AvailabilityDraft, error) {
+	return c.Query().Where(availabilitydraft.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *AvailabilityDraftClient) GetX(ctx context.Context, id uuid.UUID) *AvailabilityDraft {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryShop queries the shop edge of a AvailabilityDraft.
+func (c *AvailabilityDraftClient) QueryShop(_m *AvailabilityDraft) *ShopQuery {
+	query := (&ShopClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(availabilitydraft.Table, availabilitydraft.FieldID, id),
+			sqlgraph.To(shop.Table, shop.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, availabilitydraft.ShopTable, availabilitydraft.ShopColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryEmployee queries the employee edge of a AvailabilityDraft.
+func (c *AvailabilityDraftClient) QueryEmployee(_m *AvailabilityDraft) *EmployeeQuery {
+	query := (&EmployeeClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(availabilitydraft.Table, availabilitydraft.FieldID, id),
+			sqlgraph.To(employee.Table, employee.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, availabilitydraft.EmployeeTable, availabilitydraft.EmployeeColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *AvailabilityDraftClient) Hooks() []Hook {
+	return c.hooks.AvailabilityDraft
+}
+
+// Interceptors returns the client interceptors.
+func (c *AvailabilityDraftClient) Interceptors() []Interceptor {
+	return c.inters.AvailabilityDraft
+}
+
+func (c *AvailabilityDraftClient) mutate(ctx context.Context, m *AvailabilityDraftMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&AvailabilityDraftCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&AvailabilityDraftUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&AvailabilityDraftUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&AvailabilityDraftDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown AvailabilityDraft mutation op: %q", m.Op())
+	}
+}
+
 // EmployeeClient is a client for the Employee schema.
 type EmployeeClient struct {
 	config
@@ -570,6 +743,22 @@ func (c *EmployeeClient) QueryAvailabilities(_m *Employee) *AvailabilityQuery {
 			sqlgraph.From(employee.Table, employee.FieldID, id),
 			sqlgraph.To(availability.Table, availability.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, employee.AvailabilitiesTable, employee.AvailabilitiesColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAvailabilityDrafts queries the availability_drafts edge of a Employee.
+func (c *EmployeeClient) QueryAvailabilityDrafts(_m *Employee) *AvailabilityDraftQuery {
+	query := (&AvailabilityDraftClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(employee.Table, employee.FieldID, id),
+			sqlgraph.To(availabilitydraft.Table, availabilitydraft.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, employee.AvailabilityDraftsTable, employee.AvailabilityDraftsColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -1877,6 +2066,22 @@ func (c *ShopClient) QueryAvailabilities(_m *Shop) *AvailabilityQuery {
 	return query
 }
 
+// QueryAvailabilityDrafts queries the availability_drafts edge of a Shop.
+func (c *ShopClient) QueryAvailabilityDrafts(_m *Shop) *AvailabilityDraftQuery {
+	query := (&AvailabilityDraftClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(shop.Table, shop.FieldID, id),
+			sqlgraph.To(availabilitydraft.Table, availabilitydraft.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, shop.AvailabilityDraftsTable, shop.AvailabilityDraftsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryReminderDeliveries queries the reminder_deliveries edge of a Shop.
 func (c *ShopClient) QueryReminderDeliveries(_m *Shop) *ReminderDeliveryQuery {
 	query := (&ReminderDeliveryClient{config: c.config}).Query()
@@ -1921,11 +2126,11 @@ func (c *ShopClient) mutate(ctx context.Context, m *ShopMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Availability, Employee, ReminderDelivery, Rule, Schedule, ScheduleAssignment,
-		ScheduleVote, Shift, Shop []ent.Hook
+		Availability, AvailabilityDraft, Employee, ReminderDelivery, Rule, Schedule,
+		ScheduleAssignment, ScheduleVote, Shift, Shop []ent.Hook
 	}
 	inters struct {
-		Availability, Employee, ReminderDelivery, Rule, Schedule, ScheduleAssignment,
-		ScheduleVote, Shift, Shop []ent.Interceptor
+		Availability, AvailabilityDraft, Employee, ReminderDelivery, Rule, Schedule,
+		ScheduleAssignment, ScheduleVote, Shift, Shop []ent.Interceptor
 	}
 )

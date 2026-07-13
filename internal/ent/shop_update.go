@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/betallsoph/shiftz/internal/ent/availability"
+	"github.com/betallsoph/shiftz/internal/ent/availabilitydraft"
 	"github.com/betallsoph/shiftz/internal/ent/employee"
 	"github.com/betallsoph/shiftz/internal/ent/predicate"
 	"github.com/betallsoph/shiftz/internal/ent/reminderdelivery"
@@ -247,6 +248,21 @@ func (_u *ShopUpdate) AddAvailabilities(v ...*Availability) *ShopUpdate {
 	return _u.AddAvailabilityIDs(ids...)
 }
 
+// AddAvailabilityDraftIDs adds the "availability_drafts" edge to the AvailabilityDraft entity by IDs.
+func (_u *ShopUpdate) AddAvailabilityDraftIDs(ids ...uuid.UUID) *ShopUpdate {
+	_u.mutation.AddAvailabilityDraftIDs(ids...)
+	return _u
+}
+
+// AddAvailabilityDrafts adds the "availability_drafts" edges to the AvailabilityDraft entity.
+func (_u *ShopUpdate) AddAvailabilityDrafts(v ...*AvailabilityDraft) *ShopUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddAvailabilityDraftIDs(ids...)
+}
+
 // AddReminderDeliveryIDs adds the "reminder_deliveries" edge to the ReminderDelivery entity by IDs.
 func (_u *ShopUpdate) AddReminderDeliveryIDs(ids ...uuid.UUID) *ShopUpdate {
 	_u.mutation.AddReminderDeliveryIDs(ids...)
@@ -370,6 +386,27 @@ func (_u *ShopUpdate) RemoveAvailabilities(v ...*Availability) *ShopUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveAvailabilityIDs(ids...)
+}
+
+// ClearAvailabilityDrafts clears all "availability_drafts" edges to the AvailabilityDraft entity.
+func (_u *ShopUpdate) ClearAvailabilityDrafts() *ShopUpdate {
+	_u.mutation.ClearAvailabilityDrafts()
+	return _u
+}
+
+// RemoveAvailabilityDraftIDs removes the "availability_drafts" edge to AvailabilityDraft entities by IDs.
+func (_u *ShopUpdate) RemoveAvailabilityDraftIDs(ids ...uuid.UUID) *ShopUpdate {
+	_u.mutation.RemoveAvailabilityDraftIDs(ids...)
+	return _u
+}
+
+// RemoveAvailabilityDrafts removes "availability_drafts" edges to AvailabilityDraft entities.
+func (_u *ShopUpdate) RemoveAvailabilityDrafts(v ...*AvailabilityDraft) *ShopUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveAvailabilityDraftIDs(ids...)
 }
 
 // ClearReminderDeliveries clears all "reminder_deliveries" edges to the ReminderDelivery entity.
@@ -690,6 +727,51 @@ func (_u *ShopUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.AvailabilityDraftsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   shop.AvailabilityDraftsTable,
+			Columns: []string{shop.AvailabilityDraftsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(availabilitydraft.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedAvailabilityDraftsIDs(); len(nodes) > 0 && !_u.mutation.AvailabilityDraftsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   shop.AvailabilityDraftsTable,
+			Columns: []string{shop.AvailabilityDraftsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(availabilitydraft.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.AvailabilityDraftsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   shop.AvailabilityDraftsTable,
+			Columns: []string{shop.AvailabilityDraftsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(availabilitydraft.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _u.mutation.ReminderDeliveriesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -967,6 +1049,21 @@ func (_u *ShopUpdateOne) AddAvailabilities(v ...*Availability) *ShopUpdateOne {
 	return _u.AddAvailabilityIDs(ids...)
 }
 
+// AddAvailabilityDraftIDs adds the "availability_drafts" edge to the AvailabilityDraft entity by IDs.
+func (_u *ShopUpdateOne) AddAvailabilityDraftIDs(ids ...uuid.UUID) *ShopUpdateOne {
+	_u.mutation.AddAvailabilityDraftIDs(ids...)
+	return _u
+}
+
+// AddAvailabilityDrafts adds the "availability_drafts" edges to the AvailabilityDraft entity.
+func (_u *ShopUpdateOne) AddAvailabilityDrafts(v ...*AvailabilityDraft) *ShopUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddAvailabilityDraftIDs(ids...)
+}
+
 // AddReminderDeliveryIDs adds the "reminder_deliveries" edge to the ReminderDelivery entity by IDs.
 func (_u *ShopUpdateOne) AddReminderDeliveryIDs(ids ...uuid.UUID) *ShopUpdateOne {
 	_u.mutation.AddReminderDeliveryIDs(ids...)
@@ -1090,6 +1187,27 @@ func (_u *ShopUpdateOne) RemoveAvailabilities(v ...*Availability) *ShopUpdateOne
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveAvailabilityIDs(ids...)
+}
+
+// ClearAvailabilityDrafts clears all "availability_drafts" edges to the AvailabilityDraft entity.
+func (_u *ShopUpdateOne) ClearAvailabilityDrafts() *ShopUpdateOne {
+	_u.mutation.ClearAvailabilityDrafts()
+	return _u
+}
+
+// RemoveAvailabilityDraftIDs removes the "availability_drafts" edge to AvailabilityDraft entities by IDs.
+func (_u *ShopUpdateOne) RemoveAvailabilityDraftIDs(ids ...uuid.UUID) *ShopUpdateOne {
+	_u.mutation.RemoveAvailabilityDraftIDs(ids...)
+	return _u
+}
+
+// RemoveAvailabilityDrafts removes "availability_drafts" edges to AvailabilityDraft entities.
+func (_u *ShopUpdateOne) RemoveAvailabilityDrafts(v ...*AvailabilityDraft) *ShopUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveAvailabilityDraftIDs(ids...)
 }
 
 // ClearReminderDeliveries clears all "reminder_deliveries" edges to the ReminderDelivery entity.
@@ -1433,6 +1551,51 @@ func (_u *ShopUpdateOne) sqlSave(ctx context.Context) (_node *Shop, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(availability.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.AvailabilityDraftsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   shop.AvailabilityDraftsTable,
+			Columns: []string{shop.AvailabilityDraftsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(availabilitydraft.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedAvailabilityDraftsIDs(); len(nodes) > 0 && !_u.mutation.AvailabilityDraftsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   shop.AvailabilityDraftsTable,
+			Columns: []string{shop.AvailabilityDraftsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(availabilitydraft.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.AvailabilityDraftsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   shop.AvailabilityDraftsTable,
+			Columns: []string{shop.AvailabilityDraftsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(availabilitydraft.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

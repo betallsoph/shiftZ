@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/betallsoph/shiftz/internal/ent/availability"
+	"github.com/betallsoph/shiftz/internal/ent/availabilitydraft"
 	"github.com/betallsoph/shiftz/internal/ent/employee"
 	"github.com/betallsoph/shiftz/internal/ent/reminderdelivery"
 	"github.com/betallsoph/shiftz/internal/ent/rule"
@@ -36,6 +37,20 @@ func init() {
 	availabilityDescID := availabilityFields[0].Descriptor()
 	// availability.DefaultID holds the default value on creation for the id field.
 	availability.DefaultID = availabilityDescID.Default.(func() uuid.UUID)
+	availabilitydraftFields := schema.AvailabilityDraft{}.Fields()
+	_ = availabilitydraftFields
+	// availabilitydraftDescRawMessage is the schema descriptor for raw_message field.
+	availabilitydraftDescRawMessage := availabilitydraftFields[8].Descriptor()
+	// availabilitydraft.DefaultRawMessage holds the default value on creation for the raw_message field.
+	availabilitydraft.DefaultRawMessage = availabilitydraftDescRawMessage.Default.(string)
+	// availabilitydraftDescCreatedAt is the schema descriptor for created_at field.
+	availabilitydraftDescCreatedAt := availabilitydraftFields[9].Descriptor()
+	// availabilitydraft.DefaultCreatedAt holds the default value on creation for the created_at field.
+	availabilitydraft.DefaultCreatedAt = availabilitydraftDescCreatedAt.Default.(func() time.Time)
+	// availabilitydraftDescID is the schema descriptor for id field.
+	availabilitydraftDescID := availabilitydraftFields[0].Descriptor()
+	// availabilitydraft.DefaultID holds the default value on creation for the id field.
+	availabilitydraft.DefaultID = availabilitydraftDescID.Default.(func() uuid.UUID)
 	employeeFields := schema.Employee{}.Fields()
 	_ = employeeFields
 	// employeeDescRole is the schema descriptor for role field.

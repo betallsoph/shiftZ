@@ -21,6 +21,18 @@ func (f AvailabilityFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AvailabilityMutation", m)
 }
 
+// The AvailabilityDraftFunc type is an adapter to allow the use of ordinary
+// function as AvailabilityDraft mutator.
+type AvailabilityDraftFunc func(context.Context, *ent.AvailabilityDraftMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f AvailabilityDraftFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.AvailabilityDraftMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AvailabilityDraftMutation", m)
+}
+
 // The EmployeeFunc type is an adapter to allow the use of ordinary
 // function as Employee mutator.
 type EmployeeFunc func(context.Context, *ent.EmployeeMutation) (ent.Value, error)

@@ -50,6 +50,52 @@ var (
 			},
 		},
 	}
+	// AvailabilityDraftsColumns holds the columns for the "availability_drafts" table.
+	AvailabilityDraftsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "telegram_user_id", Type: field.TypeInt64},
+		{Name: "chat_id", Type: field.TypeInt64},
+		{Name: "week_start", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "date"}},
+		{Name: "timezone", Type: field.TypeString},
+		{Name: "slots", Type: field.TypeJSON},
+		{Name: "raw_message", Type: field.TypeString, Size: 2147483647, Default: ""},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "expires_at", Type: field.TypeTime},
+		{Name: "employee_id", Type: field.TypeUUID},
+		{Name: "shop_id", Type: field.TypeUUID},
+	}
+	// AvailabilityDraftsTable holds the schema information for the "availability_drafts" table.
+	AvailabilityDraftsTable = &schema.Table{
+		Name:       "availability_drafts",
+		Columns:    AvailabilityDraftsColumns,
+		PrimaryKey: []*schema.Column{AvailabilityDraftsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "availability_drafts_employees_availability_drafts",
+				Columns:    []*schema.Column{AvailabilityDraftsColumns[9]},
+				RefColumns: []*schema.Column{EmployeesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "availability_drafts_shops_availability_drafts",
+				Columns:    []*schema.Column{AvailabilityDraftsColumns[10]},
+				RefColumns: []*schema.Column{ShopsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "availabilitydraft_expires_at",
+				Unique:  false,
+				Columns: []*schema.Column{AvailabilityDraftsColumns[8]},
+			},
+			{
+				Name:    "availabilitydraft_telegram_user_id_expires_at",
+				Unique:  false,
+				Columns: []*schema.Column{AvailabilityDraftsColumns[1], AvailabilityDraftsColumns[8]},
+			},
+		},
+	}
 	// EmployeesColumns holds the columns for the "employees" table.
 	EmployeesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -359,6 +405,7 @@ var (
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		AvailabilitiesTable,
+		AvailabilityDraftsTable,
 		EmployeesTable,
 		ReminderDeliveriesTable,
 		RulesTable,
@@ -373,6 +420,8 @@ var (
 func init() {
 	AvailabilitiesTable.ForeignKeys[0].RefTable = EmployeesTable
 	AvailabilitiesTable.ForeignKeys[1].RefTable = ShopsTable
+	AvailabilityDraftsTable.ForeignKeys[0].RefTable = EmployeesTable
+	AvailabilityDraftsTable.ForeignKeys[1].RefTable = ShopsTable
 	EmployeesTable.ForeignKeys[0].RefTable = ShopsTable
 	ReminderDeliveriesTable.ForeignKeys[0].RefTable = EmployeesTable
 	ReminderDeliveriesTable.ForeignKeys[1].RefTable = ShopsTable

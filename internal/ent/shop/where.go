@@ -756,6 +756,29 @@ func HasAvailabilitiesWith(preds ...predicate.Availability) predicate.Shop {
 	})
 }
 
+// HasAvailabilityDrafts applies the HasEdge predicate on the "availability_drafts" edge.
+func HasAvailabilityDrafts() predicate.Shop {
+	return predicate.Shop(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, AvailabilityDraftsTable, AvailabilityDraftsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasAvailabilityDraftsWith applies the HasEdge predicate on the "availability_drafts" edge with a given conditions (other predicates).
+func HasAvailabilityDraftsWith(preds ...predicate.AvailabilityDraft) predicate.Shop {
+	return predicate.Shop(func(s *sql.Selector) {
+		step := newAvailabilityDraftsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasReminderDeliveries applies the HasEdge predicate on the "reminder_deliveries" edge.
 func HasReminderDeliveries() predicate.Shop {
 	return predicate.Shop(func(s *sql.Selector) {

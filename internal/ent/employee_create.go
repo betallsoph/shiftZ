@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/betallsoph/shiftz/internal/ent/availability"
+	"github.com/betallsoph/shiftz/internal/ent/availabilitydraft"
 	"github.com/betallsoph/shiftz/internal/ent/employee"
 	"github.com/betallsoph/shiftz/internal/ent/reminderdelivery"
 	"github.com/betallsoph/shiftz/internal/ent/scheduleassignment"
@@ -135,6 +136,21 @@ func (_c *EmployeeCreate) AddAvailabilities(v ...*Availability) *EmployeeCreate 
 		ids[i] = v[i].ID
 	}
 	return _c.AddAvailabilityIDs(ids...)
+}
+
+// AddAvailabilityDraftIDs adds the "availability_drafts" edge to the AvailabilityDraft entity by IDs.
+func (_c *EmployeeCreate) AddAvailabilityDraftIDs(ids ...uuid.UUID) *EmployeeCreate {
+	_c.mutation.AddAvailabilityDraftIDs(ids...)
+	return _c
+}
+
+// AddAvailabilityDrafts adds the "availability_drafts" edges to the AvailabilityDraft entity.
+func (_c *EmployeeCreate) AddAvailabilityDrafts(v ...*AvailabilityDraft) *EmployeeCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddAvailabilityDraftIDs(ids...)
 }
 
 // AddAssignmentIDs adds the "assignments" edge to the ScheduleAssignment entity by IDs.
@@ -351,6 +367,22 @@ func (_c *EmployeeCreate) createSpec() (*Employee, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(availability.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.AvailabilityDraftsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   employee.AvailabilityDraftsTable,
+			Columns: []string{employee.AvailabilityDraftsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(availabilitydraft.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

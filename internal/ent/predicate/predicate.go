@@ -9,6 +9,9 @@ import (
 // Availability is the predicate function for availability builders.
 type Availability func(*sql.Selector)
 
+// AvailabilityDraft is the predicate function for availabilitydraft builders.
+type AvailabilityDraft func(*sql.Selector)
+
 // Employee is the predicate function for employee builders.
 type Employee func(*sql.Selector)
 

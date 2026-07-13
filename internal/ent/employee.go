@@ -45,6 +45,8 @@ type EmployeeEdges struct {
 	Shop *Shop `json:"shop,omitempty"`
 	// Availabilities holds the value of the availabilities edge.
 	Availabilities []*Availability `json:"availabilities,omitempty"`
+	// AvailabilityDrafts holds the value of the availability_drafts edge.
+	AvailabilityDrafts []*AvailabilityDraft `json:"availability_drafts,omitempty"`
 	// Assignments holds the value of the assignments edge.
 	Assignments []*ScheduleAssignment `json:"assignments,omitempty"`
 	// Votes holds the value of the votes edge.
@@ -53,7 +55,7 @@ type EmployeeEdges struct {
 	ReminderDeliveries []*ReminderDelivery `json:"reminder_deliveries,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [5]bool
+	loadedTypes [6]bool
 }
 
 // ShopOrErr returns the Shop value or an error if the edge
@@ -76,10 +78,19 @@ func (e EmployeeEdges) AvailabilitiesOrErr() ([]*Availability, error) {
 	return nil, &NotLoadedError{edge: "availabilities"}
 }
 
+// AvailabilityDraftsOrErr returns the AvailabilityDrafts value or an error if the edge
+// was not loaded in eager-loading.
+func (e EmployeeEdges) AvailabilityDraftsOrErr() ([]*AvailabilityDraft, error) {
+	if e.loadedTypes[2] {
+		return e.AvailabilityDrafts, nil
+	}
+	return nil, &NotLoadedError{edge: "availability_drafts"}
+}
+
 // AssignmentsOrErr returns the Assignments value or an error if the edge
 // was not loaded in eager-loading.
 func (e EmployeeEdges) AssignmentsOrErr() ([]*ScheduleAssignment, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[3] {
 		return e.Assignments, nil
 	}
 	return nil, &NotLoadedError{edge: "assignments"}
@@ -88,7 +99,7 @@ func (e EmployeeEdges) AssignmentsOrErr() ([]*ScheduleAssignment, error) {
 // VotesOrErr returns the Votes value or an error if the edge
 // was not loaded in eager-loading.
 func (e EmployeeEdges) VotesOrErr() ([]*ScheduleVote, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[4] {
 		return e.Votes, nil
 	}
 	return nil, &NotLoadedError{edge: "votes"}
@@ -97,7 +108,7 @@ func (e EmployeeEdges) VotesOrErr() ([]*ScheduleVote, error) {
 // ReminderDeliveriesOrErr returns the ReminderDeliveries value or an error if the edge
 // was not loaded in eager-loading.
 func (e EmployeeEdges) ReminderDeliveriesOrErr() ([]*ReminderDelivery, error) {
-	if e.loadedTypes[4] {
+	if e.loadedTypes[5] {
 		return e.ReminderDeliveries, nil
 	}
 	return nil, &NotLoadedError{edge: "reminder_deliveries"}
@@ -204,6 +215,11 @@ func (_m *Employee) QueryShop() *ShopQuery {
 // QueryAvailabilities queries the "availabilities" edge of the Employee entity.
 func (_m *Employee) QueryAvailabilities() *AvailabilityQuery {
 	return NewEmployeeClient(_m.config).QueryAvailabilities(_m)
+}
+
+// QueryAvailabilityDrafts queries the "availability_drafts" edge of the Employee entity.
+func (_m *Employee) QueryAvailabilityDrafts() *AvailabilityDraftQuery {
+	return NewEmployeeClient(_m.config).QueryAvailabilityDrafts(_m)
 }
 
 // QueryAssignments queries the "assignments" edge of the Employee entity.

@@ -67,6 +67,21 @@ type Availability struct {
 	CreatedAt  time.Time
 }
 
+// AvailabilityDraft is a pending Telegram availability confirmation.
+type AvailabilityDraft struct {
+	ID             uuid.UUID
+	ShopID         uuid.UUID
+	EmployeeID     uuid.UUID
+	TelegramUserID int64
+	ChatID         int64
+	WeekStart      time.Time
+	Timezone       string
+	Slots          []AvailabilitySlot
+	RawMessage     string
+	CreatedAt      time.Time
+	ExpiresAt      time.Time
+}
+
 // ReminderDelivery is one queued or completed Telegram reminder/nag send.
 type ReminderDelivery struct {
 	ID         uuid.UUID
@@ -185,6 +200,31 @@ func availabilityFromEnt(m *ent.Availability) *Availability {
 		Slots:      slots,
 		RawMessage: m.RawMessage,
 		CreatedAt:  m.CreatedAt,
+	}
+}
+
+func availabilityDraftFromEnt(m *ent.AvailabilityDraft) *AvailabilityDraft {
+	slots := make([]AvailabilitySlot, len(m.Slots))
+	for i, s := range m.Slots {
+		slots[i] = AvailabilitySlot{
+			Start:      s.Start,
+			End:        s.End,
+			Preference: s.Preference,
+			Note:       s.Note,
+		}
+	}
+	return &AvailabilityDraft{
+		ID:             m.ID,
+		ShopID:         m.ShopID,
+		EmployeeID:     m.EmployeeID,
+		TelegramUserID: m.TelegramUserID,
+		ChatID:         m.ChatID,
+		WeekStart:      m.WeekStart,
+		Timezone:       m.Timezone,
+		Slots:          slots,
+		RawMessage:     m.RawMessage,
+		CreatedAt:      m.CreatedAt,
+		ExpiresAt:      m.ExpiresAt,
 	}
 }
 

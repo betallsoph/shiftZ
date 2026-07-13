@@ -36,6 +36,7 @@ func (Employee) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("shop", Shop.Type).Ref("employees").Field("shop_id").Unique().Required(),
 		edge.To("availabilities", Availability.Type).Annotations(entsql.OnDelete(entsql.Cascade)),
+		edge.To("availability_drafts", AvailabilityDraft.Type).Annotations(entsql.OnDelete(entsql.Cascade)),
 		edge.To("assignments", ScheduleAssignment.Type).Annotations(entsql.OnDelete(entsql.Cascade)),
 		edge.To("votes", ScheduleVote.Type).Annotations(entsql.OnDelete(entsql.Cascade)),
 		edge.To("reminder_deliveries", ReminderDelivery.Type).Annotations(entsql.OnDelete(entsql.Cascade)),

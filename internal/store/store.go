@@ -53,8 +53,9 @@ type Store struct {
 	Shops        *ShopRepo
 	Employees    *EmployeeRepo
 	Shifts       *ShiftRepo
-	Availability *AvailabilityRepo
-	Schedules    *ScheduleRepo
+	Availability        *AvailabilityRepo
+	AvailabilityDrafts  *AvailabilityDraftRepo
+	Schedules           *ScheduleRepo
 	Rules        *RuleRepo
 	Votes        *VoteRepo
 	Reminders    *ReminderDeliveryRepo
@@ -91,8 +92,9 @@ func NewWithOptions(ctx context.Context, databaseURL string, debug bool, opts Op
 		Shops:        &ShopRepo{client: client},
 		Employees:    &EmployeeRepo{client: client},
 		Shifts:       &ShiftRepo{client: client},
-		Availability: &AvailabilityRepo{client: client},
-		Schedules:    &ScheduleRepo{client: client},
+		Availability:       &AvailabilityRepo{client: client},
+		AvailabilityDrafts: &AvailabilityDraftRepo{client: client, ttl: DefaultAvailabilityDraftTTL},
+		Schedules:          &ScheduleRepo{client: client},
 		Rules:        &RuleRepo{client: client},
 		Votes:        &VoteRepo{client: client},
 		Reminders:    &ReminderDeliveryRepo{client: client},
@@ -108,8 +110,9 @@ func NewWithClient(client *ent.Client) *Store {
 		Shops:        &ShopRepo{client: client},
 		Employees:    &EmployeeRepo{client: client},
 		Shifts:       &ShiftRepo{client: client},
-		Availability: &AvailabilityRepo{client: client},
-		Schedules:    &ScheduleRepo{client: client},
+		Availability:       &AvailabilityRepo{client: client},
+		AvailabilityDrafts: &AvailabilityDraftRepo{client: client, ttl: DefaultAvailabilityDraftTTL},
+		Schedules:          &ScheduleRepo{client: client},
 		Rules:        &RuleRepo{client: client},
 		Votes:        &VoteRepo{client: client},
 		Reminders:    &ReminderDeliveryRepo{client: client},

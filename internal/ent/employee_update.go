@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/betallsoph/shiftz/internal/ent/availability"
+	"github.com/betallsoph/shiftz/internal/ent/availabilitydraft"
 	"github.com/betallsoph/shiftz/internal/ent/employee"
 	"github.com/betallsoph/shiftz/internal/ent/predicate"
 	"github.com/betallsoph/shiftz/internal/ent/reminderdelivery"
@@ -151,6 +152,21 @@ func (_u *EmployeeUpdate) AddAvailabilities(v ...*Availability) *EmployeeUpdate 
 	return _u.AddAvailabilityIDs(ids...)
 }
 
+// AddAvailabilityDraftIDs adds the "availability_drafts" edge to the AvailabilityDraft entity by IDs.
+func (_u *EmployeeUpdate) AddAvailabilityDraftIDs(ids ...uuid.UUID) *EmployeeUpdate {
+	_u.mutation.AddAvailabilityDraftIDs(ids...)
+	return _u
+}
+
+// AddAvailabilityDrafts adds the "availability_drafts" edges to the AvailabilityDraft entity.
+func (_u *EmployeeUpdate) AddAvailabilityDrafts(v ...*AvailabilityDraft) *EmployeeUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddAvailabilityDraftIDs(ids...)
+}
+
 // AddAssignmentIDs adds the "assignments" edge to the ScheduleAssignment entity by IDs.
 func (_u *EmployeeUpdate) AddAssignmentIDs(ids ...uuid.UUID) *EmployeeUpdate {
 	_u.mutation.AddAssignmentIDs(ids...)
@@ -226,6 +242,27 @@ func (_u *EmployeeUpdate) RemoveAvailabilities(v ...*Availability) *EmployeeUpda
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveAvailabilityIDs(ids...)
+}
+
+// ClearAvailabilityDrafts clears all "availability_drafts" edges to the AvailabilityDraft entity.
+func (_u *EmployeeUpdate) ClearAvailabilityDrafts() *EmployeeUpdate {
+	_u.mutation.ClearAvailabilityDrafts()
+	return _u
+}
+
+// RemoveAvailabilityDraftIDs removes the "availability_drafts" edge to AvailabilityDraft entities by IDs.
+func (_u *EmployeeUpdate) RemoveAvailabilityDraftIDs(ids ...uuid.UUID) *EmployeeUpdate {
+	_u.mutation.RemoveAvailabilityDraftIDs(ids...)
+	return _u
+}
+
+// RemoveAvailabilityDrafts removes "availability_drafts" edges to AvailabilityDraft entities.
+func (_u *EmployeeUpdate) RemoveAvailabilityDrafts(v ...*AvailabilityDraft) *EmployeeUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveAvailabilityDraftIDs(ids...)
 }
 
 // ClearAssignments clears all "assignments" edges to the ScheduleAssignment entity.
@@ -426,6 +463,51 @@ func (_u *EmployeeUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(availability.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.AvailabilityDraftsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   employee.AvailabilityDraftsTable,
+			Columns: []string{employee.AvailabilityDraftsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(availabilitydraft.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedAvailabilityDraftsIDs(); len(nodes) > 0 && !_u.mutation.AvailabilityDraftsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   employee.AvailabilityDraftsTable,
+			Columns: []string{employee.AvailabilityDraftsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(availabilitydraft.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.AvailabilityDraftsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   employee.AvailabilityDraftsTable,
+			Columns: []string{employee.AvailabilityDraftsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(availabilitydraft.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -706,6 +788,21 @@ func (_u *EmployeeUpdateOne) AddAvailabilities(v ...*Availability) *EmployeeUpda
 	return _u.AddAvailabilityIDs(ids...)
 }
 
+// AddAvailabilityDraftIDs adds the "availability_drafts" edge to the AvailabilityDraft entity by IDs.
+func (_u *EmployeeUpdateOne) AddAvailabilityDraftIDs(ids ...uuid.UUID) *EmployeeUpdateOne {
+	_u.mutation.AddAvailabilityDraftIDs(ids...)
+	return _u
+}
+
+// AddAvailabilityDrafts adds the "availability_drafts" edges to the AvailabilityDraft entity.
+func (_u *EmployeeUpdateOne) AddAvailabilityDrafts(v ...*AvailabilityDraft) *EmployeeUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddAvailabilityDraftIDs(ids...)
+}
+
 // AddAssignmentIDs adds the "assignments" edge to the ScheduleAssignment entity by IDs.
 func (_u *EmployeeUpdateOne) AddAssignmentIDs(ids ...uuid.UUID) *EmployeeUpdateOne {
 	_u.mutation.AddAssignmentIDs(ids...)
@@ -781,6 +878,27 @@ func (_u *EmployeeUpdateOne) RemoveAvailabilities(v ...*Availability) *EmployeeU
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveAvailabilityIDs(ids...)
+}
+
+// ClearAvailabilityDrafts clears all "availability_drafts" edges to the AvailabilityDraft entity.
+func (_u *EmployeeUpdateOne) ClearAvailabilityDrafts() *EmployeeUpdateOne {
+	_u.mutation.ClearAvailabilityDrafts()
+	return _u
+}
+
+// RemoveAvailabilityDraftIDs removes the "availability_drafts" edge to AvailabilityDraft entities by IDs.
+func (_u *EmployeeUpdateOne) RemoveAvailabilityDraftIDs(ids ...uuid.UUID) *EmployeeUpdateOne {
+	_u.mutation.RemoveAvailabilityDraftIDs(ids...)
+	return _u
+}
+
+// RemoveAvailabilityDrafts removes "availability_drafts" edges to AvailabilityDraft entities.
+func (_u *EmployeeUpdateOne) RemoveAvailabilityDrafts(v ...*AvailabilityDraft) *EmployeeUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveAvailabilityDraftIDs(ids...)
 }
 
 // ClearAssignments clears all "assignments" edges to the ScheduleAssignment entity.
@@ -1011,6 +1129,51 @@ func (_u *EmployeeUpdateOne) sqlSave(ctx context.Context) (_node *Employee, err 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(availability.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.AvailabilityDraftsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   employee.AvailabilityDraftsTable,
+			Columns: []string{employee.AvailabilityDraftsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(availabilitydraft.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedAvailabilityDraftsIDs(); len(nodes) > 0 && !_u.mutation.AvailabilityDraftsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   employee.AvailabilityDraftsTable,
+			Columns: []string{employee.AvailabilityDraftsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(availabilitydraft.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.AvailabilityDraftsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   employee.AvailabilityDraftsTable,
+			Columns: []string{employee.AvailabilityDraftsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(availabilitydraft.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

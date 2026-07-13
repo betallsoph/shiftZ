@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/betallsoph/shiftz/internal/ent/availability"
+	"github.com/betallsoph/shiftz/internal/ent/availabilitydraft"
 	"github.com/betallsoph/shiftz/internal/ent/employee"
 	"github.com/betallsoph/shiftz/internal/ent/predicate"
 	"github.com/betallsoph/shiftz/internal/ent/reminderdelivery"
@@ -35,6 +36,7 @@ type ShopQuery struct {
 	withSchedules          *ScheduleQuery
 	withRules              *RuleQuery
 	withAvailabilities     *AvailabilityQuery
+	withAvailabilityDrafts *AvailabilityDraftQuery
 	withReminderDeliveries *ReminderDeliveryQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -175,6 +177,28 @@ func (_q *ShopQuery) QueryAvailabilities() *AvailabilityQuery {
 			sqlgraph.From(shop.Table, shop.FieldID, selector),
 			sqlgraph.To(availability.Table, availability.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, shop.AvailabilitiesTable, shop.AvailabilitiesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryAvailabilityDrafts chains the current query on the "availability_drafts" edge.
+func (_q *ShopQuery) QueryAvailabilityDrafts() *AvailabilityDraftQuery {
+	query := (&AvailabilityDraftClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(shop.Table, shop.FieldID, selector),
+			sqlgraph.To(availabilitydraft.Table, availabilitydraft.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, shop.AvailabilityDraftsTable, shop.AvailabilityDraftsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -401,6 +425,7 @@ func (_q *ShopQuery) Clone() *ShopQuery {
 		withSchedules:          _q.withSchedules.Clone(),
 		withRules:              _q.withRules.Clone(),
 		withAvailabilities:     _q.withAvailabilities.Clone(),
+		withAvailabilityDrafts: _q.withAvailabilityDrafts.Clone(),
 		withReminderDeliveries: _q.withReminderDeliveries.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
@@ -460,6 +485,17 @@ func (_q *ShopQuery) WithAvailabilities(opts ...func(*AvailabilityQuery)) *ShopQ
 		opt(query)
 	}
 	_q.withAvailabilities = query
+	return _q
+}
+
+// WithAvailabilityDrafts tells the query-builder to eager-load the nodes that are connected to
+// the "availability_drafts" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *ShopQuery) WithAvailabilityDrafts(opts ...func(*AvailabilityDraftQuery)) *ShopQuery {
+	query := (&AvailabilityDraftClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withAvailabilityDrafts = query
 	return _q
 }
 
@@ -552,12 +588,13 @@ func (_q *ShopQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Shop, e
 	var (
 		nodes       = []*Shop{}
 		_spec       = _q.querySpec()
-		loadedTypes = [6]bool{
+		loadedTypes = [7]bool{
 			_q.withEmployees != nil,
 			_q.withShifts != nil,
 			_q.withSchedules != nil,
 			_q.withRules != nil,
 			_q.withAvailabilities != nil,
+			_q.withAvailabilityDrafts != nil,
 			_q.withReminderDeliveries != nil,
 		}
 	)
@@ -611,6 +648,15 @@ func (_q *ShopQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Shop, e
 		if err := _q.loadAvailabilities(ctx, query, nodes,
 			func(n *Shop) { n.Edges.Availabilities = []*Availability{} },
 			func(n *Shop, e *Availability) { n.Edges.Availabilities = append(n.Edges.Availabilities, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withAvailabilityDrafts; query != nil {
+		if err := _q.loadAvailabilityDrafts(ctx, query, nodes,
+			func(n *Shop) { n.Edges.AvailabilityDrafts = []*AvailabilityDraft{} },
+			func(n *Shop, e *AvailabilityDraft) {
+				n.Edges.AvailabilityDrafts = append(n.Edges.AvailabilityDrafts, e)
+			}); err != nil {
 			return nil, err
 		}
 	}
@@ -759,6 +805,36 @@ func (_q *ShopQuery) loadAvailabilities(ctx context.Context, query *Availability
 	}
 	query.Where(predicate.Availability(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(shop.AvailabilitiesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.ShopID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "shop_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *ShopQuery) loadAvailabilityDrafts(ctx context.Context, query *AvailabilityDraftQuery, nodes []*Shop, init func(*Shop), assign func(*Shop, *AvailabilityDraft)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Shop)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(availabilitydraft.FieldShopID)
+	}
+	query.Where(predicate.AvailabilityDraft(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(shop.AvailabilityDraftsColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

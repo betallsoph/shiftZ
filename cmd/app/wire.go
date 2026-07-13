@@ -5,7 +5,6 @@ import (
 	"io/fs"
 	"log/slog"
 	"net/http"
-	"time"
 
 	"github.com/betallsoph/shiftz/internal/api"
 	"github.com/betallsoph/shiftz/internal/config"
@@ -31,7 +30,7 @@ func wire(ctx context.Context, cfg *config.Config, st *store.Store, log *slog.Lo
 
 	llmSvc := llm.NewService(newProvider(cfg, log))
 	tg := telegram.NewClient(cfg.TelegramToken)
-	drafts := telegram.NewMemoryAvailabilityDraftStore(30 * time.Minute)
+	drafts := telegram.NewStoreAvailabilityDraftStore(st.AvailabilityDrafts)
 	bot := telegram.NewBot(tg, llmSvc, st.Shops, st.Shops, st.Employees, st.Availability, st.Votes, drafts, log)
 	mux.Handle("POST /telegram/webhook", telegram.WebhookHandler(bot, cfg.TelegramWebhookSecret, log))
 

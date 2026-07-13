@@ -14,6 +14,8 @@ type Tx struct {
 	config
 	// Availability is the client for interacting with the Availability builders.
 	Availability *AvailabilityClient
+	// AvailabilityDraft is the client for interacting with the AvailabilityDraft builders.
+	AvailabilityDraft *AvailabilityDraftClient
 	// Employee is the client for interacting with the Employee builders.
 	Employee *EmployeeClient
 	// ReminderDelivery is the client for interacting with the ReminderDelivery builders.
@@ -162,6 +164,7 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.Availability = NewAvailabilityClient(tx.config)
+	tx.AvailabilityDraft = NewAvailabilityDraftClient(tx.config)
 	tx.Employee = NewEmployeeClient(tx.config)
 	tx.ReminderDelivery = NewReminderDeliveryClient(tx.config)
 	tx.Rule = NewRuleClient(tx.config)

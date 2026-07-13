@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/betallsoph/shiftz/internal/ent/availability"
+	"github.com/betallsoph/shiftz/internal/ent/availabilitydraft"
 	"github.com/betallsoph/shiftz/internal/ent/employee"
 	"github.com/betallsoph/shiftz/internal/ent/reminderdelivery"
 	"github.com/betallsoph/shiftz/internal/ent/rule"
@@ -82,6 +83,7 @@ func checkColumn(t, c string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
 			availability.Table:       availability.ValidColumn,
+			availabilitydraft.Table:  availabilitydraft.ValidColumn,
 			employee.Table:           employee.ValidColumn,
 			reminderdelivery.Table:   reminderdelivery.ValidColumn,
 			rule.Table:               rule.ValidColumn,

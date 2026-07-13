@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/betallsoph/shiftz/internal/ent/availability"
+	"github.com/betallsoph/shiftz/internal/ent/availabilitydraft"
 	"github.com/betallsoph/shiftz/internal/ent/employee"
 	"github.com/betallsoph/shiftz/internal/ent/predicate"
 	"github.com/betallsoph/shiftz/internal/ent/reminderdelivery"
@@ -35,6 +36,7 @@ const (
 
 	// Node types.
 	TypeAvailability       = "Availability"
+	TypeAvailabilityDraft  = "AvailabilityDraft"
 	TypeEmployee           = "Employee"
 	TypeReminderDelivery   = "ReminderDelivery"
 	TypeRule               = "Rule"
@@ -763,6 +765,1009 @@ func (m *AvailabilityMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown Availability edge %s", name)
 }
 
+// AvailabilityDraftMutation represents an operation that mutates the AvailabilityDraft nodes in the graph.
+type AvailabilityDraftMutation struct {
+	config
+	op                  Op
+	typ                 string
+	id                  *uuid.UUID
+	telegram_user_id    *int64
+	addtelegram_user_id *int64
+	chat_id             *int64
+	addchat_id          *int64
+	week_start          *time.Time
+	timezone            *string
+	slots               *[]schema.AvailabilitySlot
+	appendslots         []schema.AvailabilitySlot
+	raw_message         *string
+	created_at          *time.Time
+	expires_at          *time.Time
+	clearedFields       map[string]struct{}
+	shop                *uuid.UUID
+	clearedshop         bool
+	employee            *uuid.UUID
+	clearedemployee     bool
+	done                bool
+	oldValue            func(context.Context) (*AvailabilityDraft, error)
+	predicates          []predicate.AvailabilityDraft
+}
+
+var _ ent.Mutation = (*AvailabilityDraftMutation)(nil)
+
+// availabilitydraftOption allows management of the mutation configuration using functional options.
+type availabilitydraftOption func(*AvailabilityDraftMutation)
+
+// newAvailabilityDraftMutation creates new mutation for the AvailabilityDraft entity.
+func newAvailabilityDraftMutation(c config, op Op, opts ...availabilitydraftOption) *AvailabilityDraftMutation {
+	m := &AvailabilityDraftMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeAvailabilityDraft,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withAvailabilityDraftID sets the ID field of the mutation.
+func withAvailabilityDraftID(id uuid.UUID) availabilitydraftOption {
+	return func(m *AvailabilityDraftMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *AvailabilityDraft
+		)
+		m.oldValue = func(ctx context.Context) (*AvailabilityDraft, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().AvailabilityDraft.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withAvailabilityDraft sets the old AvailabilityDraft of the mutation.
+func withAvailabilityDraft(node *AvailabilityDraft) availabilitydraftOption {
+	return func(m *AvailabilityDraftMutation) {
+		m.oldValue = func(context.Context) (*AvailabilityDraft, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m AvailabilityDraftMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m AvailabilityDraftMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of AvailabilityDraft entities.
+func (m *AvailabilityDraftMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *AvailabilityDraftMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *AvailabilityDraftMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().AvailabilityDraft.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetShopID sets the "shop_id" field.
+func (m *AvailabilityDraftMutation) SetShopID(u uuid.UUID) {
+	m.shop = &u
+}
+
+// ShopID returns the value of the "shop_id" field in the mutation.
+func (m *AvailabilityDraftMutation) ShopID() (r uuid.UUID, exists bool) {
+	v := m.shop
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldShopID returns the old "shop_id" field's value of the AvailabilityDraft entity.
+// If the AvailabilityDraft object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AvailabilityDraftMutation) OldShopID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldShopID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldShopID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldShopID: %w", err)
+	}
+	return oldValue.ShopID, nil
+}
+
+// ResetShopID resets all changes to the "shop_id" field.
+func (m *AvailabilityDraftMutation) ResetShopID() {
+	m.shop = nil
+}
+
+// SetEmployeeID sets the "employee_id" field.
+func (m *AvailabilityDraftMutation) SetEmployeeID(u uuid.UUID) {
+	m.employee = &u
+}
+
+// EmployeeID returns the value of the "employee_id" field in the mutation.
+func (m *AvailabilityDraftMutation) EmployeeID() (r uuid.UUID, exists bool) {
+	v := m.employee
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEmployeeID returns the old "employee_id" field's value of the AvailabilityDraft entity.
+// If the AvailabilityDraft object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AvailabilityDraftMutation) OldEmployeeID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEmployeeID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEmployeeID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEmployeeID: %w", err)
+	}
+	return oldValue.EmployeeID, nil
+}
+
+// ResetEmployeeID resets all changes to the "employee_id" field.
+func (m *AvailabilityDraftMutation) ResetEmployeeID() {
+	m.employee = nil
+}
+
+// SetTelegramUserID sets the "telegram_user_id" field.
+func (m *AvailabilityDraftMutation) SetTelegramUserID(i int64) {
+	m.telegram_user_id = &i
+	m.addtelegram_user_id = nil
+}
+
+// TelegramUserID returns the value of the "telegram_user_id" field in the mutation.
+func (m *AvailabilityDraftMutation) TelegramUserID() (r int64, exists bool) {
+	v := m.telegram_user_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTelegramUserID returns the old "telegram_user_id" field's value of the AvailabilityDraft entity.
+// If the AvailabilityDraft object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AvailabilityDraftMutation) OldTelegramUserID(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTelegramUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTelegramUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTelegramUserID: %w", err)
+	}
+	return oldValue.TelegramUserID, nil
+}
+
+// AddTelegramUserID adds i to the "telegram_user_id" field.
+func (m *AvailabilityDraftMutation) AddTelegramUserID(i int64) {
+	if m.addtelegram_user_id != nil {
+		*m.addtelegram_user_id += i
+	} else {
+		m.addtelegram_user_id = &i
+	}
+}
+
+// AddedTelegramUserID returns the value that was added to the "telegram_user_id" field in this mutation.
+func (m *AvailabilityDraftMutation) AddedTelegramUserID() (r int64, exists bool) {
+	v := m.addtelegram_user_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetTelegramUserID resets all changes to the "telegram_user_id" field.
+func (m *AvailabilityDraftMutation) ResetTelegramUserID() {
+	m.telegram_user_id = nil
+	m.addtelegram_user_id = nil
+}
+
+// SetChatID sets the "chat_id" field.
+func (m *AvailabilityDraftMutation) SetChatID(i int64) {
+	m.chat_id = &i
+	m.addchat_id = nil
+}
+
+// ChatID returns the value of the "chat_id" field in the mutation.
+func (m *AvailabilityDraftMutation) ChatID() (r int64, exists bool) {
+	v := m.chat_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldChatID returns the old "chat_id" field's value of the AvailabilityDraft entity.
+// If the AvailabilityDraft object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AvailabilityDraftMutation) OldChatID(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldChatID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldChatID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldChatID: %w", err)
+	}
+	return oldValue.ChatID, nil
+}
+
+// AddChatID adds i to the "chat_id" field.
+func (m *AvailabilityDraftMutation) AddChatID(i int64) {
+	if m.addchat_id != nil {
+		*m.addchat_id += i
+	} else {
+		m.addchat_id = &i
+	}
+}
+
+// AddedChatID returns the value that was added to the "chat_id" field in this mutation.
+func (m *AvailabilityDraftMutation) AddedChatID() (r int64, exists bool) {
+	v := m.addchat_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetChatID resets all changes to the "chat_id" field.
+func (m *AvailabilityDraftMutation) ResetChatID() {
+	m.chat_id = nil
+	m.addchat_id = nil
+}
+
+// SetWeekStart sets the "week_start" field.
+func (m *AvailabilityDraftMutation) SetWeekStart(t time.Time) {
+	m.week_start = &t
+}
+
+// WeekStart returns the value of the "week_start" field in the mutation.
+func (m *AvailabilityDraftMutation) WeekStart() (r time.Time, exists bool) {
+	v := m.week_start
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWeekStart returns the old "week_start" field's value of the AvailabilityDraft entity.
+// If the AvailabilityDraft object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AvailabilityDraftMutation) OldWeekStart(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWeekStart is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWeekStart requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWeekStart: %w", err)
+	}
+	return oldValue.WeekStart, nil
+}
+
+// ResetWeekStart resets all changes to the "week_start" field.
+func (m *AvailabilityDraftMutation) ResetWeekStart() {
+	m.week_start = nil
+}
+
+// SetTimezone sets the "timezone" field.
+func (m *AvailabilityDraftMutation) SetTimezone(s string) {
+	m.timezone = &s
+}
+
+// Timezone returns the value of the "timezone" field in the mutation.
+func (m *AvailabilityDraftMutation) Timezone() (r string, exists bool) {
+	v := m.timezone
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTimezone returns the old "timezone" field's value of the AvailabilityDraft entity.
+// If the AvailabilityDraft object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AvailabilityDraftMutation) OldTimezone(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTimezone is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTimezone requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTimezone: %w", err)
+	}
+	return oldValue.Timezone, nil
+}
+
+// ResetTimezone resets all changes to the "timezone" field.
+func (m *AvailabilityDraftMutation) ResetTimezone() {
+	m.timezone = nil
+}
+
+// SetSlots sets the "slots" field.
+func (m *AvailabilityDraftMutation) SetSlots(ss []schema.AvailabilitySlot) {
+	m.slots = &ss
+	m.appendslots = nil
+}
+
+// Slots returns the value of the "slots" field in the mutation.
+func (m *AvailabilityDraftMutation) Slots() (r []schema.AvailabilitySlot, exists bool) {
+	v := m.slots
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSlots returns the old "slots" field's value of the AvailabilityDraft entity.
+// If the AvailabilityDraft object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AvailabilityDraftMutation) OldSlots(ctx context.Context) (v []schema.AvailabilitySlot, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSlots is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSlots requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSlots: %w", err)
+	}
+	return oldValue.Slots, nil
+}
+
+// AppendSlots adds ss to the "slots" field.
+func (m *AvailabilityDraftMutation) AppendSlots(ss []schema.AvailabilitySlot) {
+	m.appendslots = append(m.appendslots, ss...)
+}
+
+// AppendedSlots returns the list of values that were appended to the "slots" field in this mutation.
+func (m *AvailabilityDraftMutation) AppendedSlots() ([]schema.AvailabilitySlot, bool) {
+	if len(m.appendslots) == 0 {
+		return nil, false
+	}
+	return m.appendslots, true
+}
+
+// ResetSlots resets all changes to the "slots" field.
+func (m *AvailabilityDraftMutation) ResetSlots() {
+	m.slots = nil
+	m.appendslots = nil
+}
+
+// SetRawMessage sets the "raw_message" field.
+func (m *AvailabilityDraftMutation) SetRawMessage(s string) {
+	m.raw_message = &s
+}
+
+// RawMessage returns the value of the "raw_message" field in the mutation.
+func (m *AvailabilityDraftMutation) RawMessage() (r string, exists bool) {
+	v := m.raw_message
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRawMessage returns the old "raw_message" field's value of the AvailabilityDraft entity.
+// If the AvailabilityDraft object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AvailabilityDraftMutation) OldRawMessage(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRawMessage is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRawMessage requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRawMessage: %w", err)
+	}
+	return oldValue.RawMessage, nil
+}
+
+// ResetRawMessage resets all changes to the "raw_message" field.
+func (m *AvailabilityDraftMutation) ResetRawMessage() {
+	m.raw_message = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *AvailabilityDraftMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *AvailabilityDraftMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the AvailabilityDraft entity.
+// If the AvailabilityDraft object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AvailabilityDraftMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *AvailabilityDraftMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetExpiresAt sets the "expires_at" field.
+func (m *AvailabilityDraftMutation) SetExpiresAt(t time.Time) {
+	m.expires_at = &t
+}
+
+// ExpiresAt returns the value of the "expires_at" field in the mutation.
+func (m *AvailabilityDraftMutation) ExpiresAt() (r time.Time, exists bool) {
+	v := m.expires_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldExpiresAt returns the old "expires_at" field's value of the AvailabilityDraft entity.
+// If the AvailabilityDraft object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AvailabilityDraftMutation) OldExpiresAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldExpiresAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldExpiresAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldExpiresAt: %w", err)
+	}
+	return oldValue.ExpiresAt, nil
+}
+
+// ResetExpiresAt resets all changes to the "expires_at" field.
+func (m *AvailabilityDraftMutation) ResetExpiresAt() {
+	m.expires_at = nil
+}
+
+// ClearShop clears the "shop" edge to the Shop entity.
+func (m *AvailabilityDraftMutation) ClearShop() {
+	m.clearedshop = true
+	m.clearedFields[availabilitydraft.FieldShopID] = struct{}{}
+}
+
+// ShopCleared reports if the "shop" edge to the Shop entity was cleared.
+func (m *AvailabilityDraftMutation) ShopCleared() bool {
+	return m.clearedshop
+}
+
+// ShopIDs returns the "shop" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ShopID instead. It exists only for internal usage by the builders.
+func (m *AvailabilityDraftMutation) ShopIDs() (ids []uuid.UUID) {
+	if id := m.shop; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetShop resets all changes to the "shop" edge.
+func (m *AvailabilityDraftMutation) ResetShop() {
+	m.shop = nil
+	m.clearedshop = false
+}
+
+// ClearEmployee clears the "employee" edge to the Employee entity.
+func (m *AvailabilityDraftMutation) ClearEmployee() {
+	m.clearedemployee = true
+	m.clearedFields[availabilitydraft.FieldEmployeeID] = struct{}{}
+}
+
+// EmployeeCleared reports if the "employee" edge to the Employee entity was cleared.
+func (m *AvailabilityDraftMutation) EmployeeCleared() bool {
+	return m.clearedemployee
+}
+
+// EmployeeIDs returns the "employee" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// EmployeeID instead. It exists only for internal usage by the builders.
+func (m *AvailabilityDraftMutation) EmployeeIDs() (ids []uuid.UUID) {
+	if id := m.employee; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetEmployee resets all changes to the "employee" edge.
+func (m *AvailabilityDraftMutation) ResetEmployee() {
+	m.employee = nil
+	m.clearedemployee = false
+}
+
+// Where appends a list predicates to the AvailabilityDraftMutation builder.
+func (m *AvailabilityDraftMutation) Where(ps ...predicate.AvailabilityDraft) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the AvailabilityDraftMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *AvailabilityDraftMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.AvailabilityDraft, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *AvailabilityDraftMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *AvailabilityDraftMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (AvailabilityDraft).
+func (m *AvailabilityDraftMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *AvailabilityDraftMutation) Fields() []string {
+	fields := make([]string, 0, 10)
+	if m.shop != nil {
+		fields = append(fields, availabilitydraft.FieldShopID)
+	}
+	if m.employee != nil {
+		fields = append(fields, availabilitydraft.FieldEmployeeID)
+	}
+	if m.telegram_user_id != nil {
+		fields = append(fields, availabilitydraft.FieldTelegramUserID)
+	}
+	if m.chat_id != nil {
+		fields = append(fields, availabilitydraft.FieldChatID)
+	}
+	if m.week_start != nil {
+		fields = append(fields, availabilitydraft.FieldWeekStart)
+	}
+	if m.timezone != nil {
+		fields = append(fields, availabilitydraft.FieldTimezone)
+	}
+	if m.slots != nil {
+		fields = append(fields, availabilitydraft.FieldSlots)
+	}
+	if m.raw_message != nil {
+		fields = append(fields, availabilitydraft.FieldRawMessage)
+	}
+	if m.created_at != nil {
+		fields = append(fields, availabilitydraft.FieldCreatedAt)
+	}
+	if m.expires_at != nil {
+		fields = append(fields, availabilitydraft.FieldExpiresAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *AvailabilityDraftMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case availabilitydraft.FieldShopID:
+		return m.ShopID()
+	case availabilitydraft.FieldEmployeeID:
+		return m.EmployeeID()
+	case availabilitydraft.FieldTelegramUserID:
+		return m.TelegramUserID()
+	case availabilitydraft.FieldChatID:
+		return m.ChatID()
+	case availabilitydraft.FieldWeekStart:
+		return m.WeekStart()
+	case availabilitydraft.FieldTimezone:
+		return m.Timezone()
+	case availabilitydraft.FieldSlots:
+		return m.Slots()
+	case availabilitydraft.FieldRawMessage:
+		return m.RawMessage()
+	case availabilitydraft.FieldCreatedAt:
+		return m.CreatedAt()
+	case availabilitydraft.FieldExpiresAt:
+		return m.ExpiresAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *AvailabilityDraftMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case availabilitydraft.FieldShopID:
+		return m.OldShopID(ctx)
+	case availabilitydraft.FieldEmployeeID:
+		return m.OldEmployeeID(ctx)
+	case availabilitydraft.FieldTelegramUserID:
+		return m.OldTelegramUserID(ctx)
+	case availabilitydraft.FieldChatID:
+		return m.OldChatID(ctx)
+	case availabilitydraft.FieldWeekStart:
+		return m.OldWeekStart(ctx)
+	case availabilitydraft.FieldTimezone:
+		return m.OldTimezone(ctx)
+	case availabilitydraft.FieldSlots:
+		return m.OldSlots(ctx)
+	case availabilitydraft.FieldRawMessage:
+		return m.OldRawMessage(ctx)
+	case availabilitydraft.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case availabilitydraft.FieldExpiresAt:
+		return m.OldExpiresAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown AvailabilityDraft field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *AvailabilityDraftMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case availabilitydraft.FieldShopID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetShopID(v)
+		return nil
+	case availabilitydraft.FieldEmployeeID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEmployeeID(v)
+		return nil
+	case availabilitydraft.FieldTelegramUserID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTelegramUserID(v)
+		return nil
+	case availabilitydraft.FieldChatID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetChatID(v)
+		return nil
+	case availabilitydraft.FieldWeekStart:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWeekStart(v)
+		return nil
+	case availabilitydraft.FieldTimezone:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTimezone(v)
+		return nil
+	case availabilitydraft.FieldSlots:
+		v, ok := value.([]schema.AvailabilitySlot)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSlots(v)
+		return nil
+	case availabilitydraft.FieldRawMessage:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRawMessage(v)
+		return nil
+	case availabilitydraft.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case availabilitydraft.FieldExpiresAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetExpiresAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown AvailabilityDraft field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *AvailabilityDraftMutation) AddedFields() []string {
+	var fields []string
+	if m.addtelegram_user_id != nil {
+		fields = append(fields, availabilitydraft.FieldTelegramUserID)
+	}
+	if m.addchat_id != nil {
+		fields = append(fields, availabilitydraft.FieldChatID)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *AvailabilityDraftMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case availabilitydraft.FieldTelegramUserID:
+		return m.AddedTelegramUserID()
+	case availabilitydraft.FieldChatID:
+		return m.AddedChatID()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *AvailabilityDraftMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case availabilitydraft.FieldTelegramUserID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddTelegramUserID(v)
+		return nil
+	case availabilitydraft.FieldChatID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddChatID(v)
+		return nil
+	}
+	return fmt.Errorf("unknown AvailabilityDraft numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *AvailabilityDraftMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *AvailabilityDraftMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *AvailabilityDraftMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown AvailabilityDraft nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *AvailabilityDraftMutation) ResetField(name string) error {
+	switch name {
+	case availabilitydraft.FieldShopID:
+		m.ResetShopID()
+		return nil
+	case availabilitydraft.FieldEmployeeID:
+		m.ResetEmployeeID()
+		return nil
+	case availabilitydraft.FieldTelegramUserID:
+		m.ResetTelegramUserID()
+		return nil
+	case availabilitydraft.FieldChatID:
+		m.ResetChatID()
+		return nil
+	case availabilitydraft.FieldWeekStart:
+		m.ResetWeekStart()
+		return nil
+	case availabilitydraft.FieldTimezone:
+		m.ResetTimezone()
+		return nil
+	case availabilitydraft.FieldSlots:
+		m.ResetSlots()
+		return nil
+	case availabilitydraft.FieldRawMessage:
+		m.ResetRawMessage()
+		return nil
+	case availabilitydraft.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case availabilitydraft.FieldExpiresAt:
+		m.ResetExpiresAt()
+		return nil
+	}
+	return fmt.Errorf("unknown AvailabilityDraft field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *AvailabilityDraftMutation) AddedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.shop != nil {
+		edges = append(edges, availabilitydraft.EdgeShop)
+	}
+	if m.employee != nil {
+		edges = append(edges, availabilitydraft.EdgeEmployee)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *AvailabilityDraftMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case availabilitydraft.EdgeShop:
+		if id := m.shop; id != nil {
+			return []ent.Value{*id}
+		}
+	case availabilitydraft.EdgeEmployee:
+		if id := m.employee; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *AvailabilityDraftMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 2)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *AvailabilityDraftMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *AvailabilityDraftMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.clearedshop {
+		edges = append(edges, availabilitydraft.EdgeShop)
+	}
+	if m.clearedemployee {
+		edges = append(edges, availabilitydraft.EdgeEmployee)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *AvailabilityDraftMutation) EdgeCleared(name string) bool {
+	switch name {
+	case availabilitydraft.EdgeShop:
+		return m.clearedshop
+	case availabilitydraft.EdgeEmployee:
+		return m.clearedemployee
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *AvailabilityDraftMutation) ClearEdge(name string) error {
+	switch name {
+	case availabilitydraft.EdgeShop:
+		m.ClearShop()
+		return nil
+	case availabilitydraft.EdgeEmployee:
+		m.ClearEmployee()
+		return nil
+	}
+	return fmt.Errorf("unknown AvailabilityDraft unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *AvailabilityDraftMutation) ResetEdge(name string) error {
+	switch name {
+	case availabilitydraft.EdgeShop:
+		m.ResetShop()
+		return nil
+	case availabilitydraft.EdgeEmployee:
+		m.ResetEmployee()
+		return nil
+	}
+	return fmt.Errorf("unknown AvailabilityDraft edge %s", name)
+}
+
 // EmployeeMutation represents an operation that mutates the Employee nodes in the graph.
 type EmployeeMutation struct {
 	config
@@ -783,6 +1788,9 @@ type EmployeeMutation struct {
 	availabilities             map[uuid.UUID]struct{}
 	removedavailabilities      map[uuid.UUID]struct{}
 	clearedavailabilities      bool
+	availability_drafts        map[uuid.UUID]struct{}
+	removedavailability_drafts map[uuid.UUID]struct{}
+	clearedavailability_drafts bool
 	assignments                map[uuid.UUID]struct{}
 	removedassignments         map[uuid.UUID]struct{}
 	clearedassignments         bool
@@ -1274,6 +2282,60 @@ func (m *EmployeeMutation) ResetAvailabilities() {
 	m.removedavailabilities = nil
 }
 
+// AddAvailabilityDraftIDs adds the "availability_drafts" edge to the AvailabilityDraft entity by ids.
+func (m *EmployeeMutation) AddAvailabilityDraftIDs(ids ...uuid.UUID) {
+	if m.availability_drafts == nil {
+		m.availability_drafts = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.availability_drafts[ids[i]] = struct{}{}
+	}
+}
+
+// ClearAvailabilityDrafts clears the "availability_drafts" edge to the AvailabilityDraft entity.
+func (m *EmployeeMutation) ClearAvailabilityDrafts() {
+	m.clearedavailability_drafts = true
+}
+
+// AvailabilityDraftsCleared reports if the "availability_drafts" edge to the AvailabilityDraft entity was cleared.
+func (m *EmployeeMutation) AvailabilityDraftsCleared() bool {
+	return m.clearedavailability_drafts
+}
+
+// RemoveAvailabilityDraftIDs removes the "availability_drafts" edge to the AvailabilityDraft entity by IDs.
+func (m *EmployeeMutation) RemoveAvailabilityDraftIDs(ids ...uuid.UUID) {
+	if m.removedavailability_drafts == nil {
+		m.removedavailability_drafts = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.availability_drafts, ids[i])
+		m.removedavailability_drafts[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedAvailabilityDrafts returns the removed IDs of the "availability_drafts" edge to the AvailabilityDraft entity.
+func (m *EmployeeMutation) RemovedAvailabilityDraftsIDs() (ids []uuid.UUID) {
+	for id := range m.removedavailability_drafts {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// AvailabilityDraftsIDs returns the "availability_drafts" edge IDs in the mutation.
+func (m *EmployeeMutation) AvailabilityDraftsIDs() (ids []uuid.UUID) {
+	for id := range m.availability_drafts {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetAvailabilityDrafts resets all changes to the "availability_drafts" edge.
+func (m *EmployeeMutation) ResetAvailabilityDrafts() {
+	m.availability_drafts = nil
+	m.clearedavailability_drafts = false
+	m.removedavailability_drafts = nil
+}
+
 // AddAssignmentIDs adds the "assignments" edge to the ScheduleAssignment entity by ids.
 func (m *EmployeeMutation) AddAssignmentIDs(ids ...uuid.UUID) {
 	if m.assignments == nil {
@@ -1698,12 +2760,15 @@ func (m *EmployeeMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *EmployeeMutation) AddedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m.shop != nil {
 		edges = append(edges, employee.EdgeShop)
 	}
 	if m.availabilities != nil {
 		edges = append(edges, employee.EdgeAvailabilities)
+	}
+	if m.availability_drafts != nil {
+		edges = append(edges, employee.EdgeAvailabilityDrafts)
 	}
 	if m.assignments != nil {
 		edges = append(edges, employee.EdgeAssignments)
@@ -1731,6 +2796,12 @@ func (m *EmployeeMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case employee.EdgeAvailabilityDrafts:
+		ids := make([]ent.Value, 0, len(m.availability_drafts))
+		for id := range m.availability_drafts {
+			ids = append(ids, id)
+		}
+		return ids
 	case employee.EdgeAssignments:
 		ids := make([]ent.Value, 0, len(m.assignments))
 		for id := range m.assignments {
@@ -1755,9 +2826,12 @@ func (m *EmployeeMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *EmployeeMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m.removedavailabilities != nil {
 		edges = append(edges, employee.EdgeAvailabilities)
+	}
+	if m.removedavailability_drafts != nil {
+		edges = append(edges, employee.EdgeAvailabilityDrafts)
 	}
 	if m.removedassignments != nil {
 		edges = append(edges, employee.EdgeAssignments)
@@ -1778,6 +2852,12 @@ func (m *EmployeeMutation) RemovedIDs(name string) []ent.Value {
 	case employee.EdgeAvailabilities:
 		ids := make([]ent.Value, 0, len(m.removedavailabilities))
 		for id := range m.removedavailabilities {
+			ids = append(ids, id)
+		}
+		return ids
+	case employee.EdgeAvailabilityDrafts:
+		ids := make([]ent.Value, 0, len(m.removedavailability_drafts))
+		for id := range m.removedavailability_drafts {
 			ids = append(ids, id)
 		}
 		return ids
@@ -1805,12 +2885,15 @@ func (m *EmployeeMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *EmployeeMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m.clearedshop {
 		edges = append(edges, employee.EdgeShop)
 	}
 	if m.clearedavailabilities {
 		edges = append(edges, employee.EdgeAvailabilities)
+	}
+	if m.clearedavailability_drafts {
+		edges = append(edges, employee.EdgeAvailabilityDrafts)
 	}
 	if m.clearedassignments {
 		edges = append(edges, employee.EdgeAssignments)
@@ -1832,6 +2915,8 @@ func (m *EmployeeMutation) EdgeCleared(name string) bool {
 		return m.clearedshop
 	case employee.EdgeAvailabilities:
 		return m.clearedavailabilities
+	case employee.EdgeAvailabilityDrafts:
+		return m.clearedavailability_drafts
 	case employee.EdgeAssignments:
 		return m.clearedassignments
 	case employee.EdgeVotes:
@@ -1862,6 +2947,9 @@ func (m *EmployeeMutation) ResetEdge(name string) error {
 		return nil
 	case employee.EdgeAvailabilities:
 		m.ResetAvailabilities()
+		return nil
+	case employee.EdgeAvailabilityDrafts:
+		m.ResetAvailabilityDrafts()
 		return nil
 	case employee.EdgeAssignments:
 		m.ResetAssignments()
@@ -6808,6 +7896,9 @@ type ShopMutation struct {
 	availabilities                 map[uuid.UUID]struct{}
 	removedavailabilities          map[uuid.UUID]struct{}
 	clearedavailabilities          bool
+	availability_drafts            map[uuid.UUID]struct{}
+	removedavailability_drafts     map[uuid.UUID]struct{}
+	clearedavailability_drafts     bool
 	reminder_deliveries            map[uuid.UUID]struct{}
 	removedreminder_deliveries     map[uuid.UUID]struct{}
 	clearedreminder_deliveries     bool
@@ -7573,6 +8664,60 @@ func (m *ShopMutation) ResetAvailabilities() {
 	m.removedavailabilities = nil
 }
 
+// AddAvailabilityDraftIDs adds the "availability_drafts" edge to the AvailabilityDraft entity by ids.
+func (m *ShopMutation) AddAvailabilityDraftIDs(ids ...uuid.UUID) {
+	if m.availability_drafts == nil {
+		m.availability_drafts = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.availability_drafts[ids[i]] = struct{}{}
+	}
+}
+
+// ClearAvailabilityDrafts clears the "availability_drafts" edge to the AvailabilityDraft entity.
+func (m *ShopMutation) ClearAvailabilityDrafts() {
+	m.clearedavailability_drafts = true
+}
+
+// AvailabilityDraftsCleared reports if the "availability_drafts" edge to the AvailabilityDraft entity was cleared.
+func (m *ShopMutation) AvailabilityDraftsCleared() bool {
+	return m.clearedavailability_drafts
+}
+
+// RemoveAvailabilityDraftIDs removes the "availability_drafts" edge to the AvailabilityDraft entity by IDs.
+func (m *ShopMutation) RemoveAvailabilityDraftIDs(ids ...uuid.UUID) {
+	if m.removedavailability_drafts == nil {
+		m.removedavailability_drafts = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.availability_drafts, ids[i])
+		m.removedavailability_drafts[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedAvailabilityDrafts returns the removed IDs of the "availability_drafts" edge to the AvailabilityDraft entity.
+func (m *ShopMutation) RemovedAvailabilityDraftsIDs() (ids []uuid.UUID) {
+	for id := range m.removedavailability_drafts {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// AvailabilityDraftsIDs returns the "availability_drafts" edge IDs in the mutation.
+func (m *ShopMutation) AvailabilityDraftsIDs() (ids []uuid.UUID) {
+	for id := range m.availability_drafts {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetAvailabilityDrafts resets all changes to the "availability_drafts" edge.
+func (m *ShopMutation) ResetAvailabilityDrafts() {
+	m.availability_drafts = nil
+	m.clearedavailability_drafts = false
+	m.removedavailability_drafts = nil
+}
+
 // AddReminderDeliveryIDs adds the "reminder_deliveries" edge to the ReminderDelivery entity by ids.
 func (m *ShopMutation) AddReminderDeliveryIDs(ids ...uuid.UUID) {
 	if m.reminder_deliveries == nil {
@@ -7932,7 +9077,7 @@ func (m *ShopMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ShopMutation) AddedEdges() []string {
-	edges := make([]string, 0, 6)
+	edges := make([]string, 0, 7)
 	if m.employees != nil {
 		edges = append(edges, shop.EdgeEmployees)
 	}
@@ -7947,6 +9092,9 @@ func (m *ShopMutation) AddedEdges() []string {
 	}
 	if m.availabilities != nil {
 		edges = append(edges, shop.EdgeAvailabilities)
+	}
+	if m.availability_drafts != nil {
+		edges = append(edges, shop.EdgeAvailabilityDrafts)
 	}
 	if m.reminder_deliveries != nil {
 		edges = append(edges, shop.EdgeReminderDeliveries)
@@ -7988,6 +9136,12 @@ func (m *ShopMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case shop.EdgeAvailabilityDrafts:
+		ids := make([]ent.Value, 0, len(m.availability_drafts))
+		for id := range m.availability_drafts {
+			ids = append(ids, id)
+		}
+		return ids
 	case shop.EdgeReminderDeliveries:
 		ids := make([]ent.Value, 0, len(m.reminder_deliveries))
 		for id := range m.reminder_deliveries {
@@ -8000,7 +9154,7 @@ func (m *ShopMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ShopMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 6)
+	edges := make([]string, 0, 7)
 	if m.removedemployees != nil {
 		edges = append(edges, shop.EdgeEmployees)
 	}
@@ -8015,6 +9169,9 @@ func (m *ShopMutation) RemovedEdges() []string {
 	}
 	if m.removedavailabilities != nil {
 		edges = append(edges, shop.EdgeAvailabilities)
+	}
+	if m.removedavailability_drafts != nil {
+		edges = append(edges, shop.EdgeAvailabilityDrafts)
 	}
 	if m.removedreminder_deliveries != nil {
 		edges = append(edges, shop.EdgeReminderDeliveries)
@@ -8056,6 +9213,12 @@ func (m *ShopMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case shop.EdgeAvailabilityDrafts:
+		ids := make([]ent.Value, 0, len(m.removedavailability_drafts))
+		for id := range m.removedavailability_drafts {
+			ids = append(ids, id)
+		}
+		return ids
 	case shop.EdgeReminderDeliveries:
 		ids := make([]ent.Value, 0, len(m.removedreminder_deliveries))
 		for id := range m.removedreminder_deliveries {
@@ -8068,7 +9231,7 @@ func (m *ShopMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ShopMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 6)
+	edges := make([]string, 0, 7)
 	if m.clearedemployees {
 		edges = append(edges, shop.EdgeEmployees)
 	}
@@ -8083,6 +9246,9 @@ func (m *ShopMutation) ClearedEdges() []string {
 	}
 	if m.clearedavailabilities {
 		edges = append(edges, shop.EdgeAvailabilities)
+	}
+	if m.clearedavailability_drafts {
+		edges = append(edges, shop.EdgeAvailabilityDrafts)
 	}
 	if m.clearedreminder_deliveries {
 		edges = append(edges, shop.EdgeReminderDeliveries)
@@ -8104,6 +9270,8 @@ func (m *ShopMutation) EdgeCleared(name string) bool {
 		return m.clearedrules
 	case shop.EdgeAvailabilities:
 		return m.clearedavailabilities
+	case shop.EdgeAvailabilityDrafts:
+		return m.clearedavailability_drafts
 	case shop.EdgeReminderDeliveries:
 		return m.clearedreminder_deliveries
 	}
@@ -8136,6 +9304,9 @@ func (m *ShopMutation) ResetEdge(name string) error {
 		return nil
 	case shop.EdgeAvailabilities:
 		m.ResetAvailabilities()
+		return nil
+	case shop.EdgeAvailabilityDrafts:
+		m.ResetAvailabilityDrafts()
 		return nil
 	case shop.EdgeReminderDeliveries:
 		m.ResetReminderDeliveries()
