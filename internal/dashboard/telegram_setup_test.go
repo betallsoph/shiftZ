@@ -104,6 +104,7 @@ func newTelegramTestServer(t *testing.T, fakeTG *fakeShopTelegram) (*Server, *ht
 		shops:         &fakeShops{shop: &store.Shop{ID: shopID, Name: "Cafe", Timezone: "UTC"}},
 		shopAuth:      &noopShopAuth{},
 		shopTelegram:  fakeTG,
+		shifts:        &fakeShifts{},
 		schedules:     &fakeSchedules{},
 		employees:     &fakeEmployees{},
 		availability:  &fakeAvailabilityRepo{},

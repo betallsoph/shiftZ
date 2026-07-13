@@ -89,6 +89,11 @@ func MaxStaff(v int) predicate.Shift {
 	return predicate.Shift(sql.FieldEQ(FieldMaxStaff, v))
 }
 
+// IsActive applies equality check predicate on the "is_active" field. It's identical to IsActiveEQ.
+func IsActive(v bool) predicate.Shift {
+	return predicate.Shift(sql.FieldEQ(FieldIsActive, v))
+}
+
 // ShopIDEQ applies the EQ predicate on the "shop_id" field.
 func ShopIDEQ(v uuid.UUID) predicate.Shift {
 	return predicate.Shift(sql.FieldEQ(FieldShopID, v))
@@ -422,6 +427,16 @@ func MaxStaffLT(v int) predicate.Shift {
 // MaxStaffLTE applies the LTE predicate on the "max_staff" field.
 func MaxStaffLTE(v int) predicate.Shift {
 	return predicate.Shift(sql.FieldLTE(FieldMaxStaff, v))
+}
+
+// IsActiveEQ applies the EQ predicate on the "is_active" field.
+func IsActiveEQ(v bool) predicate.Shift {
+	return predicate.Shift(sql.FieldEQ(FieldIsActive, v))
+}
+
+// IsActiveNEQ applies the NEQ predicate on the "is_active" field.
+func IsActiveNEQ(v bool) predicate.Shift {
+	return predicate.Shift(sql.FieldNEQ(FieldIsActive, v))
 }
 
 // HasShop applies the HasEdge predicate on the "shop" edge.

@@ -245,6 +245,7 @@ func testDashboard(t *testing.T, shops shopReader, schedules scheduleRepo, emplo
 		shops:         shops,
 		shopAuth:      &noopShopAuth{},
 		shopTelegram:  &fakeShopTelegram{},
+		shifts:        &fakeShifts{},
 		schedules:     schedules,
 		employees:     employees,
 		availability:  availability,

@@ -83,6 +83,20 @@ func (_c *ShiftCreate) SetNillableMaxStaff(v *int) *ShiftCreate {
 	return _c
 }
 
+// SetIsActive sets the "is_active" field.
+func (_c *ShiftCreate) SetIsActive(v bool) *ShiftCreate {
+	_c.mutation.SetIsActive(v)
+	return _c
+}
+
+// SetNillableIsActive sets the "is_active" field if the given value is not nil.
+func (_c *ShiftCreate) SetNillableIsActive(v *bool) *ShiftCreate {
+	if v != nil {
+		_c.SetIsActive(*v)
+	}
+	return _c
+}
+
 // SetID sets the "id" field.
 func (_c *ShiftCreate) SetID(v uuid.UUID) *ShiftCreate {
 	_c.mutation.SetID(v)
@@ -162,6 +176,10 @@ func (_c *ShiftCreate) defaults() error {
 		v := shift.DefaultMaxStaff
 		_c.mutation.SetMaxStaff(v)
 	}
+	if _, ok := _c.mutation.IsActive(); !ok {
+		v := shift.DefaultIsActive
+		_c.mutation.SetIsActive(v)
+	}
 	if _, ok := _c.mutation.ID(); !ok {
 		if shift.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized shift.DefaultID (forgotten import ent/runtime?)")
@@ -219,6 +237,9 @@ func (_c *ShiftCreate) check() error {
 		if err := shift.MaxStaffValidator(v); err != nil {
 			return &ValidationError{Name: "max_staff", err: fmt.Errorf(`ent: validator failed for field "Shift.max_staff": %w`, err)}
 		}
+	}
+	if _, ok := _c.mutation.IsActive(); !ok {
+		return &ValidationError{Name: "is_active", err: errors.New(`ent: missing required field "Shift.is_active"`)}
 	}
 	if len(_c.mutation.ShopIDs()) == 0 {
 		return &ValidationError{Name: "shop", err: errors.New(`ent: missing required edge "Shift.shop"`)}
@@ -282,6 +303,10 @@ func (_c *ShiftCreate) createSpec() (*Shift, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.MaxStaff(); ok {
 		_spec.SetField(shift.FieldMaxStaff, field.TypeInt, value)
 		_node.MaxStaff = value
+	}
+	if value, ok := _c.mutation.IsActive(); ok {
+		_spec.SetField(shift.FieldIsActive, field.TypeBool, value)
+		_node.IsActive = value
 	}
 	if nodes := _c.mutation.ShopIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -470,6 +495,18 @@ func (u *ShiftUpsert) AddMaxStaff(v int) *ShiftUpsert {
 	return u
 }
 
+// SetIsActive sets the "is_active" field.
+func (u *ShiftUpsert) SetIsActive(v bool) *ShiftUpsert {
+	u.Set(shift.FieldIsActive, v)
+	return u
+}
+
+// UpdateIsActive sets the "is_active" field to the value that was provided on create.
+func (u *ShiftUpsert) UpdateIsActive() *ShiftUpsert {
+	u.SetExcluded(shift.FieldIsActive)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -634,6 +671,20 @@ func (u *ShiftUpsertOne) AddMaxStaff(v int) *ShiftUpsertOne {
 func (u *ShiftUpsertOne) UpdateMaxStaff() *ShiftUpsertOne {
 	return u.Update(func(s *ShiftUpsert) {
 		s.UpdateMaxStaff()
+	})
+}
+
+// SetIsActive sets the "is_active" field.
+func (u *ShiftUpsertOne) SetIsActive(v bool) *ShiftUpsertOne {
+	return u.Update(func(s *ShiftUpsert) {
+		s.SetIsActive(v)
+	})
+}
+
+// UpdateIsActive sets the "is_active" field to the value that was provided on create.
+func (u *ShiftUpsertOne) UpdateIsActive() *ShiftUpsertOne {
+	return u.Update(func(s *ShiftUpsert) {
+		s.UpdateIsActive()
 	})
 }
 
@@ -968,6 +1019,20 @@ func (u *ShiftUpsertBulk) AddMaxStaff(v int) *ShiftUpsertBulk {
 func (u *ShiftUpsertBulk) UpdateMaxStaff() *ShiftUpsertBulk {
 	return u.Update(func(s *ShiftUpsert) {
 		s.UpdateMaxStaff()
+	})
+}
+
+// SetIsActive sets the "is_active" field.
+func (u *ShiftUpsertBulk) SetIsActive(v bool) *ShiftUpsertBulk {
+	return u.Update(func(s *ShiftUpsert) {
+		s.SetIsActive(v)
+	})
+}
+
+// UpdateIsActive sets the "is_active" field to the value that was provided on create.
+func (u *ShiftUpsertBulk) UpdateIsActive() *ShiftUpsertBulk {
+	return u.Update(func(s *ShiftUpsert) {
+		s.UpdateIsActive()
 	})
 }
 

@@ -32,6 +32,8 @@ type Shift struct {
 	MinStaff int `json:"min_staff,omitempty"`
 	// MaxStaff holds the value of the "max_staff" field.
 	MaxStaff int `json:"max_staff,omitempty"`
+	// IsActive holds the value of the "is_active" field.
+	IsActive bool `json:"is_active,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ShiftQuery when eager-loading is set.
 	Edges        ShiftEdges `json:"edges"`
@@ -74,6 +76,8 @@ func (*Shift) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case shift.FieldIsActive:
+			values[i] = new(sql.NullBool)
 		case shift.FieldWeekday, shift.FieldMinStaff, shift.FieldMaxStaff:
 			values[i] = new(sql.NullInt64)
 		case shift.FieldName, shift.FieldStartTime, shift.FieldEndTime:
@@ -143,6 +147,12 @@ func (_m *Shift) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.MaxStaff = int(value.Int64)
 			}
+		case shift.FieldIsActive:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field is_active", values[i])
+			} else if value.Valid {
+				_m.IsActive = value.Bool
+			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -209,6 +219,9 @@ func (_m *Shift) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("max_staff=")
 	builder.WriteString(fmt.Sprintf("%v", _m.MaxStaff))
+	builder.WriteString(", ")
+	builder.WriteString("is_active=")
+	builder.WriteString(fmt.Sprintf("%v", _m.IsActive))
 	builder.WriteByte(')')
 	return builder.String()
 }

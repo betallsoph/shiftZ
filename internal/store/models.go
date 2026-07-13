@@ -43,6 +43,7 @@ type Shift struct {
 	EndTime   string
 	MinStaff  int
 	MaxStaff  int
+	IsActive  bool
 }
 
 // AvailabilitySlot is one parsed span of (un)availability inside a weekly
@@ -162,6 +163,7 @@ func shiftFromEnt(m *ent.Shift) *Shift {
 		EndTime:   m.EndTime,
 		MinStaff:  m.MinStaff,
 		MaxStaff:  m.MaxStaff,
+		IsActive:  m.IsActive,
 	}
 }
 

@@ -29,6 +29,7 @@ func (s *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
 		Today:    time.Now().Format(dateLayout),
 		ShopName: shop.Name,
 		Telegram: buildTelegramSetupView(shop, "", time.Time{}, time.Now()),
+		Shifts:   s.loadShiftsPanelView(r.Context(), sess.ShopID),
 	}); err != nil {
 		s.log.Error("render page", "err", err)
 		http.Error(w, "template error", http.StatusInternalServerError)

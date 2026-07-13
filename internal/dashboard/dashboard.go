@@ -39,6 +39,7 @@ type Server struct {
 	shops         shopReader
 	shopAuth      shopAuthenticator
 	shopTelegram  shopTelegramSetup
+	shifts        shiftRepo
 	schedules     scheduleRepo
 	employees     employeeLister
 	availability  availabilityLister
@@ -63,6 +64,7 @@ func New(st *store.Store, sessions *SessionManager, onboard shopOnboarder, signu
 		shops:         st.Shops,
 		shopAuth:      st.Shops,
 		shopTelegram:  st.Shops,
+		shifts:        st.Shifts,
 		schedules:     st.Schedules,
 		employees:     st.Employees,
 		availability:  st.Availability,
@@ -87,6 +89,9 @@ func (s *Server) Register(mux *http.ServeMux) {
 	mux.HandleFunc("POST /dashboard/generate", s.handleGenerate)
 	mux.HandleFunc("POST /dashboard/schedules/{id}/approve", s.handleApprove)
 	mux.HandleFunc("POST /dashboard/telegram/setup-code", s.handleRotateTelegramSetupCode)
+	mux.HandleFunc("POST /dashboard/shifts", s.handleCreateShift)
+	mux.HandleFunc("POST /dashboard/shifts/{id}/activate", s.handleActivateShift)
+	mux.HandleFunc("POST /dashboard/shifts/{id}/deactivate", s.handleDeactivateShift)
 }
 
 type templateSet struct {

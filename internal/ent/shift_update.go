@@ -149,6 +149,20 @@ func (_u *ShiftUpdate) AddMaxStaff(v int) *ShiftUpdate {
 	return _u
 }
 
+// SetIsActive sets the "is_active" field.
+func (_u *ShiftUpdate) SetIsActive(v bool) *ShiftUpdate {
+	_u.mutation.SetIsActive(v)
+	return _u
+}
+
+// SetNillableIsActive sets the "is_active" field if the given value is not nil.
+func (_u *ShiftUpdate) SetNillableIsActive(v *bool) *ShiftUpdate {
+	if v != nil {
+		_u.SetIsActive(*v)
+	}
+	return _u
+}
+
 // SetShop sets the "shop" edge to the Shop entity.
 func (_u *ShiftUpdate) SetShop(v *Shop) *ShiftUpdate {
 	return _u.SetShopID(v.ID)
@@ -299,6 +313,9 @@ func (_u *ShiftUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.AddedMaxStaff(); ok {
 		_spec.AddField(shift.FieldMaxStaff, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.IsActive(); ok {
+		_spec.SetField(shift.FieldIsActive, field.TypeBool, value)
 	}
 	if _u.mutation.ShopCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -513,6 +530,20 @@ func (_u *ShiftUpdateOne) AddMaxStaff(v int) *ShiftUpdateOne {
 	return _u
 }
 
+// SetIsActive sets the "is_active" field.
+func (_u *ShiftUpdateOne) SetIsActive(v bool) *ShiftUpdateOne {
+	_u.mutation.SetIsActive(v)
+	return _u
+}
+
+// SetNillableIsActive sets the "is_active" field if the given value is not nil.
+func (_u *ShiftUpdateOne) SetNillableIsActive(v *bool) *ShiftUpdateOne {
+	if v != nil {
+		_u.SetIsActive(*v)
+	}
+	return _u
+}
+
 // SetShop sets the "shop" edge to the Shop entity.
 func (_u *ShiftUpdateOne) SetShop(v *Shop) *ShiftUpdateOne {
 	return _u.SetShopID(v.ID)
@@ -693,6 +724,9 @@ func (_u *ShiftUpdateOne) sqlSave(ctx context.Context) (_node *Shift, err error)
 	}
 	if value, ok := _u.mutation.AddedMaxStaff(); ok {
 		_spec.AddField(shift.FieldMaxStaff, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.IsActive(); ok {
+		_spec.SetField(shift.FieldIsActive, field.TypeBool, value)
 	}
 	if _u.mutation.ShopCleared() {
 		edge := &sqlgraph.EdgeSpec{

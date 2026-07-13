@@ -28,6 +28,8 @@ const (
 	FieldMinStaff = "min_staff"
 	// FieldMaxStaff holds the string denoting the max_staff field in the database.
 	FieldMaxStaff = "max_staff"
+	// FieldIsActive holds the string denoting the is_active field in the database.
+	FieldIsActive = "is_active"
 	// EdgeShop holds the string denoting the shop edge name in mutations.
 	EdgeShop = "shop"
 	// EdgeAssignments holds the string denoting the assignments edge name in mutations.
@@ -60,6 +62,7 @@ var Columns = []string{
 	FieldEndTime,
 	FieldMinStaff,
 	FieldMaxStaff,
+	FieldIsActive,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -93,6 +96,8 @@ var (
 	DefaultMaxStaff int
 	// MaxStaffValidator is a validator for the "max_staff" field. It is called by the builders before save.
 	MaxStaffValidator func(int) error
+	// DefaultIsActive holds the default value on creation for the "is_active" field.
+	DefaultIsActive bool
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -138,6 +143,11 @@ func ByMinStaff(opts ...sql.OrderTermOption) OrderOption {
 // ByMaxStaff orders the results by the max_staff field.
 func ByMaxStaff(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldMaxStaff, opts...).ToFunc()
+}
+
+// ByIsActive orders the results by the is_active field.
+func ByIsActive(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldIsActive, opts...).ToFunc()
 }
 
 // ByShopField orders the results by shop field.

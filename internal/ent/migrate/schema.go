@@ -313,6 +313,7 @@ var (
 		{Name: "end_time", Type: field.TypeString},
 		{Name: "min_staff", Type: field.TypeInt, Default: 1},
 		{Name: "max_staff", Type: field.TypeInt, Default: 1},
+		{Name: "is_active", Type: field.TypeBool, Default: true},
 		{Name: "shop_id", Type: field.TypeUUID},
 	}
 	// ShiftsTable holds the schema information for the "shifts" table.
@@ -323,7 +324,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "shifts_shops_shifts",
-				Columns:    []*schema.Column{ShiftsColumns[7]},
+				Columns:    []*schema.Column{ShiftsColumns[8]},
 				RefColumns: []*schema.Column{ShopsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},

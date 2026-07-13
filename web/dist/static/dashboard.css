@@ -93,6 +93,71 @@ body {
   margin-bottom: 6px;
 }
 
+.shifts-panel {
+  margin-bottom: 16px;
+}
+
+.shifts-heading {
+  margin: 0 0 12px;
+  font-size: 1rem;
+}
+
+.shift-list {
+  list-style: none;
+  margin: 0 0 16px;
+  padding: 0;
+}
+
+.shift-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.shift-row.is-inactive {
+  opacity: 0.65;
+}
+
+.shift-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+}
+
+.shift-weekday {
+  font-weight: 700;
+  min-width: 4.5rem;
+}
+
+.shift-name {
+  font-weight: 700;
+}
+
+.shift-form-heading {
+  margin: 16px 0 8px;
+  font-size: 0.9rem;
+}
+
+.shift-time-row,
+.shift-staff-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.badge-shift-active {
+  background: var(--blue-200);
+}
+
+.badge-shift-inactive {
+  background: #eee;
+}
+
 .checkbox-label {
   display: flex;
   align-items: flex-start;

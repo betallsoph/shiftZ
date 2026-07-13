@@ -5840,6 +5840,7 @@ type ShiftMutation struct {
 	addmin_staff       *int
 	max_staff          *int
 	addmax_staff       *int
+	is_active          *bool
 	clearedFields      map[string]struct{}
 	shop               *uuid.UUID
 	clearedshop        bool
@@ -6267,6 +6268,42 @@ func (m *ShiftMutation) ResetMaxStaff() {
 	m.addmax_staff = nil
 }
 
+// SetIsActive sets the "is_active" field.
+func (m *ShiftMutation) SetIsActive(b bool) {
+	m.is_active = &b
+}
+
+// IsActive returns the value of the "is_active" field in the mutation.
+func (m *ShiftMutation) IsActive() (r bool, exists bool) {
+	v := m.is_active
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIsActive returns the old "is_active" field's value of the Shift entity.
+// If the Shift object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ShiftMutation) OldIsActive(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIsActive is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIsActive requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIsActive: %w", err)
+	}
+	return oldValue.IsActive, nil
+}
+
+// ResetIsActive resets all changes to the "is_active" field.
+func (m *ShiftMutation) ResetIsActive() {
+	m.is_active = nil
+}
+
 // ClearShop clears the "shop" edge to the Shop entity.
 func (m *ShiftMutation) ClearShop() {
 	m.clearedshop = true
@@ -6382,7 +6419,7 @@ func (m *ShiftMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ShiftMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 8)
 	if m.shop != nil {
 		fields = append(fields, shift.FieldShopID)
 	}
@@ -6403,6 +6440,9 @@ func (m *ShiftMutation) Fields() []string {
 	}
 	if m.max_staff != nil {
 		fields = append(fields, shift.FieldMaxStaff)
+	}
+	if m.is_active != nil {
+		fields = append(fields, shift.FieldIsActive)
 	}
 	return fields
 }
@@ -6426,6 +6466,8 @@ func (m *ShiftMutation) Field(name string) (ent.Value, bool) {
 		return m.MinStaff()
 	case shift.FieldMaxStaff:
 		return m.MaxStaff()
+	case shift.FieldIsActive:
+		return m.IsActive()
 	}
 	return nil, false
 }
@@ -6449,6 +6491,8 @@ func (m *ShiftMutation) OldField(ctx context.Context, name string) (ent.Value, e
 		return m.OldMinStaff(ctx)
 	case shift.FieldMaxStaff:
 		return m.OldMaxStaff(ctx)
+	case shift.FieldIsActive:
+		return m.OldIsActive(ctx)
 	}
 	return nil, fmt.Errorf("unknown Shift field %s", name)
 }
@@ -6506,6 +6550,13 @@ func (m *ShiftMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetMaxStaff(v)
+		return nil
+	case shift.FieldIsActive:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIsActive(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Shift field %s", name)
@@ -6615,6 +6666,9 @@ func (m *ShiftMutation) ResetField(name string) error {
 		return nil
 	case shift.FieldMaxStaff:
 		m.ResetMaxStaff()
+		return nil
+	case shift.FieldIsActive:
+		m.ResetIsActive()
 		return nil
 	}
 	return fmt.Errorf("unknown Shift field %s", name)

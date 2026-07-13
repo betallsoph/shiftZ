@@ -33,6 +33,7 @@ func (Shift) Fields() []ent.Field {
 		field.String("end_time").Match(timeOfDay),
 		field.Int("min_staff").Default(1).NonNegative(),
 		field.Int("max_staff").Default(1).NonNegative(),
+		field.Bool("is_active").Default(true),
 	}
 }
 

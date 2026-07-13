@@ -170,6 +170,10 @@ func init() {
 	shift.DefaultMaxStaff = shiftDescMaxStaff.Default.(int)
 	// shift.MaxStaffValidator is a validator for the "max_staff" field. It is called by the builders before save.
 	shift.MaxStaffValidator = shiftDescMaxStaff.Validators[0].(func(int) error)
+	// shiftDescIsActive is the schema descriptor for is_active field.
+	shiftDescIsActive := shiftFields[8].Descriptor()
+	// shift.DefaultIsActive holds the default value on creation for the is_active field.
+	shift.DefaultIsActive = shiftDescIsActive.Default.(bool)
 	// shiftDescID is the schema descriptor for id field.
 	shiftDescID := shiftFields[0].Descriptor()
 	// shift.DefaultID holds the default value on creation for the id field.

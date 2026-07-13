@@ -38,6 +38,9 @@ var ErrExpiredSetupCode = errors.New("store: expired setup code")
 // ErrAlreadyExists is returned when schedules already exist for a shop week.
 var ErrAlreadyExists = errors.New("store: schedules already exist for shop week")
 
+// ErrValidation is returned when input fails business validation.
+var ErrValidation = errors.New("store: validation error")
+
 // Store bundles the ent client and repositories.
 type Store struct {
 	// Client is the raw ent client, exposed for code that outgrows the
