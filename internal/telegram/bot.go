@@ -119,6 +119,14 @@ func (b *Bot) handleMessage(ctx context.Context, m *Message) error {
 		return nil
 	}
 	text := strings.TrimSpace(m.Text)
+
+	if isGroupChat(m.Chat) {
+		if strings.HasPrefix(text, "/setup") {
+			return b.handleSetup(ctx, m, text)
+		}
+		return nil
+	}
+
 	switch {
 	case strings.HasPrefix(text, "/start"):
 		return b.handleStart(ctx, m, strings.TrimSpace(strings.TrimPrefix(text, "/start")))
@@ -171,6 +179,9 @@ func (b *Bot) handleSetup(ctx context.Context, m *Message, text string) error {
 }
 
 func (b *Bot) handleAvailabilityText(ctx context.Context, m *Message, text string) error {
+	if !isPrivateChat(m.Chat) {
+		return nil
+	}
 	emp, err := b.employees.ByTelegramID(ctx, m.From.ID)
 	if errors.Is(err, store.ErrNotFound) {
 		return b.api.SendMessage(ctx, m.Chat.ID, "I don't know you yet — join your shop first with /start <invite-code>.", nil)
@@ -244,6 +255,9 @@ func (b *Bot) handleAvailabilityText(ctx context.Context, m *Message, text strin
 }
 
 func (b *Bot) handleCallback(ctx context.Context, q *CallbackQuery) error {
+	if isGroupChat(callbackChat(q)) {
+		return b.api.AnswerCallbackQuery(ctx, q.ID, "")
+	}
 	switch {
 	case strings.HasPrefix(q.Data, availConfirmPrefix):
 		return b.handleAvailabilityConfirm(ctx, q)

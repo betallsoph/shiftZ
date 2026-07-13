@@ -23,7 +23,7 @@ func TestHandleAvailabilityTextCreatesDraft(t *testing.T) {
 
 	msg := &Message{
 		From: &User{ID: 42, FirstName: "Anna"},
-		Chat: Chat{ID: 100},
+		Chat: Chat{ID: 100, Type: "private"},
 		Text: "Mon mornings",
 	}
 
@@ -99,7 +99,7 @@ func TestHandleAvailabilityConfirmSavesAndDeletesDraft(t *testing.T) {
 		ID:   "cb1",
 		From: User{ID: 42},
 		Data: availConfirmPrefix + draftID.String(),
-		Message: &Message{Chat: Chat{ID: 100}},
+		Message: &Message{Chat: Chat{ID: 100, Type: "private"}},
 	}
 	if err := bot.handleCallback(context.Background(), q); err != nil {
 		t.Fatal(err)
@@ -145,7 +145,7 @@ func TestHandleAvailabilityCancelDoesNotSave(t *testing.T) {
 		ID:   "cb2",
 		From: User{ID: 42},
 		Data: availCancelPrefix + draftID.String(),
-		Message: &Message{Chat: Chat{ID: 100}},
+		Message: &Message{Chat: Chat{ID: 100, Type: "private"}},
 	}
 	if err := bot.handleCallback(context.Background(), q); err != nil {
 		t.Fatal(err)
@@ -212,7 +212,7 @@ func TestHandleVoteCallbackStillWorks(t *testing.T) {
 	employees := &fakeEmployees{emp: &store.Employee{ID: empID, ShopID: shopID}}
 	bot := NewBot(msgAPI, &fakeParser{}, &fakeShops{}, &fakeGroupSetup{}, employees, &fakeAvailability{}, votes, NewMemoryAvailabilityDraftStore(0), testLogger())
 
-	q := &CallbackQuery{ID: "vote1", From: User{ID: 42}, Data: votePrefix + scheduleID.String()}
+	q := &CallbackQuery{ID: "vote1", From: User{ID: 42}, Data: votePrefix + scheduleID.String(), Message: &Message{Chat: Chat{ID: 100, Type: "private"}}}
 	if err := bot.handleCallback(context.Background(), q); err != nil {
 		t.Fatal(err)
 	}
@@ -233,7 +233,7 @@ func TestHandleAvailabilityTextClarificationNoDraft(t *testing.T) {
 	drafts := NewMemoryAvailabilityDraftStore(30 * time.Minute)
 	bot := NewBot(msgAPI, parser, shops, &fakeGroupSetup{}, employees, &fakeAvailability{}, &fakeVotes{}, drafts, testLogger())
 
-	msg := &Message{From: &User{ID: 42}, Chat: Chat{ID: 1}, Text: "maybe Monday"}
+	msg := &Message{From: &User{ID: 42}, Chat: Chat{ID: 1, Type: "private"}, Text: "maybe Monday"}
 	if err := bot.handleAvailabilityText(context.Background(), msg, msg.Text); err != nil {
 		t.Fatal(err)
 	}
@@ -256,7 +256,7 @@ func TestHandleAvailabilityTextNoProvider(t *testing.T) {
 	employees := &fakeEmployees{emp: &store.Employee{ID: uuid.New(), ShopID: shopID}}
 	bot := NewBot(msgAPI, parser, shops, &fakeGroupSetup{}, employees, &fakeAvailability{}, &fakeVotes{}, NewMemoryAvailabilityDraftStore(0), testLogger())
 
-	msg := &Message{From: &User{ID: 42}, Chat: Chat{ID: 1}, Text: "Mon mornings"}
+	msg := &Message{From: &User{ID: 42}, Chat: Chat{ID: 1, Type: "private"}, Text: "Mon mornings"}
 	if err := bot.handleAvailabilityText(context.Background(), msg, msg.Text); err != nil {
 		t.Fatal(err)
 	}
@@ -471,5 +471,91 @@ func TestHandleSetupValidCodeSetsGroup(t *testing.T) {
 	}
 	if !strings.Contains(msgAPI.messages[0].text, "Beta Cafe") {
 		t.Fatalf("message = %q", msgAPI.messages[0].text)
+	}
+}
+
+func TestHandleAvailabilityTextInGroupIgnored(t *testing.T) {
+	shopID := uuid.New()
+	msgAPI := &fakeMessenger{}
+	parser := &fakeParser{slots: []llm.AvailabilitySlot{{Start: time.Now(), End: time.Now().Add(time.Hour), Preference: 1}}}
+	shops := &fakeShops{shop: &store.Shop{ID: shopID, Timezone: "UTC"}}
+	employees := &fakeEmployees{emp: &store.Employee{ID: uuid.New(), ShopID: shopID}}
+	bot := NewBot(msgAPI, parser, shops, &fakeGroupSetup{}, employees, &fakeAvailability{}, &fakeVotes{}, NewMemoryAvailabilityDraftStore(0), testLogger())
+
+	msg := &Message{From: &User{ID: 42}, Chat: Chat{ID: -1001, Type: "group"}, Text: "Mon mornings"}
+	if err := bot.handleMessage(context.Background(), msg); err != nil {
+		t.Fatal(err)
+	}
+	if len(msgAPI.messages) != 0 {
+		t.Fatalf("expected no reply in group, got %d messages", len(msgAPI.messages))
+	}
+	if parser.lastLoc != nil {
+		t.Fatal("parser should not run for group availability text")
+	}
+}
+
+func TestHandleStartInGroupIgnored(t *testing.T) {
+	msgAPI := &fakeMessenger{}
+	bot := NewBot(msgAPI, &fakeParser{}, &fakeShops{}, &fakeGroupSetup{}, &fakeEmployees{}, &fakeAvailability{}, &fakeVotes{}, NewMemoryAvailabilityDraftStore(0), testLogger())
+
+	msg := &Message{From: &User{ID: 42}, Chat: Chat{ID: -1001, Type: "supergroup"}, Text: "/start abc123"}
+	if err := bot.handleMessage(context.Background(), msg); err != nil {
+		t.Fatal(err)
+	}
+	if len(msgAPI.messages) != 0 {
+		t.Fatalf("expected no reply for /start in group, got %v", msgAPI.messages)
+	}
+}
+
+func TestHandleAvailabilityConfirmInGroupIgnored(t *testing.T) {
+	shopID := uuid.New()
+	empID := uuid.New()
+	drafts := NewMemoryAvailabilityDraftStore(30 * time.Minute)
+	draftID, _ := drafts.Create(context.Background(), AvailabilityDraft{
+		TelegramUserID: 42,
+		ShopID:         shopID,
+		EmployeeID:     empID,
+		Slots:          []store.AvailabilitySlot{{Start: time.Now(), End: time.Now().Add(time.Hour), Preference: 1}},
+	})
+
+	msgAPI := &fakeMessenger{}
+	availability := &fakeAvailability{}
+	bot := NewBot(msgAPI, &fakeParser{}, &fakeShops{}, &fakeGroupSetup{}, &fakeEmployees{}, availability, &fakeVotes{}, drafts, testLogger())
+
+	q := &CallbackQuery{
+		ID:      "cb-group",
+		From:    User{ID: 42},
+		Data:    availConfirmPrefix + draftID.String(),
+		Message: &Message{Chat: Chat{ID: -1001, Type: "group"}},
+	}
+	if err := bot.handleCallback(context.Background(), q); err != nil {
+		t.Fatal(err)
+	}
+	if availability.replaceCalls != 0 {
+		t.Fatal("availability should not save from group callback")
+	}
+}
+
+func TestHandleVoteInGroupIgnored(t *testing.T) {
+	shopID := uuid.New()
+	empID := uuid.New()
+	scheduleID := uuid.New()
+
+	msgAPI := &fakeMessenger{}
+	votes := &fakeVotes{}
+	employees := &fakeEmployees{emp: &store.Employee{ID: empID, ShopID: shopID}}
+	bot := NewBot(msgAPI, &fakeParser{}, &fakeShops{}, &fakeGroupSetup{}, employees, &fakeAvailability{}, votes, NewMemoryAvailabilityDraftStore(0), testLogger())
+
+	q := &CallbackQuery{
+		ID:      "vote-group",
+		From:    User{ID: 42},
+		Data:    votePrefix + scheduleID.String(),
+		Message: &Message{Chat: Chat{ID: -1001, Type: "supergroup"}},
+	}
+	if err := bot.handleCallback(context.Background(), q); err != nil {
+		t.Fatal(err)
+	}
+	if votes.recordCalls != 0 {
+		t.Fatal("vote should not record from group callback yet")
 	}
 }

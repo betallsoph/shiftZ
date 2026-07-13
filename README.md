@@ -154,7 +154,9 @@ curl "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/setWebhook" \
 
 ### Availability intake
 
-1. Employee joins with `/start <invite-code>`.
+Employees interact with the bot in **private chat** only (DM). Group chats accept `/setup` for owner dashboard connection; other group messages are ignored.
+
+1. Employee joins with `/start <invite-code>` in a private chat with the bot.
 2. Employee sends availability in plain language.
 3. Bot parses the message (using the shop timezone) and replies with a short summary plus **Confirm** / **Cancel** buttons.
 4. Only **Confirm** writes availability to the database; **Cancel** discards the draft.
