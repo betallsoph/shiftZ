@@ -111,6 +111,26 @@ func (_u *ShopUpdate) SetNillablePlan(v *string) *ShopUpdate {
 	return _u
 }
 
+// SetDashboardTokenHash sets the "dashboard_token_hash" field.
+func (_u *ShopUpdate) SetDashboardTokenHash(v string) *ShopUpdate {
+	_u.mutation.SetDashboardTokenHash(v)
+	return _u
+}
+
+// SetNillableDashboardTokenHash sets the "dashboard_token_hash" field if the given value is not nil.
+func (_u *ShopUpdate) SetNillableDashboardTokenHash(v *string) *ShopUpdate {
+	if v != nil {
+		_u.SetDashboardTokenHash(*v)
+	}
+	return _u
+}
+
+// ClearDashboardTokenHash clears the value of the "dashboard_token_hash" field.
+func (_u *ShopUpdate) ClearDashboardTokenHash() *ShopUpdate {
+	_u.mutation.ClearDashboardTokenHash()
+	return _u
+}
+
 // AddEmployeeIDs adds the "employees" edge to the Employee entity by IDs.
 func (_u *ShopUpdate) AddEmployeeIDs(ids ...uuid.UUID) *ShopUpdate {
 	_u.mutation.AddEmployeeIDs(ids...)
@@ -385,6 +405,12 @@ func (_u *ShopUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.Plan(); ok {
 		_spec.SetField(shop.FieldPlan, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.DashboardTokenHash(); ok {
+		_spec.SetField(shop.FieldDashboardTokenHash, field.TypeString, value)
+	}
+	if _u.mutation.DashboardTokenHashCleared() {
+		_spec.ClearField(shop.FieldDashboardTokenHash, field.TypeString)
 	}
 	if _u.mutation.EmployeesCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -753,6 +779,26 @@ func (_u *ShopUpdateOne) SetNillablePlan(v *string) *ShopUpdateOne {
 	return _u
 }
 
+// SetDashboardTokenHash sets the "dashboard_token_hash" field.
+func (_u *ShopUpdateOne) SetDashboardTokenHash(v string) *ShopUpdateOne {
+	_u.mutation.SetDashboardTokenHash(v)
+	return _u
+}
+
+// SetNillableDashboardTokenHash sets the "dashboard_token_hash" field if the given value is not nil.
+func (_u *ShopUpdateOne) SetNillableDashboardTokenHash(v *string) *ShopUpdateOne {
+	if v != nil {
+		_u.SetDashboardTokenHash(*v)
+	}
+	return _u
+}
+
+// ClearDashboardTokenHash clears the value of the "dashboard_token_hash" field.
+func (_u *ShopUpdateOne) ClearDashboardTokenHash() *ShopUpdateOne {
+	_u.mutation.ClearDashboardTokenHash()
+	return _u
+}
+
 // AddEmployeeIDs adds the "employees" edge to the Employee entity by IDs.
 func (_u *ShopUpdateOne) AddEmployeeIDs(ids ...uuid.UUID) *ShopUpdateOne {
 	_u.mutation.AddEmployeeIDs(ids...)
@@ -1057,6 +1103,12 @@ func (_u *ShopUpdateOne) sqlSave(ctx context.Context) (_node *Shop, err error) {
 	}
 	if value, ok := _u.mutation.Plan(); ok {
 		_spec.SetField(shop.FieldPlan, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.DashboardTokenHash(); ok {
+		_spec.SetField(shop.FieldDashboardTokenHash, field.TypeString, value)
+	}
+	if _u.mutation.DashboardTokenHashCleared() {
+		_spec.ClearField(shop.FieldDashboardTokenHash, field.TypeString)
 	}
 	if _u.mutation.EmployeesCleared() {
 		edge := &sqlgraph.EdgeSpec{

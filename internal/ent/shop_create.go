@@ -76,6 +76,20 @@ func (_c *ShopCreate) SetNillablePlan(v *string) *ShopCreate {
 	return _c
 }
 
+// SetDashboardTokenHash sets the "dashboard_token_hash" field.
+func (_c *ShopCreate) SetDashboardTokenHash(v string) *ShopCreate {
+	_c.mutation.SetDashboardTokenHash(v)
+	return _c
+}
+
+// SetNillableDashboardTokenHash sets the "dashboard_token_hash" field if the given value is not nil.
+func (_c *ShopCreate) SetNillableDashboardTokenHash(v *string) *ShopCreate {
+	if v != nil {
+		_c.SetDashboardTokenHash(*v)
+	}
+	return _c
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (_c *ShopCreate) SetCreatedAt(v time.Time) *ShopCreate {
 	_c.mutation.SetCreatedAt(v)
@@ -323,6 +337,10 @@ func (_c *ShopCreate) createSpec() (*Shop, *sqlgraph.CreateSpec) {
 		_spec.SetField(shop.FieldPlan, field.TypeString, value)
 		_node.Plan = value
 	}
+	if value, ok := _c.mutation.DashboardTokenHash(); ok {
+		_spec.SetField(shop.FieldDashboardTokenHash, field.TypeString, value)
+		_node.DashboardTokenHash = &value
+	}
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(shop.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
@@ -541,6 +559,24 @@ func (u *ShopUpsert) UpdatePlan() *ShopUpsert {
 	return u
 }
 
+// SetDashboardTokenHash sets the "dashboard_token_hash" field.
+func (u *ShopUpsert) SetDashboardTokenHash(v string) *ShopUpsert {
+	u.Set(shop.FieldDashboardTokenHash, v)
+	return u
+}
+
+// UpdateDashboardTokenHash sets the "dashboard_token_hash" field to the value that was provided on create.
+func (u *ShopUpsert) UpdateDashboardTokenHash() *ShopUpsert {
+	u.SetExcluded(shop.FieldDashboardTokenHash)
+	return u
+}
+
+// ClearDashboardTokenHash clears the value of the "dashboard_token_hash" field.
+func (u *ShopUpsert) ClearDashboardTokenHash() *ShopUpsert {
+	u.SetNull(shop.FieldDashboardTokenHash)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -666,6 +702,27 @@ func (u *ShopUpsertOne) SetPlan(v string) *ShopUpsertOne {
 func (u *ShopUpsertOne) UpdatePlan() *ShopUpsertOne {
 	return u.Update(func(s *ShopUpsert) {
 		s.UpdatePlan()
+	})
+}
+
+// SetDashboardTokenHash sets the "dashboard_token_hash" field.
+func (u *ShopUpsertOne) SetDashboardTokenHash(v string) *ShopUpsertOne {
+	return u.Update(func(s *ShopUpsert) {
+		s.SetDashboardTokenHash(v)
+	})
+}
+
+// UpdateDashboardTokenHash sets the "dashboard_token_hash" field to the value that was provided on create.
+func (u *ShopUpsertOne) UpdateDashboardTokenHash() *ShopUpsertOne {
+	return u.Update(func(s *ShopUpsert) {
+		s.UpdateDashboardTokenHash()
+	})
+}
+
+// ClearDashboardTokenHash clears the value of the "dashboard_token_hash" field.
+func (u *ShopUpsertOne) ClearDashboardTokenHash() *ShopUpsertOne {
+	return u.Update(func(s *ShopUpsert) {
+		s.ClearDashboardTokenHash()
 	})
 }
 
@@ -961,6 +1018,27 @@ func (u *ShopUpsertBulk) SetPlan(v string) *ShopUpsertBulk {
 func (u *ShopUpsertBulk) UpdatePlan() *ShopUpsertBulk {
 	return u.Update(func(s *ShopUpsert) {
 		s.UpdatePlan()
+	})
+}
+
+// SetDashboardTokenHash sets the "dashboard_token_hash" field.
+func (u *ShopUpsertBulk) SetDashboardTokenHash(v string) *ShopUpsertBulk {
+	return u.Update(func(s *ShopUpsert) {
+		s.SetDashboardTokenHash(v)
+	})
+}
+
+// UpdateDashboardTokenHash sets the "dashboard_token_hash" field to the value that was provided on create.
+func (u *ShopUpsertBulk) UpdateDashboardTokenHash() *ShopUpsertBulk {
+	return u.Update(func(s *ShopUpsert) {
+		s.UpdateDashboardTokenHash()
+	})
+}
+
+// ClearDashboardTokenHash clears the value of the "dashboard_token_hash" field.
+func (u *ShopUpsertBulk) ClearDashboardTokenHash() *ShopUpsertBulk {
+	return u.Update(func(s *ShopUpsert) {
+		s.ClearDashboardTokenHash()
 	})
 }
 

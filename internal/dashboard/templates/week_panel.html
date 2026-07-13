@@ -56,7 +56,7 @@
   {{end}}
 
   {{if not .Schedules}}
-    {{if and .ShopID .WeekStart}}
+    {{if .WeekStart}}
     <div class="empty-state">
       <p>Chưa có lịch cho tuần này.</p>
       <form
@@ -65,7 +65,6 @@
         hx-swap="innerHTML"
         class="inline-form"
       >
-        <input type="hidden" name="shop_id" value="{{.ShopID}}" />
         <input type="hidden" name="week_start" value="{{.WeekStart}}" />
         <button type="submit" class="btn btn-primary btn-sm">Tạo lịch</button>
       </form>
@@ -106,7 +105,6 @@
           hx-swap="innerHTML"
           class="approve-form"
         >
-          <input type="hidden" name="shop_id" value="{{$.ShopID}}" />
           <input type="hidden" name="week_start" value="{{$.WeekStart}}" />
           <button type="submit" class="btn btn-primary btn-sm modal-action">
             <span class="modal-action-label">Duyệt</span>

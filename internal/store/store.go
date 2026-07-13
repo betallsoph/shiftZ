@@ -29,6 +29,9 @@ import (
 // ErrNotFound is returned when a query matches no rows.
 var ErrNotFound = errors.New("store: not found")
 
+// ErrInvalidCredentials is returned when dashboard login credentials are wrong.
+var ErrInvalidCredentials = errors.New("store: invalid credentials")
+
 // ErrAlreadyExists is returned when schedules already exist for a shop week.
 var ErrAlreadyExists = errors.New("store: schedules already exist for shop week")
 

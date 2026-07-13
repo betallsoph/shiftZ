@@ -14,8 +14,20 @@ import (
 )
 
 func (s *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
+	sess, ok := s.requireSession(w, r)
+	if !ok {
+		return
+	}
+	shop, err := s.shops.ByID(r.Context(), sess.ShopID)
+	if err != nil {
+		s.log.Error("load shop for page", "err", err)
+		s.sessions.ClearCookie(w)
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
 	if err := s.tmpl.render(w, "page.html", PageData{
-		Today: time.Now().Format(dateLayout),
+		Today:    time.Now().Format(dateLayout),
+		ShopName: shop.Name,
 	}); err != nil {
 		s.log.Error("render page", "err", err)
 		http.Error(w, "template error", http.StatusInternalServerError)
@@ -23,11 +35,18 @@ func (s *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleWeek(w http.ResponseWriter, r *http.Request) {
+	if _, ok := s.requireSession(w, r); !ok {
+		return
+	}
 	s.renderWeek(w, r, "", nil)
 }
 
 func (s *Server) handleGenerate(w http.ResponseWriter, r *http.Request) {
-	shop, shopID, weekStart, errMsg := s.parseShopWeekForm(r)
+	sess, ok := s.requireSession(w, r)
+	if !ok {
+		return
+	}
+	shop, shopID, weekStart, errMsg := s.parseWeekForm(r, sess.ShopID)
 	if errMsg != "" {
 		s.renderWeekView(w, WeekView{Error: errMsg})
 		return
@@ -65,7 +84,11 @@ func (s *Server) handleGenerate(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleApprove(w http.ResponseWriter, r *http.Request) {
-	shop, shopID, weekStart, errMsg := s.parseShopWeekForm(r)
+	sess, ok := s.requireSession(w, r)
+	if !ok {
+		return
+	}
+	shop, shopID, weekStart, errMsg := s.parseWeekForm(r, sess.ShopID)
 	if errMsg != "" {
 		s.renderWeekView(w, WeekView{Error: errMsg})
 		return
@@ -80,7 +103,6 @@ func (s *Server) handleApprove(w http.ResponseWriter, r *http.Request) {
 	if _, err := s.schedules.Approve(r.Context(), shopID, scheduleID); err != nil {
 		if errors.Is(err, store.ErrNotFound) {
 			s.renderWeekView(w, WeekView{
-				ShopID:    shop.ID.String(),
 				ShopName:  shop.Name,
 				WeekStart: weekStart.Format(dateLayout),
 				Error:     "không tìm thấy lịch",
@@ -122,13 +144,18 @@ func (s *Server) loadWeekData(ctx context.Context, shopID uuid.UUID, weekStart t
 }
 
 func (s *Server) renderWeek(w http.ResponseWriter, r *http.Request, notice string, generated *planner.GenerateResult) {
-	shop, shopID, weekStart, errMsg := s.parseShopWeekForm(r)
+	sess, ok := s.requireSession(w, r)
+	if !ok {
+		return
+	}
+	shop, shopID, weekStart, errMsg := s.parseWeekForm(r, sess.ShopID)
 	if errMsg != "" {
 		s.renderWeekView(w, WeekView{Error: errMsg})
 		return
 	}
+	_ = shopID
 
-	data, err := s.loadWeekData(r.Context(), shopID, weekStart)
+	data, err := s.loadWeekData(r.Context(), sess.ShopID, weekStart)
 	if err != nil {
 		s.log.Error("load week panel", "err", err)
 		s.renderWeekView(w, WeekView{Error: "không tải được dữ liệu tuần"})
@@ -146,19 +173,11 @@ func (s *Server) renderWeekView(w http.ResponseWriter, view WeekView) {
 	}
 }
 
-func (s *Server) parseShopWeekForm(r *http.Request) (*store.Shop, uuid.UUID, time.Time, string) {
+func (s *Server) parseWeekForm(r *http.Request, sessionShopID uuid.UUID) (*store.Shop, uuid.UUID, time.Time, string) {
 	if err := r.ParseForm(); err != nil {
 		return nil, uuid.Nil, time.Time{}, "dữ liệu form không hợp lệ"
 	}
-	rawShop := r.FormValue("shop_id")
-	if rawShop == "" {
-		return nil, uuid.Nil, time.Time{}, "thiếu mã cửa hàng"
-	}
-	shopID, err := uuid.Parse(rawShop)
-	if err != nil {
-		return nil, uuid.Nil, time.Time{}, "mã cửa hàng không hợp lệ"
-	}
-	shop, err := s.shops.ByID(r.Context(), shopID)
+	shop, err := s.shops.ByID(r.Context(), sessionShopID)
 	if err != nil {
 		if errors.Is(err, store.ErrNotFound) {
 			return nil, uuid.Nil, time.Time{}, "không tìm thấy cửa hàng"
@@ -179,5 +198,5 @@ func (s *Server) parseShopWeekForm(r *http.Request) (*store.Shop, uuid.UUID, tim
 	if err != nil {
 		return nil, uuid.Nil, time.Time{}, "ngày không hợp lệ (YYYY-MM-DD)"
 	}
-	return shop, shopID, store.WeekStart(parsed, loc), ""
+	return shop, sessionShopID, store.WeekStart(parsed, loc), ""
 }

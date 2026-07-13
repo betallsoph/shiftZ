@@ -48,6 +48,11 @@ type Config struct {
 	DBMaxIdleConns    int
 	DBConnMaxLifetime time.Duration
 	DBConnMaxIdleTime time.Duration
+
+	// SessionSecret signs owner dashboard session cookies (required in production).
+	SessionSecret string
+	// CookieSecure sets the Secure flag on dashboard session cookies.
+	CookieSecure bool
 }
 
 // Load reads all settings from the environment, applying defaults for
@@ -71,6 +76,8 @@ func Load() *Config {
 		DBMaxIdleConns:        envIntOr("DB_MAX_IDLE_CONNS", pool.MaxIdleConns),
 		DBConnMaxLifetime:     envDurationOr("DB_CONN_MAX_LIFETIME", pool.ConnMaxLifetime),
 		DBConnMaxIdleTime:     envDurationOr("DB_CONN_MAX_IDLE_TIME", pool.ConnMaxIdleTime),
+		SessionSecret:         os.Getenv("SESSION_SECRET"),
+		CookieSecure:          os.Getenv("COOKIE_SECURE") == "1" || os.Getenv("COOKIE_SECURE") == "true",
 	}
 }
 

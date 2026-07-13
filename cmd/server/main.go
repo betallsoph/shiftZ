@@ -3,6 +3,8 @@ package main
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/base64"
 	"errors"
 	"io/fs"
 	"log/slog"
@@ -47,7 +49,18 @@ func run(log *slog.Logger) error {
 	health.Register(mux, st)
 	api.New(st, log).Register(mux)
 
-	dash, err := dashboard.New(st, log)
+	sessionSecret := cfg.SessionSecret
+	if sessionSecret == "" {
+		var b [32]byte
+		if _, err := rand.Read(b[:]); err != nil {
+			return err
+		}
+		sessionSecret = base64.RawURLEncoding.EncodeToString(b[:])
+		log.Warn("SESSION_SECRET not set; using ephemeral dev secret (sessions reset on restart)")
+	}
+	sessions := dashboard.NewSessionManager(sessionSecret, cfg.CookieSecure)
+
+	dash, err := dashboard.New(st, sessions, log)
 	if err != nil {
 		return err
 	}

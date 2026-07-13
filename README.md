@@ -84,13 +84,17 @@ Generating again for the same shop/week returns `409 Conflict`.
 
 Open `http://localhost:8080` after `go run ./cmd/server`.
 
-1. Paste the shop `id` printed by `go run ./cmd/seed`.
+1. Sign in at `/login` with the shop `id` and **Owner dashboard token** printed by `go run ./cmd/seed`.
 2. Pick a week start (next Monday works well with seeded availability).
-3. Click **Generate** to run the planner, or **Load** to view existing candidates.
-4. Click **Approve** on the variant you want.
+3. Click **Tải lịch** to view existing candidates, or **Tạo lịch** to run the planner.
+4. Click **Duyệt** on the variant you want.
 
 The dashboard uses HTMX and calls the Go planner/store layer directly (no JSON API from the browser).
 The dashboard also shows weekly availability submission status and parsed slots.
+
+For local dev, `SESSION_SECRET` can be omitted (the server generates an ephemeral secret and logs a warning).
+In production, set a long random `SESSION_SECRET` (for example `openssl rand -base64 32`).
+Set `COOKIE_SECURE=true` when serving the dashboard over HTTPS.
 
 ```sh
 # 6. Run the Telegram bot (webhook mode)
@@ -161,6 +165,8 @@ export LLM_MODEL='gemini-3.5-flash'   # optional; swap for cheaper Flash-Lite-st
 | `DB_MAX_IDLE_CONNS`       | bot, server     | `2`     | database/sql max idle connections              |
 | `DB_CONN_MAX_LIFETIME`    | bot, server     | `30m`   | Max connection lifetime                        |
 | `DB_CONN_MAX_IDLE_TIME`   | bot, server     | `5m`    | Max idle connection time                       |
+| `SESSION_SECRET`          | server (prod)   | —       | HMAC secret for owner dashboard session cookies |
+| `COOKIE_SECURE`           | server (optional)| `false`| `true` sets Secure on dashboard session cookies |
 | `ENT_DEBUG`               | all (optional)  | —       | `1`/`true` logs every generated SQL statement (dev only) |
 
 ## Production / beta deployment
@@ -177,6 +183,8 @@ LLM_PROVIDER=gemini
 LLM_API_KEY=...
 LLM_MODEL=gemini-3.5-flash
 REMINDERS_ENABLED=true
+SESSION_SECRET=...            # openssl rand -base64 32
+COOKIE_SECURE=true            # HTTPS deployments
 ```
 
 ### Optional runtime env

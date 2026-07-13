@@ -337,6 +337,7 @@ var (
 		{Name: "invite_code", Type: field.TypeString, Unique: true},
 		{Name: "telegram_group_id", Type: field.TypeInt64},
 		{Name: "plan", Type: field.TypeString, Default: "free"},
+		{Name: "dashboard_token_hash", Type: field.TypeString, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 	}
 	// ShopsTable holds the schema information for the "shops" table.

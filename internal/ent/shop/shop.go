@@ -25,6 +25,8 @@ const (
 	FieldTelegramGroupID = "telegram_group_id"
 	// FieldPlan holds the string denoting the plan field in the database.
 	FieldPlan = "plan"
+	// FieldDashboardTokenHash holds the string denoting the dashboard_token_hash field in the database.
+	FieldDashboardTokenHash = "dashboard_token_hash"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// EdgeEmployees holds the string denoting the employees edge name in mutations.
@@ -93,6 +95,7 @@ var Columns = []string{
 	FieldInviteCode,
 	FieldTelegramGroupID,
 	FieldPlan,
+	FieldDashboardTokenHash,
 	FieldCreatedAt,
 }
 
@@ -148,6 +151,11 @@ func ByTelegramGroupID(opts ...sql.OrderTermOption) OrderOption {
 // ByPlan orders the results by the plan field.
 func ByPlan(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldPlan, opts...).ToFunc()
+}
+
+// ByDashboardTokenHash orders the results by the dashboard_token_hash field.
+func ByDashboardTokenHash(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDashboardTokenHash, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.

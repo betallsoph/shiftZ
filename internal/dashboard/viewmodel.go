@@ -17,12 +17,12 @@ const dateLayout = "2006-01-02"
 
 // PageData is the main dashboard shell.
 type PageData struct {
-	Today string
+	Today    string
+	ShopName string
 }
 
 // WeekView is the HTMX-swapped week panel.
 type WeekView struct {
-	ShopID         string
 	ShopName       string
 	WeekStart      string
 	Notice         string
@@ -136,7 +136,6 @@ func buildWeekView(
 	availabilityViews, submittedCount, employeeCount := buildAvailabilityEmployeeViews(employees, availabilities, loc)
 
 	return WeekView{
-		ShopID:         shop.ID.String(),
 		ShopName:       shop.Name,
 		WeekStart:      weekStart.Format(dateLayout),
 		Notice:         notice,

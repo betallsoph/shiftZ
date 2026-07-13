@@ -185,7 +185,7 @@ func init() {
 	// shop.DefaultPlan holds the default value on creation for the plan field.
 	shop.DefaultPlan = shopDescPlan.Default.(string)
 	// shopDescCreatedAt is the schema descriptor for created_at field.
-	shopDescCreatedAt := shopFields[6].Descriptor()
+	shopDescCreatedAt := shopFields[7].Descriptor()
 	// shop.DefaultCreatedAt holds the default value on creation for the created_at field.
 	shop.DefaultCreatedAt = shopDescCreatedAt.Default.(func() time.Time)
 	// shopDescID is the schema descriptor for id field.

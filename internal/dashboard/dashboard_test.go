@@ -67,33 +67,9 @@ func TestGroupAssignments(t *testing.T) {
 	}
 }
 
-func TestHandleWeekBadShopID(t *testing.T) {
-	srv := testDashboard(t, &fakeShops{}, &fakeSchedules{}, &fakeEmployees{}, &fakeAvailabilityRepo{}, &fakePlanner{})
-	mux := http.NewServeMux()
-	srv.Register(mux)
-
-	req := httptest.NewRequest(http.MethodGet, "/dashboard/week?shop_id=bad&week_start=2026-07-13", nil)
-	rec := httptest.NewRecorder()
-	mux.ServeHTTP(rec, req)
-
-	if rec.Code != http.StatusOK {
-		t.Fatalf("status = %d", rec.Code)
-	}
-	body := rec.Body.String()
-	if !strings.Contains(body, "mã cửa hàng không hợp lệ") {
-		t.Fatalf("body = %q", body)
-	}
-	if strings.Contains(body, "Tạo lịch") {
-		t.Fatalf("error state should not render generate button, body = %q", body)
-	}
-	if strings.Contains(body, `name="shop_id"`) {
-		t.Fatalf("error state should not render hidden shop_id field, body = %q", body)
-	}
-}
-
 func TestHandleApproveNotFound(t *testing.T) {
 	shopID := uuid.New()
-	srv := testDashboard(t,
+	srv, mux := testDashboard(t,
 		&fakeShops{shop: &store.Shop{ID: shopID, Name: "Cafe", Timezone: "UTC"}},
 		&fakeSchedules{approveFn: func(ctx context.Context, sid, schedID uuid.UUID) (*store.Schedule, error) {
 			return nil, store.ErrNotFound
@@ -102,15 +78,13 @@ func TestHandleApproveNotFound(t *testing.T) {
 		&fakeAvailabilityRepo{},
 		&fakePlanner{},
 	)
-	mux := http.NewServeMux()
-	srv.Register(mux)
 
 	form := url.Values{
-		"shop_id":    {shopID.String()},
 		"week_start": {"2026-07-13"},
 	}
 	req := httptest.NewRequest(http.MethodPost, "/dashboard/schedules/"+uuid.New().String()+"/approve", strings.NewReader(form.Encode()))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	addSessionCookie(t, srv, shopID, req)
 	rec := httptest.NewRecorder()
 	mux.ServeHTTP(rec, req)
 
@@ -176,7 +150,7 @@ func TestHandleWeekRendersAvailability(t *testing.T) {
 	empID := uuid.New()
 	weekStart := time.Date(2026, 7, 13, 0, 0, 0, 0, time.UTC)
 
-	srv := testDashboard(t,
+	srv, mux := testDashboard(t,
 		&fakeShops{shop: &store.Shop{ID: shopID, Name: "Cafe", Timezone: "UTC"}},
 		&fakeSchedules{},
 		&fakeEmployees{employees: []*store.Employee{
@@ -192,10 +166,9 @@ func TestHandleWeekRendersAvailability(t *testing.T) {
 		}}},
 		&fakePlanner{},
 	)
-	mux := http.NewServeMux()
-	srv.Register(mux)
 
-	req := httptest.NewRequest(http.MethodGet, "/dashboard/week?shop_id="+shopID.String()+"&week_start=2026-07-13", nil)
+	req := httptest.NewRequest(http.MethodGet, "/dashboard/week?week_start=2026-07-13", nil)
+	addSessionCookie(t, srv, shopID, req)
 	rec := httptest.NewRecorder()
 	mux.ServeHTTP(rec, req)
 
@@ -257,19 +230,36 @@ func (f *fakePlanner) GenerateWeek(ctx context.Context, shopID uuid.UUID, weekSt
 	return nil, nil
 }
 
-func testDashboard(t *testing.T, shops shopReader, schedules scheduleRepo, employees employeeLister, availability availabilityLister, gen weekGenerator) *Server {
+func testDashboard(t *testing.T, shops shopReader, schedules scheduleRepo, employees employeeLister, availability availabilityLister, gen weekGenerator) (*Server, *http.ServeMux) {
 	t.Helper()
 	tmpl, err := loadTemplates()
 	if err != nil {
 		t.Fatal(err)
 	}
-	return &Server{
+	shopID := uuid.Nil
+	if fs, ok := shops.(*fakeShops); ok && fs.shop != nil {
+		shopID = fs.shop.ID
+	}
+	sessions := NewSessionManager("test-dashboard-secret", false)
+	srv := &Server{
 		shops:        shops,
+		shopAuth:     &noopShopAuth{},
 		schedules:    schedules,
 		employees:    employees,
 		availability: availability,
 		planner:      gen,
+		sessions:     sessions,
 		log:          slog.New(slog.NewTextHandler(io.Discard, nil)),
 		tmpl:         &templateSet{tmpl},
 	}
+	_ = shopID
+	mux := http.NewServeMux()
+	srv.Register(mux)
+	return srv, mux
+}
+
+type noopShopAuth struct{}
+
+func (noopShopAuth) VerifyDashboardToken(ctx context.Context, shopID uuid.UUID, token string) (*store.Shop, error) {
+	return nil, store.ErrInvalidCredentials
 }

@@ -63,6 +63,17 @@ body {
   opacity: 0.75;
 }
 
+.site-header .header-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.logout-form {
+  margin: 0;
+}
+
 .container {
   max-width: 920px;
   margin: 0 auto;

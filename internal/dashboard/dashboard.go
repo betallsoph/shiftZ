@@ -37,16 +37,18 @@ type weekGenerator interface {
 // Server renders the owner dashboard with HTMX partials.
 type Server struct {
 	shops        shopReader
+	shopAuth     shopAuthenticator
 	schedules    scheduleRepo
 	employees    employeeLister
 	availability availabilityLister
 	planner      weekGenerator
+	sessions     *SessionManager
 	log          *slog.Logger
 	tmpl         *templateSet
 }
 
 // New wires the dashboard on top of the store and planner.
-func New(st *store.Store, log *slog.Logger) (*Server, error) {
+func New(st *store.Store, sessions *SessionManager, log *slog.Logger) (*Server, error) {
 	tmpl, err := loadTemplates()
 	if err != nil {
 		return nil, err
@@ -56,10 +58,12 @@ func New(st *store.Store, log *slog.Logger) (*Server, error) {
 	}
 	return &Server{
 		shops:        st.Shops,
+		shopAuth:     st.Shops,
 		schedules:    st.Schedules,
 		employees:    st.Employees,
 		availability: st.Availability,
 		planner:      planner.New(st),
+		sessions:     sessions,
 		log:          log,
 		tmpl:         &templateSet{tmpl},
 	}, nil
@@ -67,6 +71,9 @@ func New(st *store.Store, log *slog.Logger) (*Server, error) {
 
 // Register mounts dashboard routes on mux.
 func (s *Server) Register(mux *http.ServeMux) {
+	mux.HandleFunc("GET /login", s.handleLoginGET)
+	mux.HandleFunc("POST /login", s.handleLoginPOST)
+	mux.HandleFunc("POST /logout", s.handleLogout)
 	mux.HandleFunc("GET /{$}", s.handleIndex)
 	mux.HandleFunc("GET /dashboard/week", s.handleWeek)
 	mux.HandleFunc("POST /dashboard/generate", s.handleGenerate)

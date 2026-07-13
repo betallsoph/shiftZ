@@ -28,6 +28,8 @@ type Shop struct {
 	TelegramGroupID int64 `json:"telegram_group_id,omitempty"`
 	// Plan holds the value of the "plan" field.
 	Plan string `json:"plan,omitempty"`
+	// DashboardTokenHash holds the value of the "dashboard_token_hash" field.
+	DashboardTokenHash *string `json:"dashboard_token_hash,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -116,7 +118,7 @@ func (*Shop) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case shop.FieldTelegramGroupID:
 			values[i] = new(sql.NullInt64)
-		case shop.FieldName, shop.FieldTimezone, shop.FieldInviteCode, shop.FieldPlan:
+		case shop.FieldName, shop.FieldTimezone, shop.FieldInviteCode, shop.FieldPlan, shop.FieldDashboardTokenHash:
 			values[i] = new(sql.NullString)
 		case shop.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -172,6 +174,13 @@ func (_m *Shop) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field plan", values[i])
 			} else if value.Valid {
 				_m.Plan = value.String
+			}
+		case shop.FieldDashboardTokenHash:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field dashboard_token_hash", values[i])
+			} else if value.Valid {
+				_m.DashboardTokenHash = new(string)
+				*_m.DashboardTokenHash = value.String
 			}
 		case shop.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -259,6 +268,11 @@ func (_m *Shop) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("plan=")
 	builder.WriteString(_m.Plan)
+	builder.WriteString(", ")
+	if v := _m.DashboardTokenHash; v != nil {
+		builder.WriteString("dashboard_token_hash=")
+		builder.WriteString(*v)
+	}
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))

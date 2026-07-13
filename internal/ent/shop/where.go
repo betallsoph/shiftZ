@@ -81,6 +81,11 @@ func Plan(v string) predicate.Shop {
 	return predicate.Shop(sql.FieldEQ(FieldPlan, v))
 }
 
+// DashboardTokenHash applies equality check predicate on the "dashboard_token_hash" field. It's identical to DashboardTokenHashEQ.
+func DashboardTokenHash(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldEQ(FieldDashboardTokenHash, v))
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.Shop {
 	return predicate.Shop(sql.FieldEQ(FieldCreatedAt, v))
@@ -384,6 +389,81 @@ func PlanEqualFold(v string) predicate.Shop {
 // PlanContainsFold applies the ContainsFold predicate on the "plan" field.
 func PlanContainsFold(v string) predicate.Shop {
 	return predicate.Shop(sql.FieldContainsFold(FieldPlan, v))
+}
+
+// DashboardTokenHashEQ applies the EQ predicate on the "dashboard_token_hash" field.
+func DashboardTokenHashEQ(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldEQ(FieldDashboardTokenHash, v))
+}
+
+// DashboardTokenHashNEQ applies the NEQ predicate on the "dashboard_token_hash" field.
+func DashboardTokenHashNEQ(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldNEQ(FieldDashboardTokenHash, v))
+}
+
+// DashboardTokenHashIn applies the In predicate on the "dashboard_token_hash" field.
+func DashboardTokenHashIn(vs ...string) predicate.Shop {
+	return predicate.Shop(sql.FieldIn(FieldDashboardTokenHash, vs...))
+}
+
+// DashboardTokenHashNotIn applies the NotIn predicate on the "dashboard_token_hash" field.
+func DashboardTokenHashNotIn(vs ...string) predicate.Shop {
+	return predicate.Shop(sql.FieldNotIn(FieldDashboardTokenHash, vs...))
+}
+
+// DashboardTokenHashGT applies the GT predicate on the "dashboard_token_hash" field.
+func DashboardTokenHashGT(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldGT(FieldDashboardTokenHash, v))
+}
+
+// DashboardTokenHashGTE applies the GTE predicate on the "dashboard_token_hash" field.
+func DashboardTokenHashGTE(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldGTE(FieldDashboardTokenHash, v))
+}
+
+// DashboardTokenHashLT applies the LT predicate on the "dashboard_token_hash" field.
+func DashboardTokenHashLT(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldLT(FieldDashboardTokenHash, v))
+}
+
+// DashboardTokenHashLTE applies the LTE predicate on the "dashboard_token_hash" field.
+func DashboardTokenHashLTE(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldLTE(FieldDashboardTokenHash, v))
+}
+
+// DashboardTokenHashContains applies the Contains predicate on the "dashboard_token_hash" field.
+func DashboardTokenHashContains(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldContains(FieldDashboardTokenHash, v))
+}
+
+// DashboardTokenHashHasPrefix applies the HasPrefix predicate on the "dashboard_token_hash" field.
+func DashboardTokenHashHasPrefix(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldHasPrefix(FieldDashboardTokenHash, v))
+}
+
+// DashboardTokenHashHasSuffix applies the HasSuffix predicate on the "dashboard_token_hash" field.
+func DashboardTokenHashHasSuffix(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldHasSuffix(FieldDashboardTokenHash, v))
+}
+
+// DashboardTokenHashIsNil applies the IsNil predicate on the "dashboard_token_hash" field.
+func DashboardTokenHashIsNil() predicate.Shop {
+	return predicate.Shop(sql.FieldIsNull(FieldDashboardTokenHash))
+}
+
+// DashboardTokenHashNotNil applies the NotNil predicate on the "dashboard_token_hash" field.
+func DashboardTokenHashNotNil() predicate.Shop {
+	return predicate.Shop(sql.FieldNotNull(FieldDashboardTokenHash))
+}
+
+// DashboardTokenHashEqualFold applies the EqualFold predicate on the "dashboard_token_hash" field.
+func DashboardTokenHashEqualFold(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldEqualFold(FieldDashboardTokenHash, v))
+}
+
+// DashboardTokenHashContainsFold applies the ContainsFold predicate on the "dashboard_token_hash" field.
+func DashboardTokenHashContainsFold(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldContainsFold(FieldDashboardTokenHash, v))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.

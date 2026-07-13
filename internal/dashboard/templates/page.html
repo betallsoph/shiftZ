@@ -10,22 +10,19 @@
   </head>
   <body class="roomio-grid-bg">
     <header class="site-header">
-      <h1>shiftZ</h1>
-      <p>Bảng xếp lịch cho chủ quán</p>
+      <div class="header-row">
+        <div>
+          <h1>shiftZ</h1>
+          <p>Bảng xếp lịch cho chủ quán{{if .ShopName}} — {{.ShopName}}{{end}}</p>
+        </div>
+        <form method="post" action="/logout" class="logout-form">
+          <button type="submit" class="btn btn-ghost btn-sm">Đăng xuất</button>
+        </form>
+      </div>
     </header>
     <main class="container">
       <section class="controls card">
-        <form id="shop-form" class="control-form">
-          <label>
-            Mã cửa hàng
-            <input
-              class="input"
-              type="text"
-              name="shop_id"
-              placeholder="dán uuid từ lệnh seed"
-              autocomplete="off"
-            />
-          </label>
+        <form id="week-form" class="control-form">
           <label>
             Tuần bắt đầu
             <input class="input" type="date" name="week_start" value="{{.Today}}" />
@@ -35,7 +32,7 @@
               type="button"
               class="btn btn-ghost"
               hx-get="/dashboard/week"
-              hx-include="#shop-form"
+              hx-include="#week-form"
               hx-target="#week-panel"
               hx-swap="innerHTML"
             >
@@ -45,7 +42,7 @@
               type="button"
               class="btn btn-primary"
               hx-post="/dashboard/generate"
-              hx-include="#shop-form"
+              hx-include="#week-form"
               hx-target="#week-panel"
               hx-swap="innerHTML"
             >

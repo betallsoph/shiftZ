@@ -1,4 +1,5 @@
-h1:7WsXQpcKOE8nrmVDum7WtrkV+HG8Lu5zS3PFl5hGfRI=
+h1:91D1LvoFCpuZAVEn0qPrIH75l6sUi8ufdtE0w4DS2ik=
 20260709190436_initial.sql h1:+OsuFl0Lk85+B9fzP8yReEZF5rLssgdcfgLGX6N0K/8=
 20260712121254_unique_schedule_variant.sql h1:9fn/CvQ9xSEcj8o7Jj2NSR8XfVdfemMUHHAnHkZ8B78=
 20260712131312_reminder_deliveries.sql h1:xijnecajoxg9SjQKQUfmvNgANu6SN5YL6waHKh93I6k=
+20260713193435_add_shop_dashboard_token_hash.sql h1:zUeas/MVL3Reo8cC8naXUEjPRlGbIEHOeF043/LvmEM=

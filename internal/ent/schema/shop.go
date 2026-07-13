@@ -30,6 +30,8 @@ func (Shop) Fields() []ent.Field {
 		field.Int64("telegram_group_id"),
 		// SaaS plan tier, e.g. "free", "pro".
 		field.String("plan").Default("free"),
+		// SHA-256 hex hash of the owner dashboard token (never store plaintext).
+		field.String("dashboard_token_hash").Optional().Nillable(),
 		field.Time("created_at").Default(time.Now).Immutable(),
 	}
 }
