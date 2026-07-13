@@ -158,6 +158,72 @@ body {
   background: #eee;
 }
 
+.employees-panel {
+  margin-bottom: 16px;
+}
+
+.employees-heading {
+  margin: 0 0 12px;
+  font-size: 1rem;
+}
+
+.employee-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.employee-row {
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.employee-row.is-inactive {
+  opacity: 0.65;
+}
+
+.employee-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.employee-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+}
+
+.employee-name {
+  font-weight: 700;
+}
+
+.employee-form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.employee-field-error {
+  margin-bottom: 8px;
+}
+
+.badge-telegram {
+  background: #e8f5e9;
+}
+
+.badge-employee-active {
+  background: var(--blue-200);
+}
+
+.badge-employee-inactive {
+  background: #eee;
+}
+
 .checkbox-label {
   display: flex;
   align-items: flex-start;

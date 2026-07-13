@@ -157,6 +157,7 @@ func newShiftsTestServer(t *testing.T, shopID uuid.UUID, shifts *fakeShifts) (*S
 		shifts:        shifts,
 		schedules:     &fakeSchedules{},
 		employees:     &fakeEmployees{},
+		employeeMgmt:  &fakeEmployeeMgmt{},
 		availability:  &fakeAvailabilityRepo{},
 		planner:       &fakePlanner{},
 		onboarding:    &noopOnboarder{},

@@ -20,7 +20,8 @@ type PageData struct {
 	Today    string
 	ShopName string
 	Telegram TelegramSetupView
-	Shifts   ShiftsPanelView
+	Shifts    ShiftsPanelView
+	Employees EmployeesPanelView
 }
 
 // WeekView is the HTMX-swapped week panel.

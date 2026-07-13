@@ -2,7 +2,6 @@ package telegram
 
 import (
 	"context"
-	"errors"
 	"io"
 	"log/slog"
 	"strings"
@@ -340,7 +339,9 @@ func (f *fakeShops) ByID(_ context.Context, id uuid.UUID) (*store.Shop, error) {
 }
 
 type fakeEmployees struct {
-	emp *store.Employee
+	emp     *store.Employee
+	joinErr error
+	joinEmp *store.Employee
 }
 
 func (f *fakeEmployees) ByTelegramID(_ context.Context, telegramUserID int64) (*store.Employee, error) {
@@ -350,8 +351,19 @@ func (f *fakeEmployees) ByTelegramID(_ context.Context, telegramUserID int64) (*
 	return nil, store.ErrNotFound
 }
 
-func (f *fakeEmployees) Join(_ context.Context, _ string, _ int64, _ string) (*store.Employee, error) {
-	return nil, errors.New("not implemented")
+func (f *fakeEmployees) Join(_ context.Context, _ string, _ int64, displayName string) (*store.Employee, error) {
+	if f.joinErr != nil {
+		return nil, f.joinErr
+	}
+	if f.joinEmp != nil {
+		return f.joinEmp, nil
+	}
+	if f.emp != nil {
+		emp := *f.emp
+		emp.DisplayName = displayName
+		return &emp, nil
+	}
+	return &store.Employee{ID: uuid.New(), DisplayName: displayName, IsActive: true}, nil
 }
 
 type fakeAvailability struct {
@@ -557,5 +569,50 @@ func TestHandleVoteInGroupIgnored(t *testing.T) {
 	}
 	if votes.recordCalls != 0 {
 		t.Fatal("vote should not record from group callback yet")
+	}
+}
+
+func TestHandleStartInactiveEmployee(t *testing.T) {
+	msgAPI := &fakeMessenger{}
+	employees := &fakeEmployees{joinErr: store.ErrEmployeeInactive}
+	bot := NewBot(msgAPI, &fakeParser{}, &fakeShops{}, &fakeGroupSetup{}, employees, &fakeAvailability{}, &fakeVotes{}, NewMemoryAvailabilityDraftStore(0), testLogger())
+
+	msg := &Message{
+		From: &User{ID: 42, FirstName: "Anna"},
+		Chat: Chat{ID: 100, Type: "private"},
+		Text: "/start invite123",
+	}
+	if err := bot.handleStart(context.Background(), msg, "invite123"); err != nil {
+		t.Fatal(err)
+	}
+	if len(msgAPI.messages) != 1 {
+		t.Fatalf("messages = %d", len(msgAPI.messages))
+	}
+	body := msgAPI.messages[0].text
+	if !strings.Contains(body, "đang bị tạm ngưng") || !strings.Contains(body, "liên hệ chủ quán") {
+		t.Fatalf("message = %q", body)
+	}
+}
+
+func TestHandleStartJoinSuccess(t *testing.T) {
+	shopID := uuid.New()
+	empID := uuid.New()
+	msgAPI := &fakeMessenger{}
+	employees := &fakeEmployees{joinEmp: &store.Employee{ID: empID, ShopID: shopID, DisplayName: "Anna", IsActive: true}}
+	bot := NewBot(msgAPI, &fakeParser{}, &fakeShops{}, &fakeGroupSetup{}, employees, &fakeAvailability{}, &fakeVotes{}, NewMemoryAvailabilityDraftStore(0), testLogger())
+
+	msg := &Message{
+		From: &User{ID: 42, FirstName: "Anna"},
+		Chat: Chat{ID: 100, Type: "private"},
+		Text: "/start invite123",
+	}
+	if err := bot.handleStart(context.Background(), msg, "invite123"); err != nil {
+		t.Fatal(err)
+	}
+	if len(msgAPI.messages) != 1 {
+		t.Fatalf("messages = %d", len(msgAPI.messages))
+	}
+	if !strings.Contains(msgAPI.messages[0].text, "Welcome, Anna") {
+		t.Fatalf("message = %q", msgAPI.messages[0].text)
 	}
 }

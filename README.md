@@ -121,6 +121,8 @@ Optional default shift templates (morning/evening every day) are created when se
 The dashboard uses HTMX and calls the Go planner/store layer directly (no JSON API from the browser).
 The dashboard also shows weekly availability submission status and parsed slots.
 
+Use the **Nhân viên** panel to view your roster, edit display name / role / weekly hour limits, and suspend or reactivate staff. Suspended employees cannot re-join via `/start` until you reactivate them in the dashboard.
+
 For local dev, `SESSION_SECRET` can be omitted (the server generates an ephemeral secret and logs a warning).
 In production, set a long random `SESSION_SECRET` (for example `openssl rand -base64 32`).
 Set `COOKIE_SECURE=true` when serving the dashboard over HTTPS.
@@ -157,10 +159,11 @@ curl "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/setWebhook" \
 Employees interact with the bot in **private chat** only (DM). Group chats accept `/setup` for owner dashboard connection; other group messages are ignored.
 
 1. Employee joins with `/start <invite-code>` in a private chat with the bot.
-2. Employee sends availability in plain language.
-3. Bot parses the message (using the shop timezone) and replies with a short summary plus **Confirm** / **Cancel** buttons.
-4. Only **Confirm** writes availability to the database; **Cancel** discards the draft.
-5. Pending confirmations expire after 30 minutes (in-memory for now).
+2. If an owner has suspended the employee, `/start` will not re-activate them — the owner must use the dashboard **Nhân viên** panel.
+3. Employee sends availability in plain language.
+4. Bot parses the message (using the shop timezone) and replies with a short summary plus **Confirm** / **Cancel** buttons.
+5. Only **Confirm** writes availability to the database; **Cancel** discards the draft.
+6. Pending confirmations expire after 30 minutes (in-memory for now).
 
 ### Availability reminders
 

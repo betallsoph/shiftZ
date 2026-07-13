@@ -107,6 +107,7 @@ func newTelegramTestServer(t *testing.T, fakeTG *fakeShopTelegram) (*Server, *ht
 		shifts:        &fakeShifts{},
 		schedules:     &fakeSchedules{},
 		employees:     &fakeEmployees{},
+		employeeMgmt:  &fakeEmployeeMgmt{},
 		availability:  &fakeAvailabilityRepo{},
 		planner:       &fakePlanner{},
 		onboarding:    &noopOnboarder{},

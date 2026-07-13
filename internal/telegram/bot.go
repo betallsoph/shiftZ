@@ -149,6 +149,10 @@ func (b *Bot) handleStart(ctx context.Context, m *Message, inviteCode string) er
 	if errors.Is(err, store.ErrNotFound) {
 		return b.api.SendMessage(ctx, m.Chat.ID, "That invite code doesn't match any shop. Double-check it with your manager.", nil)
 	}
+	if errors.Is(err, store.ErrEmployeeInactive) {
+		return b.api.SendMessage(ctx, m.Chat.ID,
+			"Tài khoản của bạn đang bị tạm ngưng trong quán này.\nHãy liên hệ chủ quán để được bật lại.", nil)
+	}
 	if err != nil {
 		return fmt.Errorf("telegram: join shop: %w", err)
 	}

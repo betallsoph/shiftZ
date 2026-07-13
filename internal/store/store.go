@@ -41,6 +41,9 @@ var ErrAlreadyExists = errors.New("store: schedules already exist for shop week"
 // ErrValidation is returned when input fails business validation.
 var ErrValidation = errors.New("store: validation error")
 
+// ErrEmployeeInactive is returned when an inactive employee tries to re-join via invite.
+var ErrEmployeeInactive = errors.New("store: employee inactive")
+
 // Store bundles the ent client and repositories.
 type Store struct {
 	// Client is the raw ent client, exposed for code that outgrows the

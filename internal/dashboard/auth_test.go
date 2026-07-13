@@ -216,6 +216,7 @@ func testDashboardWithAuth(t *testing.T, shopID uuid.UUID, validToken string, sh
 		shifts:        &fakeShifts{},
 		schedules:     &fakeSchedules{},
 		employees:     &fakeEmployees{},
+		employeeMgmt:  &fakeEmployeeMgmt{},
 		availability:  &fakeAvailabilityRepo{},
 		planner:       &fakePlanner{},
 		onboarding:    &noopOnboarder{},

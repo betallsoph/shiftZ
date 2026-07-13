@@ -3,6 +3,7 @@ package store
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
@@ -18,8 +19,8 @@ type EmployeeRepo struct {
 	client *ent.Client
 }
 
-// Join registers (or re-activates) an employee on the shop matching the
-// invite code and returns the employee row.
+// Join registers a new employee or updates an active employee on the shop
+// matching the invite code. Inactive employees are not re-activated here.
 func (r *EmployeeRepo) Join(ctx context.Context, inviteCode string, telegramUserID int64, displayName string) (*Employee, error) {
 	sh, err := r.client.Shop.Query().Where(shop.InviteCode(inviteCode)).Only(ctx)
 	if ent.IsNotFound(err) {
@@ -29,33 +30,38 @@ func (r *EmployeeRepo) Join(ctx context.Context, inviteCode string, telegramUser
 		return nil, fmt.Errorf("store: shop by invite code: %w", err)
 	}
 
-	id, err := r.client.Employee.Create().
+	existing, err := r.client.Employee.Query().
+		Where(employee.ShopID(sh.ID), employee.TelegramUserID(telegramUserID)).
+		Only(ctx)
+	if err == nil {
+		if !existing.IsActive {
+			return nil, ErrEmployeeInactive
+		}
+		updated, err := r.client.Employee.UpdateOneID(existing.ID).
+			SetDisplayName(strings.TrimSpace(displayName)).
+			Save(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("store: update joined employee: %w", err)
+		}
+		return employeeFromEnt(updated), nil
+	}
+	if !ent.IsNotFound(err) {
+		return nil, fmt.Errorf("store: lookup employee for join: %w", err)
+	}
+
+	row, err := r.client.Employee.Create().
 		SetShopID(sh.ID).
 		SetTelegramUserID(telegramUserID).
-		SetDisplayName(displayName).
-		OnConflict(
-			sql.ConflictColumns(employee.FieldShopID, employee.FieldTelegramUserID),
-		).
-		Update(func(u *ent.EmployeeUpsert) {
-			u.UpdateDisplayName()
-			u.SetIsActive(true)
-		}).
-		ID(ctx)
+		SetDisplayName(strings.TrimSpace(displayName)).
+		SetIsActive(true).
+		Save(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("store: join shop: %w", err)
-	}
-	row, err := r.client.Employee.Get(ctx, id)
-	if err != nil {
-		return nil, fmt.Errorf("store: fetch joined employee: %w", err)
 	}
 	return employeeFromEnt(row), nil
 }
 
-// ByTelegramID returns the employee linked to a Telegram account. This is
-// the webhook lookup: the bot resolves the sender before knowing the shop,
-// hence the standalone telegram_user_id index.
-// NOTE: assumes one shop per Telegram user for now; multi-shop membership
-// would return a slice instead.
+// ByTelegramID returns the active employee linked to a Telegram account.
 func (r *EmployeeRepo) ByTelegramID(ctx context.Context, telegramUserID int64) (*Employee, error) {
 	row, err := r.client.Employee.Query().
 		Where(employee.TelegramUserID(telegramUserID), employee.IsActive(true)).
@@ -95,8 +101,7 @@ func (r *EmployeeRepo) ActiveTelegramIDs(ctx context.Context) ([]int64, error) {
 	return ids, nil
 }
 
-// ListActiveByShop returns active employees for a shop, ordered by display
-// name.
+// ListActiveByShop returns active employees for a shop, ordered by display name.
 func (r *EmployeeRepo) ListActiveByShop(ctx context.Context, shopID uuid.UUID) ([]*Employee, error) {
 	rows, err := r.client.Employee.Query().
 		Where(employee.ShopID(shopID), employee.IsActive(true)).
@@ -110,4 +115,63 @@ func (r *EmployeeRepo) ListActiveByShop(ctx context.Context, shopID uuid.UUID) (
 		out[i] = employeeFromEnt(row)
 	}
 	return out, nil
+}
+
+// ListAllByShop returns every employee for a shop; active first, then name.
+func (r *EmployeeRepo) ListAllByShop(ctx context.Context, shopID uuid.UUID) ([]*Employee, error) {
+	rows, err := r.client.Employee.Query().
+		Where(employee.ShopID(shopID)).
+		Order(employee.ByIsActive(sql.OrderDesc()), employee.ByDisplayName()).
+		All(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("store: list all employees: %w", err)
+	}
+	out := make([]*Employee, len(rows))
+	for i, row := range rows {
+		out[i] = employeeFromEnt(row)
+	}
+	return out, nil
+}
+
+// Update changes owner-editable employee profile fields scoped to one shop.
+func (r *EmployeeRepo) Update(ctx context.Context, shopID, employeeID uuid.UUID, input UpdateEmployeeInput) (*Employee, error) {
+	if err := ValidateUpdateEmployeeInput(input); err != nil {
+		return nil, err
+	}
+	row, err := r.client.Employee.Query().
+		Where(employee.And(employee.ShopID(shopID), employee.ID(employeeID))).
+		Only(ctx)
+	if ent.IsNotFound(err) {
+		return nil, ErrNotFound
+	}
+	if err != nil {
+		return nil, fmt.Errorf("store: find employee: %w", err)
+	}
+	updated, err := r.client.Employee.UpdateOneID(row.ID).
+		SetDisplayName(strings.TrimSpace(input.DisplayName)).
+		SetRole(strings.TrimSpace(input.Role)).
+		SetMaxHoursPerWeek(input.MaxHoursPerWeek).
+		Save(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("store: update employee: %w", err)
+	}
+	return employeeFromEnt(updated), nil
+}
+
+// SetActive enables or disables an employee scoped to one shop.
+func (r *EmployeeRepo) SetActive(ctx context.Context, shopID, employeeID uuid.UUID, active bool) (*Employee, error) {
+	row, err := r.client.Employee.Query().
+		Where(employee.And(employee.ShopID(shopID), employee.ID(employeeID))).
+		Only(ctx)
+	if ent.IsNotFound(err) {
+		return nil, ErrNotFound
+	}
+	if err != nil {
+		return nil, fmt.Errorf("store: find employee: %w", err)
+	}
+	updated, err := r.client.Employee.UpdateOneID(row.ID).SetIsActive(active).Save(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("store: set employee active: %w", err)
+	}
+	return employeeFromEnt(updated), nil
 }

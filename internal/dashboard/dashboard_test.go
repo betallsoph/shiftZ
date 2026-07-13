@@ -248,6 +248,7 @@ func testDashboard(t *testing.T, shops shopReader, schedules scheduleRepo, emplo
 		shifts:        &fakeShifts{},
 		schedules:     schedules,
 		employees:     employees,
+		employeeMgmt:  &fakeEmployeeMgmt{},
 		availability:  availability,
 		planner:       gen,
 		onboarding:    &noopOnboarder{},

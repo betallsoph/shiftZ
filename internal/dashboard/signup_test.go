@@ -193,6 +193,7 @@ func newSignupTestServer(t *testing.T, signupEnabled bool, onboard shopOnboarder
 		shifts:        &fakeShifts{},
 		schedules:     &fakeSchedules{},
 		employees:     &fakeEmployees{},
+		employeeMgmt:  &fakeEmployeeMgmt{},
 		availability:  &fakeAvailabilityRepo{},
 		planner:       &fakePlanner{},
 		onboarding:    onboard,
