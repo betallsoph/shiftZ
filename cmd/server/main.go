@@ -47,7 +47,13 @@ func run(log *slog.Logger) error {
 
 	mux := http.NewServeMux()
 	health.Register(mux, st)
-	api.New(st, log).Register(mux)
+	if cfg.DevAPIEnabled {
+		api.New(st, log).Register(mux)
+		log.Info("dev API enabled")
+	} else {
+		api.RegisterDisabled(mux)
+		log.Info("dev API disabled")
+	}
 
 	sessionSecret := cfg.SessionSecret
 	if sessionSecret == "" {

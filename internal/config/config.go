@@ -53,6 +53,8 @@ type Config struct {
 	SessionSecret string
 	// CookieSecure sets the Secure flag on dashboard session cookies.
 	CookieSecure bool
+	// DevAPIEnabled exposes unauthenticated JSON API routes (local dev only).
+	DevAPIEnabled bool
 }
 
 // Load reads all settings from the environment, applying defaults for
@@ -69,15 +71,16 @@ func Load() *Config {
 		LLMProvider:           os.Getenv("LLM_PROVIDER"),
 		LLMAPIKey:             os.Getenv("LLM_API_KEY"),
 		LLMModel:              os.Getenv("LLM_MODEL"),
-		EntDebug:              os.Getenv("ENT_DEBUG") == "1" || os.Getenv("ENT_DEBUG") == "true",
-		RemindersEnabled:      os.Getenv("REMINDERS_ENABLED") == "1" || os.Getenv("REMINDERS_ENABLED") == "true",
+		EntDebug:              envBool("ENT_DEBUG"),
+		RemindersEnabled:      envBool("REMINDERS_ENABLED"),
 		ReminderTickInterval:  envDurationOr("REMINDER_TICK_INTERVAL", time.Minute),
 		DBMaxOpenConns:        envIntOr("DB_MAX_OPEN_CONNS", pool.MaxOpenConns),
 		DBMaxIdleConns:        envIntOr("DB_MAX_IDLE_CONNS", pool.MaxIdleConns),
 		DBConnMaxLifetime:     envDurationOr("DB_CONN_MAX_LIFETIME", pool.ConnMaxLifetime),
 		DBConnMaxIdleTime:     envDurationOr("DB_CONN_MAX_IDLE_TIME", pool.ConnMaxIdleTime),
 		SessionSecret:         os.Getenv("SESSION_SECRET"),
-		CookieSecure:          os.Getenv("COOKIE_SECURE") == "1" || os.Getenv("COOKIE_SECURE") == "true",
+		CookieSecure:          envBool("COOKIE_SECURE"),
+		DevAPIEnabled:         envBool("DEV_API_ENABLED"),
 	}
 }
 
@@ -136,4 +139,9 @@ func envIntOr(key string, fallback int) int {
 		return fallback
 	}
 	return n
+}
+
+func envBool(key string) bool {
+	v := os.Getenv(key)
+	return v == "1" || v == "true"
 }

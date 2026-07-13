@@ -64,6 +64,16 @@ go run ./cmd/server
 
 ## Dev API
 
+The JSON API is dev-only and disabled by default in production.
+The HTMX dashboard does not require `DEV_API_ENABLED`.
+
+Enable it for local curl testing:
+
+```sh
+export DEV_API_ENABLED=true
+go run ./cmd/server
+```
+
 After seeding, copy the shop `id` from the seed logs (or query Postgres). Then:
 
 ```sh
@@ -167,6 +177,7 @@ export LLM_MODEL='gemini-3.5-flash'   # optional; swap for cheaper Flash-Lite-st
 | `DB_CONN_MAX_IDLE_TIME`   | bot, server     | `5m`    | Max idle connection time                       |
 | `SESSION_SECRET`          | server (prod)   | —       | HMAC secret for owner dashboard session cookies |
 | `COOKIE_SECURE`           | server (optional)| `false`| `true` sets Secure on dashboard session cookies |
+| `DEV_API_ENABLED`         | server (optional)| `false` | Enables unauthenticated dev JSON API          |
 | `ENT_DEBUG`               | all (optional)  | —       | `1`/`true` logs every generated SQL statement (dev only) |
 
 ## Production / beta deployment
@@ -186,6 +197,8 @@ REMINDERS_ENABLED=true
 SESSION_SECRET=...            # openssl rand -base64 32
 COOKIE_SECURE=true            # HTTPS deployments
 ```
+
+Keep `DEV_API_ENABLED` unset or `false` in production.
 
 ### Optional runtime env
 
