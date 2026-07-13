@@ -22,6 +22,8 @@ type Config struct {
 	ServerAddr string
 	// BotAddr is the listen address of the Telegram webhook binary.
 	BotAddr string
+	// AppAddr is the listen address of the unified production binary (APP_ADDR).
+	AppAddr string
 
 	// TelegramToken is the bot token from @BotFather.
 	TelegramToken string
@@ -68,6 +70,7 @@ func Load() *Config {
 		MigrationDatabaseURL:  os.Getenv("MIGRATION_DATABASE_URL"),
 		ServerAddr:            envOr("SERVER_ADDR", ":8080"),
 		BotAddr:               envOr("BOT_ADDR", ":8081"),
+		AppAddr:               os.Getenv("APP_ADDR"),
 		TelegramToken:         os.Getenv("TELEGRAM_BOT_TOKEN"),
 		TelegramWebhookSecret: os.Getenv("TELEGRAM_WEBHOOK_SECRET"),
 		LLMProvider:           os.Getenv("LLM_PROVIDER"),
@@ -109,6 +112,43 @@ func (c *Config) RequireDatabase() error {
 func (c *Config) RequireTelegram() error {
 	if c.TelegramToken == "" {
 		return fmt.Errorf("config: TELEGRAM_BOT_TOKEN is required")
+	}
+	return nil
+}
+
+// ResolveAppAddr returns the listen address for cmd/app.
+// Precedence: APP_ADDR, then PORT (as :PORT), then :8080.
+func (c *Config) ResolveAppAddr() (string, error) {
+	if c.AppAddr != "" {
+		return c.AppAddr, nil
+	}
+	port := os.Getenv("PORT")
+	if port == "" {
+		return ":8080", nil
+	}
+	n, err := strconv.Atoi(port)
+	if err != nil || n <= 0 || n > 65535 {
+		return "", fmt.Errorf("config: invalid PORT %q", port)
+	}
+	return ":" + port, nil
+}
+
+// RequireProduction fails unless production-required settings are set.
+func (c *Config) RequireProduction() error {
+	if err := c.RequireDatabase(); err != nil {
+		return err
+	}
+	if c.SessionSecret == "" {
+		return fmt.Errorf("config: SESSION_SECRET is required")
+	}
+	if err := c.RequireTelegram(); err != nil {
+		return err
+	}
+	if c.TelegramWebhookSecret == "" {
+		return fmt.Errorf("config: TELEGRAM_WEBHOOK_SECRET is required")
+	}
+	if c.LLMProvider == "gemini" && c.LLMAPIKey == "" {
+		return fmt.Errorf("config: LLM_API_KEY is required when LLM_PROVIDER=gemini")
 	}
 	return nil
 }

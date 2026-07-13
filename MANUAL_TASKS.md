@@ -20,31 +20,17 @@ File nay khong thay the README. No la checklist van hanh: tao account, lay key, 
 openssl rand -base64 32
 ```
 
-- [ ] Chon hosting cho `cmd/server`.
-- [ ] Chon hosting cho `cmd/bot`.
+- [ ] Chon hosting cho unified service (`cmd/app` hoac Docker image).
 - [ ] Tro domain/HTTPS neu deploy public beta.
 
 ## 2. Bien Moi Truong Production
 
-Set cho `cmd/server`:
+Set cho unified runtime (`cmd/app`):
 
 ```sh
 DATABASE_URL='Neon pooled URL'
-SERVER_ADDR=':8080'
 SESSION_SECRET='...'
 COOKIE_SECURE=true
-DEV_API_ENABLED=false
-DB_MAX_OPEN_CONNS=5
-DB_MAX_IDLE_CONNS=2
-DB_CONN_MAX_LIFETIME=30m
-DB_CONN_MAX_IDLE_TIME=5m
-```
-
-Set cho `cmd/bot`:
-
-```sh
-DATABASE_URL='Neon pooled URL'
-BOT_ADDR=':8081'
 TELEGRAM_BOT_TOKEN='...'
 TELEGRAM_WEBHOOK_SECRET='...'
 LLM_PROVIDER=gemini
@@ -52,10 +38,18 @@ LLM_API_KEY='...'
 LLM_MODEL='gemini-3.5-flash'
 REMINDERS_ENABLED=true
 REMINDER_TICK_INTERVAL=1m
+DEV_API_ENABLED=false
 DB_MAX_OPEN_CONNS=5
 DB_MAX_IDLE_CONNS=2
 DB_CONN_MAX_LIFETIME=30m
 DB_CONN_MAX_IDLE_TIME=5m
+```
+
+Listen address (chon mot):
+
+```sh
+APP_ADDR=':8080'    # uu tien cao nhat
+# hoac de platform set PORT (vi du Render/Fly map PORT -> :PORT)
 ```
 
 Dung rieng cho migration:
@@ -66,10 +60,12 @@ MIGRATION_DATABASE_URL='Neon direct URL'
 
 Khong bat `DEV_API_ENABLED` tren production tru khi dang debug co chu dich.
 
+Local dev van co the dung hai binary tach (`cmd/server` + `cmd/bot`) voi `SERVER_ADDR` / `BOT_ADDR`.
+
 ## 3. Database Va Migration
 
 - [ ] Confirm dang dung Neon direct URL cho migration, khong dung pooled URL.
-- [ ] Apply migrations:
+- [ ] Apply migrations **truoc** deploy (app khong tu chay migration khi startup):
 
 ```sh
 atlas migrate apply --dir file://migrations --url "$MIGRATION_DATABASE_URL"
@@ -89,24 +85,23 @@ atlas migrate apply --dir file://migrations --url "$MIGRATION_DATABASE_URL"
 - [ ] Check Neon dashboard xem database co tables moi sau migration.
 - [ ] Ghi lai Neon project id / branch / region vao noi quan ly rieng.
 
-## 4. Deploy Services
+## 4. Deploy Service
 
-- [ ] Deploy `cmd/server`.
-- [ ] Deploy `cmd/bot`.
+- [ ] Deploy `cmd/app` (hoac Docker image tu `Dockerfile`).
 - [ ] Liveness probe dung `/livez`.
 - [ ] Readiness probe dung `/readyz`.
 - [ ] Khong cau hinh liveness probe vao `/readyz`, vi no ping DB va co the danh thuc Neon.
 - [ ] Confirm `/api/...` tra 404 khi `DEV_API_ENABLED=false`.
-- [ ] Confirm `/login` mo duoc tren server.
+- [ ] Confirm `/login` mo duoc.
 - [ ] Confirm static assets `/static/dashboard.css` va `/static/dashboard.js` load duoc.
 
 ## 5. Telegram Webhook
 
-Sau khi `cmd/bot` co public HTTPS URL:
+Sau khi app co public HTTPS URL:
 
 ```sh
 curl "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/setWebhook" \
-  -d "url=https://<bot-domain>/telegram/webhook" \
+  -d "url=https://<app-domain>/telegram/webhook" \
   -d "secret_token=$TELEGRAM_WEBHOOK_SECRET"
 ```
 
@@ -149,10 +144,8 @@ go run ./cmd/seed
 
 ## 7. Smoke Test Beta
 
-- [ ] `GET /livez` cua `cmd/server` tra 200.
-- [ ] `GET /readyz` cua `cmd/server` tra 200.
-- [ ] `GET /livez` cua `cmd/bot` tra 200.
-- [ ] `GET /readyz` cua `cmd/bot` tra 200.
+- [ ] `GET /livez` tra 200.
+- [ ] `GET /readyz` tra 200.
 - [ ] `/login` sai token bi tu choi.
 - [ ] `/login` dung token vao dashboard duoc.
 - [ ] Dashboard khong co o nhap `shop_id`.
@@ -166,8 +159,8 @@ go run ./cmd/seed
 
 ## 8. Viec Van Hanh Hang Tuan
 
-- [ ] Check log `cmd/bot` sau moc Thursday 10:00 local: reminder da gui.
-- [ ] Check log `cmd/bot` sau moc Saturday 10:00 local: nag chi gui nguoi chua submit.
+- [ ] Check log app sau moc Thursday 10:00 local: reminder da gui.
+- [ ] Check log app sau moc Saturday 10:00 local: nag chi gui nguoi chua submit.
 - [ ] Check error tu Gemini parsing.
 - [ ] Check Telegram webhook errors.
 - [ ] Check Neon usage: CU-hours, storage, active connections.
@@ -178,9 +171,6 @@ go run ./cmd/seed
 
 - [ ] Reset owner dashboard token khi chu quan lam mat token.
 - [ ] Doi timezone/shop info tu dashboard.
-- [ ] Tao/sua/xoa employee tu dashboard.
-- [ ] Tao/sua/xoa shift templates tu dashboard.
-- [ ] Gan Telegram group cho shop that.
 - [ ] Billing/free-tier enforcement.
 - [ ] Backup/restore drill.
 - [ ] Alert khi bot webhook fail.
@@ -194,8 +184,7 @@ go run ./cmd/seed
 - [ ] Kiem tra `/livez` de biet process con song khong.
 - [ ] Kiem tra `/readyz` de biet DB co ket noi duoc khong.
 - [ ] Kiem tra Neon status/dashboard.
-- [ ] Kiem tra hosting logs cua `cmd/server`.
-- [ ] Kiem tra hosting logs cua `cmd/bot`.
+- [ ] Kiem tra hosting logs cua unified app.
 - [ ] Kiem tra Telegram `getWebhookInfo`.
 - [ ] Neu Gemini loi, bot co the khong parse availability moi; thong bao user gui lai sau.
 - [ ] Neu DB loi, tam dung deploy/migration va khong generate schedule moi.
@@ -209,4 +198,3 @@ go run ./cmd/seed
 - [ ] Khong log owner dashboard token sau khi tao xong.
 - [ ] Rotating `SESSION_SECRET` se logout tat ca dashboard sessions.
 - [ ] Khi test production, dung shop test rieng, khong dung shop khach that.
-

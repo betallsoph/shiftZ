@@ -10,8 +10,9 @@ the team votes via inline buttons and the owner approves or vetoes.
 
 ```
 cmd/
-  bot/          Telegram bot entry point (webhook mode) + cron jobs
-  server/       REST API entry point; serves the embedded dashboard
+  app/          unified production runtime (dashboard + webhook + reminders)
+  bot/          Telegram bot entry point (webhook mode) + cron jobs — local dev
+  server/       REST API entry point; serves the embedded dashboard — local dev
   seed/         seeds a demo shop, employees and shifts (dev only)
   migratediff/  regenerates Atlas migrations from the ent schemas
 internal/
@@ -29,7 +30,7 @@ internal/
   scheduler/    cron runner: weekly reminder, nag non-responders,
                 close voting & finalize
   config/       env-based configuration
-web/            frontend assets, embedded into cmd/server via go:embed
+web/            frontend assets, embedded into cmd/server and cmd/app via go:embed
 migrations/     versioned Atlas migrations (generated, don't hand-edit)
 ```
 
@@ -60,6 +61,10 @@ go test ./...
 
 # 5. Run the API + dashboard (http://localhost:8080)
 go run ./cmd/server
+
+# Or run the unified production binary locally (requires production env vars):
+# export DATABASE_URL=... SESSION_SECRET=... TELEGRAM_BOT_TOKEN=... TELEGRAM_WEBHOOK_SECRET=...
+# go run ./cmd/app
 ```
 
 ## Dev API
@@ -139,13 +144,19 @@ After logging in, use the **Telegram group** panel on the dashboard:
 Setup codes are hashed at rest and cleared after a successful connection.
 
 ```sh
-# 6. Run the Telegram bot (webhook mode)
+# 6. Run the Telegram bot (webhook mode) — local dev only; production uses cmd/app
 export TELEGRAM_BOT_TOKEN='123456:ABC...'          # from @BotFather
 export TELEGRAM_WEBHOOK_SECRET='some-random-string'
 go run ./cmd/bot
 ```
 
-For Telegram to reach the bot locally, expose it with a tunnel (e.g.
+For **production/beta**, run a single service with `go run ./cmd/app` (or the Docker image). Register the webhook on the same domain:
+
+```txt
+https://<app-domain>/telegram/webhook
+```
+
+For local Telegram bot testing (separate from dashboard), expose the bot with a tunnel:
 `ngrok http 8081`) and register the webhook:
 
 ```sh
@@ -195,43 +206,71 @@ export LLM_MODEL='gemini-3.5-flash'   # optional; swap for cheaper Flash-Lite-st
 
 | Variable                  | Required by     | Default | Description                                    |
 | ------------------------- | --------------- | ------- | ---------------------------------------------- |
-| `DATABASE_URL`            | bot, server     | —       | Postgres DSN (Neon: pooled URL for runtime)    |
+| `DATABASE_URL`            | app, bot, server| —       | Postgres DSN (Neon: pooled URL for runtime)    |
 | `MIGRATION_DATABASE_URL`  | migrations only | —       | Direct Postgres DSN for Atlas (Neon: non-pooler)|
-| `SERVER_ADDR`             | server          | `:8080` | REST API / dashboard listen address            |
-| `BOT_ADDR`                | bot             | `:8081` | Webhook listen address                         |
-| `TELEGRAM_BOT_TOKEN`      | bot             | —       | Bot token from @BotFather                      |
-| `TELEGRAM_WEBHOOK_SECRET` | bot (optional)  | —       | Must match `secret_token` given to setWebhook  |
-| `LLM_PROVIDER`            | bot (optional)  | —       | Model backend (`gemini`); empty disables LLM features |
-| `LLM_API_KEY`             | bot (optional)  | —       | API key for the selected provider              |
-| `LLM_MODEL`               | bot (optional)  | —       | Model id for the selected provider             |
-| `REMINDERS_ENABLED`       | bot (optional)  | —       | `true` starts availability reminder/nag loop   |
-| `REMINDER_TICK_INTERVAL`  | bot (optional)  | `1m`    | How often the reminder worker ticks            |
-| `DB_MAX_OPEN_CONNS`       | bot, server     | `5`     | database/sql max open connections              |
-| `DB_MAX_IDLE_CONNS`       | bot, server     | `2`     | database/sql max idle connections              |
-| `DB_CONN_MAX_LIFETIME`    | bot, server     | `30m`   | Max connection lifetime                        |
-| `DB_CONN_MAX_IDLE_TIME`   | bot, server     | `5m`    | Max idle connection time                       |
-| `SESSION_SECRET`          | server (prod)   | —       | HMAC secret for owner dashboard session cookies |
-| `COOKIE_SECURE`           | server (optional)| `false`| `true` sets Secure on dashboard session cookies |
-| `DEV_API_ENABLED`         | server (optional)| `false` | Enables unauthenticated dev JSON API          |
-| `OWNER_SIGNUP_ENABLED`    | server (optional)| `false` | Enables `/signup` owner onboarding flow       |
+| `APP_ADDR`                | app             | —       | Unified app listen address (overrides `PORT`)    |
+| `PORT`                    | app (hosted)    | —       | Platform port → `:<PORT>` when `APP_ADDR` unset|
+| `SERVER_ADDR`             | server          | `:8080` | REST API / dashboard listen address (dev)      |
+| `BOT_ADDR`                | bot             | `:8081` | Webhook listen address (dev)                   |
+| `TELEGRAM_BOT_TOKEN`      | app, bot        | —       | Bot token from @BotFather                      |
+| `TELEGRAM_WEBHOOK_SECRET` | app, bot        | —       | Must match `secret_token` given to setWebhook  |
+| `LLM_PROVIDER`            | app, bot (opt.) | —       | Model backend (`gemini`); empty disables LLM   |
+| `LLM_API_KEY`             | app, bot        | —       | Required when `LLM_PROVIDER=gemini` (app prod) |
+| `LLM_MODEL`               | app, bot (opt.) | —       | Model id for the selected provider             |
+| `REMINDERS_ENABLED`       | app, bot (opt.) | —       | `true` starts availability reminder/nag loop   |
+| `REMINDER_TICK_INTERVAL`  | app, bot (opt.) | `1m`    | How often the reminder worker ticks            |
+| `DB_MAX_OPEN_CONNS`       | all             | `5`     | database/sql max open connections              |
+| `DB_MAX_IDLE_CONNS`       | all             | `2`     | database/sql max idle connections              |
+| `DB_CONN_MAX_LIFETIME`    | all             | `30m`   | Max connection lifetime                        |
+| `DB_CONN_MAX_IDLE_TIME`   | all             | `5m`    | Max idle connection time                       |
+| `SESSION_SECRET`          | app, server     | —       | HMAC secret for owner dashboard session cookies |
+| `COOKIE_SECURE`           | app, server     | `false` | `true` sets Secure on dashboard session cookies |
+| `DEV_API_ENABLED`         | app, server     | `false` | Enables unauthenticated dev JSON API          |
+| `OWNER_SIGNUP_ENABLED`    | app, server     | `false` | Enables `/signup` owner onboarding flow       |
 | `ENT_DEBUG`               | all (optional)  | —       | `1`/`true` logs every generated SQL statement (dev only) |
 
 ## Production / beta deployment
 
-Local dev uses Docker Postgres. Beta/production targets **Neon Postgres**.
+Local dev uses Docker Postgres and split binaries (`cmd/server` + `cmd/bot`).
+Beta/production runs **one service** via `cmd/app` (or the Docker image below) on a single domain with one Neon pooled connection.
 
-### Required runtime env
+### Binaries
+
+| Command        | Use case |
+| -------------- | -------- |
+| `cmd/app`      | Production/beta — dashboard, `/telegram/webhook`, reminders |
+| `cmd/server`   | Local dev — dashboard only |
+| `cmd/bot`      | Local dev — Telegram webhook + reminders only |
+
+```sh
+# Production / beta
+go run ./cmd/app
+
+# Docker
+docker build -t shiftz:local .
+docker run --rm -p 8080:8080 --env-file .env shiftz:local
+```
+
+Set `COOKIE_SECURE=true` when serving over HTTPS.
+
+Telegram webhook URL on the same host:
+
+```txt
+https://<app-domain>/telegram/webhook
+```
+
+### Required runtime env (`cmd/app`)
 
 ```sh
 DATABASE_URL=...              # Neon pooled connection string
 TELEGRAM_BOT_TOKEN=...
 TELEGRAM_WEBHOOK_SECRET=...
-LLM_PROVIDER=gemini
-LLM_API_KEY=...
-LLM_MODEL=gemini-3.5-flash
-REMINDERS_ENABLED=true
 SESSION_SECRET=...            # openssl rand -base64 32
 COOKIE_SECURE=true            # HTTPS deployments
+LLM_PROVIDER=gemini
+LLM_API_KEY=...               # required when LLM_PROVIDER=gemini
+LLM_MODEL=gemini-3.5-flash
+REMINDERS_ENABLED=true
 ```
 
 Keep `DEV_API_ENABLED` unset or `false` in production.
@@ -240,8 +279,7 @@ Keep `OWNER_SIGNUP_ENABLED` unset or `false` in production unless you want open 
 ### Optional runtime env
 
 ```sh
-SERVER_ADDR=:8080
-BOT_ADDR=:8081
+APP_ADDR=:8080                # or rely on platform PORT
 ENT_DEBUG=false
 REMINDER_TICK_INTERVAL=1m
 DB_MAX_OPEN_CONNS=5
@@ -250,9 +288,11 @@ DB_CONN_MAX_LIFETIME=30m
 DB_CONN_MAX_IDLE_TIME=5m
 ```
 
+`SERVER_ADDR` and `BOT_ADDR` apply only to the split dev binaries.
+
 ### Health checks
 
-Both `cmd/server` and `cmd/bot` expose:
+`cmd/app` (and the dev binaries) expose:
 
 | Endpoint   | Purpose | Database |
 | ---------- | ------- | -------- |

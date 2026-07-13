@@ -1,0 +1,74 @@
+package main
+
+import (
+	"context"
+	"io/fs"
+	"log/slog"
+	"net/http"
+	"time"
+
+	"github.com/betallsoph/shiftz/internal/api"
+	"github.com/betallsoph/shiftz/internal/config"
+	"github.com/betallsoph/shiftz/internal/dashboard"
+	"github.com/betallsoph/shiftz/internal/health"
+	"github.com/betallsoph/shiftz/internal/llm"
+	"github.com/betallsoph/shiftz/internal/onboarding"
+	"github.com/betallsoph/shiftz/internal/store"
+	"github.com/betallsoph/shiftz/internal/telegram"
+	"github.com/betallsoph/shiftz/web"
+)
+
+func wire(ctx context.Context, cfg *config.Config, st *store.Store, log *slog.Logger) (http.Handler, error) {
+	_ = ctx
+	mux := http.NewServeMux()
+	health.Register(mux, st)
+	if cfg.DevAPIEnabled {
+		api.New(st, log).Register(mux)
+		log.Info("dev API enabled")
+	} else {
+		api.RegisterDisabled(mux)
+	}
+
+	llmSvc := llm.NewService(newProvider(cfg, log))
+	tg := telegram.NewClient(cfg.TelegramToken)
+	drafts := telegram.NewMemoryAvailabilityDraftStore(30 * time.Minute)
+	bot := telegram.NewBot(tg, llmSvc, st.Shops, st.Shops, st.Employees, st.Availability, st.Votes, drafts, log)
+	mux.Handle("POST /telegram/webhook", telegram.WebhookHandler(bot, cfg.TelegramWebhookSecret, log))
+
+	sessions := dashboard.NewSessionManager(cfg.SessionSecret, cfg.CookieSecure)
+	onboard := onboarding.New(st)
+	dash, err := dashboard.New(st, sessions, onboard, cfg.OwnerSignupEnabled, log)
+	if err != nil {
+		return nil, err
+	}
+	if cfg.OwnerSignupEnabled {
+		log.Info("owner signup enabled")
+	}
+	dash.Register(mux)
+
+	dist, err := fs.Sub(web.Dist, "dist")
+	if err != nil {
+		return nil, err
+	}
+	mux.Handle("/", http.FileServerFS(dist))
+
+	return mux, nil
+}
+
+// newProvider picks the LLM backend from config.
+func newProvider(cfg *config.Config, log *slog.Logger) llm.Provider {
+	switch cfg.LLMProvider {
+	case "":
+		log.Warn("LLM_PROVIDER not set; availability parsing disabled")
+		return llm.Unconfigured()
+	case "gemini":
+		if cfg.LLMAPIKey == "" {
+			log.Warn("LLM_API_KEY not set; availability parsing disabled")
+			return llm.Unconfigured()
+		}
+		return llm.NewGeminiProvider(cfg.LLMAPIKey, cfg.LLMModel)
+	default:
+		log.Warn("unknown LLM provider; availability parsing disabled", "provider", cfg.LLMProvider)
+		return llm.Unconfigured()
+	}
+}
