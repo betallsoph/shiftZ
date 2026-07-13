@@ -149,3 +149,62 @@ func TestRequireProductionOK(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 }
+
+func TestResolvedReminderModeDefaultDisabled(t *testing.T) {
+	t.Setenv("REMINDER_MODE", "")
+	t.Setenv("REMINDERS_ENABLED", "")
+	cfg := Load()
+	mode, err := cfg.ResolvedReminderMode()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if mode != ReminderModeDisabled {
+		t.Fatalf("mode = %q, want disabled", mode)
+	}
+}
+
+func TestResolvedReminderModeLegacyLoop(t *testing.T) {
+	t.Setenv("REMINDER_MODE", "")
+	t.Setenv("REMINDERS_ENABLED", "true")
+	cfg := Load()
+	mode, err := cfg.ResolvedReminderMode()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if mode != ReminderModeLoop {
+		t.Fatalf("mode = %q, want loop", mode)
+	}
+}
+
+func TestResolvedReminderModeExplicitPrecedence(t *testing.T) {
+	t.Setenv("REMINDER_MODE", "disabled")
+	t.Setenv("REMINDERS_ENABLED", "true")
+	cfg := Load()
+	mode, err := cfg.ResolvedReminderMode()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if mode != ReminderModeDisabled {
+		t.Fatalf("mode = %q, want disabled", mode)
+	}
+}
+
+func TestResolvedReminderModeInvalid(t *testing.T) {
+	cfg := &Config{ReminderMode: "cron"}
+	if _, err := cfg.ResolvedReminderMode(); err == nil {
+		t.Fatal("want error for invalid mode")
+	}
+}
+
+func TestRequireProductionHTTPModeMissingTriggerSecret(t *testing.T) {
+	cfg := &Config{
+		DatabaseURL:           "postgres://x",
+		SessionSecret:         "s",
+		TelegramToken:         "t",
+		TelegramWebhookSecret: "w",
+		ReminderMode:          ReminderModeHTTP,
+	}
+	if err := cfg.RequireProduction(); err == nil {
+		t.Fatal("want error for missing REMINDER_TRIGGER_SECRET")
+	}
+}

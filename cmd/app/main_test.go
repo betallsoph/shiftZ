@@ -11,6 +11,7 @@ import (
 
 	"github.com/betallsoph/shiftz/internal/config"
 	"github.com/betallsoph/shiftz/internal/ent/enttest"
+	"github.com/betallsoph/shiftz/internal/reminder"
 	"github.com/betallsoph/shiftz/internal/store"
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -34,7 +35,7 @@ func testStore(t *testing.T) *store.Store {
 func testHandler(t *testing.T, cfg *config.Config) http.Handler {
 	t.Helper()
 	st := testStore(t)
-	handler, err := wire(context.Background(), cfg, st, slog.New(slog.NewTextHandler(io.Discard, nil)))
+	handler, err := wire(context.Background(), cfg, st, slog.New(slog.NewTextHandler(io.Discard, nil)), nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -100,3 +101,58 @@ func TestWireWebhookAcceptsMatchingSecret(t *testing.T) {
 		t.Fatalf("status = %d, want 200", rec.Code)
 	}
 }
+
+func TestWireReminderEndpointDisabledMode(t *testing.T) {
+	handler := testHandler(t, testConfig())
+	req := httptest.NewRequest(http.MethodPost, "/internal/reminders/tick", nil)
+	rec := httptest.NewRecorder()
+	handler.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusNotFound {
+		t.Fatalf("status = %d, want 404", rec.Code)
+	}
+}
+
+func TestWireReminderEndpointHTTPMode(t *testing.T) {
+	cfg := testConfig()
+	cfg.ReminderMode = config.ReminderModeHTTP
+	cfg.ReminderTriggerSecret = "tick-secret"
+	st := testStore(t)
+	rem := reminder.New(st.Shops, st.Shops, st.Employees, st.Availability, st.Reminders, noopMessenger{}, slog.New(slog.NewTextHandler(io.Discard, nil)), reminder.Config{})
+	handler, err := wire(context.Background(), cfg, st, slog.New(slog.NewTextHandler(io.Discard, nil)), rem)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	req := httptest.NewRequest(http.MethodPost, "/internal/reminders/tick", nil)
+	req.Header.Set(reminder.ReminderSecretHeader, "tick-secret")
+	rec := httptest.NewRecorder()
+	handler.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusNoContent {
+		t.Fatalf("status = %d, want 204", rec.Code)
+	}
+}
+
+func TestWireReminderEndpointLoopModeNotRegistered(t *testing.T) {
+	cfg := testConfig()
+	cfg.ReminderMode = config.ReminderModeLoop
+	st := testStore(t)
+	rem := reminder.New(st.Shops, st.Shops, st.Employees, st.Availability, st.Reminders, noopMessenger{}, slog.New(slog.NewTextHandler(io.Discard, nil)), reminder.Config{})
+	handler, err := wire(context.Background(), cfg, st, slog.New(slog.NewTextHandler(io.Discard, nil)), rem)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	req := httptest.NewRequest(http.MethodPost, "/internal/reminders/tick", nil)
+	rec := httptest.NewRecorder()
+	handler.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusNotFound {
+		t.Fatalf("status = %d, want 404", rec.Code)
+	}
+}
+
+type noopMessenger struct{}
+
+func (noopMessenger) SendMessage(context.Context, int64, string) error { return nil }

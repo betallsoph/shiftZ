@@ -35,6 +35,10 @@ func run(log *slog.Logger) error {
 	if err != nil {
 		return err
 	}
+	reminderMode, err := cfg.ResolvedReminderMode()
+	if err != nil {
+		return err
+	}
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
@@ -46,19 +50,25 @@ func run(log *slog.Logger) error {
 	defer st.Close()
 
 	tg := telegram.NewClient(cfg.TelegramToken)
-	if cfg.RemindersEnabled {
-		rem := reminder.New(st.Shops, st.Shops, st.Employees, st.Availability, st.Reminders, reminderMessenger{c: tg}, log, reminder.Config{
+	var rem *reminder.Service
+	if reminderMode != config.ReminderModeDisabled {
+		rem = reminder.New(st.Shops, st.Shops, st.Employees, st.Availability, st.Reminders, reminderMessenger{c: tg}, log, reminder.Config{
 			TickInterval: cfg.ReminderTickInterval,
 		})
+	}
+	switch reminderMode {
+	case config.ReminderModeLoop:
 		go func() {
 			if err := rem.Run(ctx); err != nil && !errors.Is(err, context.Canceled) {
 				log.Error("reminder loop stopped", "err", err)
 			}
 		}()
 		log.Info("reminder loop enabled", "tick", cfg.ReminderTickInterval)
+	case config.ReminderModeHTTP:
+		log.Info("reminder http trigger enabled")
 	}
 
-	handler, err := wire(ctx, cfg, st, log)
+	handler, err := wire(ctx, cfg, st, log, rem)
 	if err != nil {
 		return err
 	}

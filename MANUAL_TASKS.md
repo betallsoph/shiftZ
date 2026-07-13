@@ -36,8 +36,8 @@ TELEGRAM_WEBHOOK_SECRET='...'
 LLM_PROVIDER=gemini
 LLM_API_KEY='...'
 LLM_MODEL='gemini-3.5-flash'
-REMINDERS_ENABLED=true
-REMINDER_TICK_INTERVAL=1m
+REMINDER_MODE=http
+REMINDER_TRIGGER_SECRET='...'
 DEV_API_ENABLED=false
 DB_MAX_OPEN_CONNS=5
 DB_MAX_IDLE_CONNS=2
@@ -60,7 +60,16 @@ MIGRATION_DATABASE_URL='Neon direct URL'
 
 Khong bat `DEV_API_ENABLED` tren production tru khi dang debug co chu dich.
 
-Local dev van co the dung hai binary tach (`cmd/server` + `cmd/bot`) voi `SERVER_ADDR` / `BOT_ADDR`.
+Local dev van co the dung hai binary tach (`cmd/server` + `cmd/bot`) voi `SERVER_ADDR` / `BOT_ADDR` va `REMINDER_MODE=loop`.
+
+Cloud Scheduler (Task 21) se goi:
+
+```sh
+POST https://<app-domain>/internal/reminders/tick
+Header: X-ShiftZ-Reminder-Secret: <REMINDER_TRIGGER_SECRET>
+```
+
+Dat Cloud Run `max instances = 1` de tranh tick chong nhau giua instances.
 
 ## 3. Database Va Migration
 

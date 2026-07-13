@@ -174,15 +174,46 @@ Employees interact with the bot in **private chat** only (DM). Group chats accep
 3. Employee sends availability in plain language.
 4. Bot parses the message (using the shop timezone) and replies with a short summary plus **Confirm** / **Cancel** buttons.
 5. Only **Confirm** writes availability to the database; **Cancel** discards the draft.
-6. Pending confirmations expire after 30 minutes (in-memory for now).
+6. Pending confirmations expire after 30 minutes (stored in the database).
 
 ### Availability reminders
 
-Background reminders are disabled by default. Enable with:
+Reminders are **disabled** by default. Choose a mode:
+
+| Mode | Use case |
+| ---- | -------- |
+| `disabled` | Default — no reminder processing |
+| `loop` | Always-on host or local dev (`REMINDERS_ENABLED=true` also selects loop) |
+| `http` | Cloud Run / scale-to-zero — Cloud Scheduler POSTs to `/internal/reminders/tick` |
+
+**Loop mode** (local dev or always-on):
 
 ```sh
+export REMINDER_MODE=loop
+# or legacy:
 export REMINDERS_ENABLED=true
 export REMINDER_TICK_INTERVAL=1m
+```
+
+**HTTP mode** (production on Cloud Run):
+
+```sh
+export REMINDER_MODE=http
+export REMINDER_TRIGGER_SECRET='<random-secret>'   # openssl rand -base64 32
+```
+
+Cloud Scheduler calls the internal endpoint (keep the secret private):
+
+```sh
+curl -i -X POST https://<app-domain>/internal/reminders/tick \
+  -H "X-ShiftZ-Reminder-Secret: $REMINDER_TRIGGER_SECRET"
+```
+
+Local smoke:
+
+```sh
+curl -i -X POST http://localhost:8080/internal/reminders/tick \
+  -H "X-ShiftZ-Reminder-Secret: $REMINDER_TRIGGER_SECRET"
 ```
 
 Each shop uses its own timezone. Default schedule:
@@ -217,8 +248,10 @@ export LLM_MODEL='gemini-3.5-flash'   # optional; swap for cheaper Flash-Lite-st
 | `LLM_PROVIDER`            | app, bot (opt.) | —       | Model backend (`gemini`); empty disables LLM   |
 | `LLM_API_KEY`             | app, bot        | —       | Required when `LLM_PROVIDER=gemini` (app prod) |
 | `LLM_MODEL`               | app, bot (opt.) | —       | Model id for the selected provider             |
-| `REMINDERS_ENABLED`       | app, bot (opt.) | —       | `true` starts availability reminder/nag loop   |
-| `REMINDER_TICK_INTERVAL`  | app, bot (opt.) | `1m`    | How often the reminder worker ticks            |
+| `REMINDER_MODE`           | app             | `disabled` | `disabled`, `loop`, or `http` (explicit overrides `REMINDERS_ENABLED`) |
+| `REMINDER_TRIGGER_SECRET` | app (`http`)    | —       | Auth header for `POST /internal/reminders/tick` |
+| `REMINDERS_ENABLED`       | app, bot (legacy)| —      | `true` → `loop` when `REMINDER_MODE` unset     |
+| `REMINDER_TICK_INTERVAL`  | app (`loop`), bot | `1m` | How often the in-process loop ticks            |
 | `DB_MAX_OPEN_CONNS`       | all             | `5`     | database/sql max open connections              |
 | `DB_MAX_IDLE_CONNS`       | all             | `2`     | database/sql max idle connections              |
 | `DB_CONN_MAX_LIFETIME`    | all             | `30m`   | Max connection lifetime                        |
@@ -270,7 +303,8 @@ COOKIE_SECURE=true            # HTTPS deployments
 LLM_PROVIDER=gemini
 LLM_API_KEY=...               # required when LLM_PROVIDER=gemini
 LLM_MODEL=gemini-3.5-flash
-REMINDERS_ENABLED=true
+REMINDER_MODE=http
+REMINDER_TRIGGER_SECRET=...   # openssl rand -base64 32
 ```
 
 Keep `DEV_API_ENABLED` unset or `false` in production.

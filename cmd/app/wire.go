@@ -12,13 +12,19 @@ import (
 	"github.com/betallsoph/shiftz/internal/health"
 	"github.com/betallsoph/shiftz/internal/llm"
 	"github.com/betallsoph/shiftz/internal/onboarding"
+	"github.com/betallsoph/shiftz/internal/reminder"
 	"github.com/betallsoph/shiftz/internal/store"
 	"github.com/betallsoph/shiftz/internal/telegram"
 	"github.com/betallsoph/shiftz/web"
 )
 
-func wire(ctx context.Context, cfg *config.Config, st *store.Store, log *slog.Logger) (http.Handler, error) {
+func wire(ctx context.Context, cfg *config.Config, st *store.Store, log *slog.Logger, rem *reminder.Service) (http.Handler, error) {
 	_ = ctx
+	reminderMode, err := cfg.ResolvedReminderMode()
+	if err != nil {
+		return nil, err
+	}
+
 	mux := http.NewServeMux()
 	health.Register(mux, st)
 	if cfg.DevAPIEnabled {
@@ -26,6 +32,10 @@ func wire(ctx context.Context, cfg *config.Config, st *store.Store, log *slog.Lo
 		log.Info("dev API enabled")
 	} else {
 		api.RegisterDisabled(mux)
+	}
+
+	if reminderMode == config.ReminderModeHTTP && rem != nil {
+		mux.Handle("POST /internal/reminders/tick", reminder.HTTPHandler(rem, cfg.ReminderTriggerSecret, log))
 	}
 
 	llmSvc := llm.NewService(newProvider(cfg, log))

@@ -36,6 +36,10 @@ func run(log *slog.Logger) error {
 	if err := cfg.RequireTelegram(); err != nil {
 		return err
 	}
+	reminderMode, err := cfg.ResolvedReminderMode()
+	if err != nil {
+		return err
+	}
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
@@ -51,7 +55,7 @@ func run(log *slog.Logger) error {
 	drafts := telegram.NewStoreAvailabilityDraftStore(st.AvailabilityDrafts)
 	bot := telegram.NewBot(tg, llmSvc, st.Shops, st.Shops, st.Employees, st.Availability, st.Votes, drafts, log)
 
-	if cfg.RemindersEnabled {
+	if reminderMode == config.ReminderModeLoop {
 		rem := reminder.New(st.Shops, st.Shops, st.Employees, st.Availability, st.Reminders, reminderMessenger{c: tg}, log, reminder.Config{
 			TickInterval: cfg.ReminderTickInterval,
 		})

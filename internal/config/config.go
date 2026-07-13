@@ -10,6 +10,15 @@ import (
 	"github.com/betallsoph/shiftz/internal/store"
 )
 
+const (
+	// ReminderModeDisabled turns off reminder processing.
+	ReminderModeDisabled = "disabled"
+	// ReminderModeLoop runs the background ticker in-process.
+	ReminderModeLoop = "loop"
+	// ReminderModeHTTP exposes an authenticated HTTP trigger for schedulers.
+	ReminderModeHTTP = "http"
+)
+
 // Config carries every setting for both binaries; each cmd validates the
 // subset it needs via the Require* helpers.
 type Config struct {
@@ -41,8 +50,12 @@ type Config struct {
 	// and includes query parameters.
 	EntDebug bool
 
-	// RemindersEnabled starts the availability reminder/nag background loop.
+	// RemindersEnabled is the legacy flag for the background reminder loop.
 	RemindersEnabled bool
+	// ReminderMode selects disabled, loop, or http (REMINDER_MODE).
+	ReminderMode string
+	// ReminderTriggerSecret authenticates POST /internal/reminders/tick.
+	ReminderTriggerSecret string
 	// ReminderTickInterval is how often the reminder worker checks due jobs.
 	ReminderTickInterval time.Duration
 
@@ -78,6 +91,8 @@ func Load() *Config {
 		LLMModel:              os.Getenv("LLM_MODEL"),
 		EntDebug:              envBool("ENT_DEBUG"),
 		RemindersEnabled:      envBool("REMINDERS_ENABLED"),
+		ReminderMode:          os.Getenv("REMINDER_MODE"),
+		ReminderTriggerSecret: os.Getenv("REMINDER_TRIGGER_SECRET"),
 		ReminderTickInterval:  envDurationOr("REMINDER_TICK_INTERVAL", time.Minute),
 		DBMaxOpenConns:        envIntOr("DB_MAX_OPEN_CONNS", pool.MaxOpenConns),
 		DBMaxIdleConns:        envIntOr("DB_MAX_IDLE_CONNS", pool.MaxIdleConns),
@@ -133,6 +148,23 @@ func (c *Config) ResolveAppAddr() (string, error) {
 	return ":" + port, nil
 }
 
+// ResolvedReminderMode returns the effective reminder mode.
+// Precedence: explicit REMINDER_MODE, then legacy REMINDERS_ENABLED=true → loop.
+func (c *Config) ResolvedReminderMode() (string, error) {
+	if c.ReminderMode != "" {
+		switch c.ReminderMode {
+		case ReminderModeDisabled, ReminderModeLoop, ReminderModeHTTP:
+			return c.ReminderMode, nil
+		default:
+			return "", fmt.Errorf("config: invalid REMINDER_MODE %q", c.ReminderMode)
+		}
+	}
+	if c.RemindersEnabled {
+		return ReminderModeLoop, nil
+	}
+	return ReminderModeDisabled, nil
+}
+
 // RequireProduction fails unless production-required settings are set.
 func (c *Config) RequireProduction() error {
 	if err := c.RequireDatabase(); err != nil {
@@ -149,6 +181,13 @@ func (c *Config) RequireProduction() error {
 	}
 	if c.LLMProvider == "gemini" && c.LLMAPIKey == "" {
 		return fmt.Errorf("config: LLM_API_KEY is required when LLM_PROVIDER=gemini")
+	}
+	mode, err := c.ResolvedReminderMode()
+	if err != nil {
+		return err
+	}
+	if mode == ReminderModeHTTP && c.ReminderTriggerSecret == "" {
+		return fmt.Errorf("config: REMINDER_TRIGGER_SECRET is required when REMINDER_MODE=http")
 	}
 	return nil
 }
