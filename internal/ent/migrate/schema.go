@@ -336,6 +336,8 @@ var (
 		{Name: "timezone", Type: field.TypeString, Default: "UTC"},
 		{Name: "invite_code", Type: field.TypeString, Unique: true},
 		{Name: "telegram_group_id", Type: field.TypeInt64},
+		{Name: "telegram_setup_code_hash", Type: field.TypeString, Nullable: true},
+		{Name: "telegram_setup_code_expires_at", Type: field.TypeTime, Nullable: true},
 		{Name: "plan", Type: field.TypeString, Default: "free"},
 		{Name: "dashboard_token_hash", Type: field.TypeString, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
@@ -345,6 +347,13 @@ var (
 		Name:       "shops",
 		Columns:    ShopsColumns,
 		PrimaryKey: []*schema.Column{ShopsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "shop_telegram_setup_code_hash",
+				Unique:  true,
+				Columns: []*schema.Column{ShopsColumns[5]},
+			},
+		},
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{

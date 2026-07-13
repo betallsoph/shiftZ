@@ -26,6 +26,10 @@ type Shop struct {
 	InviteCode string `json:"invite_code,omitempty"`
 	// TelegramGroupID holds the value of the "telegram_group_id" field.
 	TelegramGroupID int64 `json:"telegram_group_id,omitempty"`
+	// TelegramSetupCodeHash holds the value of the "telegram_setup_code_hash" field.
+	TelegramSetupCodeHash *string `json:"telegram_setup_code_hash,omitempty"`
+	// TelegramSetupCodeExpiresAt holds the value of the "telegram_setup_code_expires_at" field.
+	TelegramSetupCodeExpiresAt *time.Time `json:"telegram_setup_code_expires_at,omitempty"`
 	// Plan holds the value of the "plan" field.
 	Plan string `json:"plan,omitempty"`
 	// DashboardTokenHash holds the value of the "dashboard_token_hash" field.
@@ -118,9 +122,9 @@ func (*Shop) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case shop.FieldTelegramGroupID:
 			values[i] = new(sql.NullInt64)
-		case shop.FieldName, shop.FieldTimezone, shop.FieldInviteCode, shop.FieldPlan, shop.FieldDashboardTokenHash:
+		case shop.FieldName, shop.FieldTimezone, shop.FieldInviteCode, shop.FieldTelegramSetupCodeHash, shop.FieldPlan, shop.FieldDashboardTokenHash:
 			values[i] = new(sql.NullString)
-		case shop.FieldCreatedAt:
+		case shop.FieldTelegramSetupCodeExpiresAt, shop.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
 		case shop.FieldID:
 			values[i] = new(uuid.UUID)
@@ -168,6 +172,20 @@ func (_m *Shop) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field telegram_group_id", values[i])
 			} else if value.Valid {
 				_m.TelegramGroupID = value.Int64
+			}
+		case shop.FieldTelegramSetupCodeHash:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field telegram_setup_code_hash", values[i])
+			} else if value.Valid {
+				_m.TelegramSetupCodeHash = new(string)
+				*_m.TelegramSetupCodeHash = value.String
+			}
+		case shop.FieldTelegramSetupCodeExpiresAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field telegram_setup_code_expires_at", values[i])
+			} else if value.Valid {
+				_m.TelegramSetupCodeExpiresAt = new(time.Time)
+				*_m.TelegramSetupCodeExpiresAt = value.Time
 			}
 		case shop.FieldPlan:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -265,6 +283,16 @@ func (_m *Shop) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("telegram_group_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TelegramGroupID))
+	builder.WriteString(", ")
+	if v := _m.TelegramSetupCodeHash; v != nil {
+		builder.WriteString("telegram_setup_code_hash=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.TelegramSetupCodeExpiresAt; v != nil {
+		builder.WriteString("telegram_setup_code_expires_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
 	builder.WriteString(", ")
 	builder.WriteString("plan=")
 	builder.WriteString(_m.Plan)

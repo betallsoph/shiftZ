@@ -28,6 +28,7 @@ func (s *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
 	if err := s.tmpl.render(w, "page.html", PageData{
 		Today:    time.Now().Format(dateLayout),
 		ShopName: shop.Name,
+		Telegram: buildTelegramSetupView(shop, "", time.Time{}, time.Now()),
 	}); err != nil {
 		s.log.Error("render page", "err", err)
 		http.Error(w, "template error", http.StatusInternalServerError)

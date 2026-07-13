@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -94,6 +95,46 @@ func (_u *ShopUpdate) SetNillableTelegramGroupID(v *int64) *ShopUpdate {
 // AddTelegramGroupID adds value to the "telegram_group_id" field.
 func (_u *ShopUpdate) AddTelegramGroupID(v int64) *ShopUpdate {
 	_u.mutation.AddTelegramGroupID(v)
+	return _u
+}
+
+// SetTelegramSetupCodeHash sets the "telegram_setup_code_hash" field.
+func (_u *ShopUpdate) SetTelegramSetupCodeHash(v string) *ShopUpdate {
+	_u.mutation.SetTelegramSetupCodeHash(v)
+	return _u
+}
+
+// SetNillableTelegramSetupCodeHash sets the "telegram_setup_code_hash" field if the given value is not nil.
+func (_u *ShopUpdate) SetNillableTelegramSetupCodeHash(v *string) *ShopUpdate {
+	if v != nil {
+		_u.SetTelegramSetupCodeHash(*v)
+	}
+	return _u
+}
+
+// ClearTelegramSetupCodeHash clears the value of the "telegram_setup_code_hash" field.
+func (_u *ShopUpdate) ClearTelegramSetupCodeHash() *ShopUpdate {
+	_u.mutation.ClearTelegramSetupCodeHash()
+	return _u
+}
+
+// SetTelegramSetupCodeExpiresAt sets the "telegram_setup_code_expires_at" field.
+func (_u *ShopUpdate) SetTelegramSetupCodeExpiresAt(v time.Time) *ShopUpdate {
+	_u.mutation.SetTelegramSetupCodeExpiresAt(v)
+	return _u
+}
+
+// SetNillableTelegramSetupCodeExpiresAt sets the "telegram_setup_code_expires_at" field if the given value is not nil.
+func (_u *ShopUpdate) SetNillableTelegramSetupCodeExpiresAt(v *time.Time) *ShopUpdate {
+	if v != nil {
+		_u.SetTelegramSetupCodeExpiresAt(*v)
+	}
+	return _u
+}
+
+// ClearTelegramSetupCodeExpiresAt clears the value of the "telegram_setup_code_expires_at" field.
+func (_u *ShopUpdate) ClearTelegramSetupCodeExpiresAt() *ShopUpdate {
+	_u.mutation.ClearTelegramSetupCodeExpiresAt()
 	return _u
 }
 
@@ -402,6 +443,18 @@ func (_u *ShopUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.AddedTelegramGroupID(); ok {
 		_spec.AddField(shop.FieldTelegramGroupID, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.TelegramSetupCodeHash(); ok {
+		_spec.SetField(shop.FieldTelegramSetupCodeHash, field.TypeString, value)
+	}
+	if _u.mutation.TelegramSetupCodeHashCleared() {
+		_spec.ClearField(shop.FieldTelegramSetupCodeHash, field.TypeString)
+	}
+	if value, ok := _u.mutation.TelegramSetupCodeExpiresAt(); ok {
+		_spec.SetField(shop.FieldTelegramSetupCodeExpiresAt, field.TypeTime, value)
+	}
+	if _u.mutation.TelegramSetupCodeExpiresAtCleared() {
+		_spec.ClearField(shop.FieldTelegramSetupCodeExpiresAt, field.TypeTime)
 	}
 	if value, ok := _u.mutation.Plan(); ok {
 		_spec.SetField(shop.FieldPlan, field.TypeString, value)
@@ -765,6 +818,46 @@ func (_u *ShopUpdateOne) AddTelegramGroupID(v int64) *ShopUpdateOne {
 	return _u
 }
 
+// SetTelegramSetupCodeHash sets the "telegram_setup_code_hash" field.
+func (_u *ShopUpdateOne) SetTelegramSetupCodeHash(v string) *ShopUpdateOne {
+	_u.mutation.SetTelegramSetupCodeHash(v)
+	return _u
+}
+
+// SetNillableTelegramSetupCodeHash sets the "telegram_setup_code_hash" field if the given value is not nil.
+func (_u *ShopUpdateOne) SetNillableTelegramSetupCodeHash(v *string) *ShopUpdateOne {
+	if v != nil {
+		_u.SetTelegramSetupCodeHash(*v)
+	}
+	return _u
+}
+
+// ClearTelegramSetupCodeHash clears the value of the "telegram_setup_code_hash" field.
+func (_u *ShopUpdateOne) ClearTelegramSetupCodeHash() *ShopUpdateOne {
+	_u.mutation.ClearTelegramSetupCodeHash()
+	return _u
+}
+
+// SetTelegramSetupCodeExpiresAt sets the "telegram_setup_code_expires_at" field.
+func (_u *ShopUpdateOne) SetTelegramSetupCodeExpiresAt(v time.Time) *ShopUpdateOne {
+	_u.mutation.SetTelegramSetupCodeExpiresAt(v)
+	return _u
+}
+
+// SetNillableTelegramSetupCodeExpiresAt sets the "telegram_setup_code_expires_at" field if the given value is not nil.
+func (_u *ShopUpdateOne) SetNillableTelegramSetupCodeExpiresAt(v *time.Time) *ShopUpdateOne {
+	if v != nil {
+		_u.SetTelegramSetupCodeExpiresAt(*v)
+	}
+	return _u
+}
+
+// ClearTelegramSetupCodeExpiresAt clears the value of the "telegram_setup_code_expires_at" field.
+func (_u *ShopUpdateOne) ClearTelegramSetupCodeExpiresAt() *ShopUpdateOne {
+	_u.mutation.ClearTelegramSetupCodeExpiresAt()
+	return _u
+}
+
 // SetPlan sets the "plan" field.
 func (_u *ShopUpdateOne) SetPlan(v string) *ShopUpdateOne {
 	_u.mutation.SetPlan(v)
@@ -1100,6 +1193,18 @@ func (_u *ShopUpdateOne) sqlSave(ctx context.Context) (_node *Shop, err error) {
 	}
 	if value, ok := _u.mutation.AddedTelegramGroupID(); ok {
 		_spec.AddField(shop.FieldTelegramGroupID, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.TelegramSetupCodeHash(); ok {
+		_spec.SetField(shop.FieldTelegramSetupCodeHash, field.TypeString, value)
+	}
+	if _u.mutation.TelegramSetupCodeHashCleared() {
+		_spec.ClearField(shop.FieldTelegramSetupCodeHash, field.TypeString)
+	}
+	if value, ok := _u.mutation.TelegramSetupCodeExpiresAt(); ok {
+		_spec.SetField(shop.FieldTelegramSetupCodeExpiresAt, field.TypeTime, value)
+	}
+	if _u.mutation.TelegramSetupCodeExpiresAtCleared() {
+		_spec.ClearField(shop.FieldTelegramSetupCodeExpiresAt, field.TypeTime)
 	}
 	if value, ok := _u.mutation.Plan(); ok {
 		_spec.SetField(shop.FieldPlan, field.TypeString, value)

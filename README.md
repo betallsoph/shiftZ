@@ -125,6 +125,17 @@ For local dev, `SESSION_SECRET` can be omitted (the server generates an ephemera
 In production, set a long random `SESSION_SECRET` (for example `openssl rand -base64 32`).
 Set `COOKIE_SECURE=true` when serving the dashboard over HTTPS.
 
+### Connect Telegram group
+
+After logging in, use the **Telegram group** panel on the dashboard:
+
+1. Click **Tạo mã setup mới** to generate a setup code (shown once; expires in 30 minutes).
+2. Add the bot to your shop's Telegram group.
+3. In the group, send `/setup tg_setup_...` with the code from the dashboard.
+4. The dashboard should show **Đã kết nối** with the group chat ID.
+
+Setup codes are hashed at rest and cleared after a successful connection.
+
 ```sh
 # 6. Run the Telegram bot (webhook mode)
 export TELEGRAM_BOT_TOKEN='123456:ABC...'          # from @BotFather

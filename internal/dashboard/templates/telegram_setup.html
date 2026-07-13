@@ -1,0 +1,37 @@
+<section id="telegram-setup" class="telegram-setup card">
+  <h2 class="telegram-setup-heading">Telegram group</h2>
+  {{if .Connected}}
+  <p class="telegram-status"><span class="badge badge-availability-submitted">Đã kết nối</span></p>
+  <p class="meta">Group chat ID: <code>{{.TelegramGroupID}}</code></p>
+  {{else}}
+  <p class="telegram-status"><span class="badge badge-availability-missing">Chưa kết nối</span></p>
+  {{if .SetupCode}}
+  <dl class="credential-list">
+    <div class="credential-row">
+      <dt>Mã setup</dt>
+      <dd><code>{{.SetupCode}}</code></dd>
+    </div>
+    {{if .SetupExpiresAt}}
+    <div class="credential-row">
+      <dt>Hết hạn</dt>
+      <dd>{{.SetupExpiresAt}}</dd>
+    </div>
+    {{end}}
+  </dl>
+  <ol class="setup-steps">
+    <li>Thêm bot vào group Telegram của quán.</li>
+    <li>Trong group, gửi: <code>/setup {{.SetupCode}}</code></li>
+  </ol>
+  {{else if .HasPendingSetup}}
+  <p class="meta">Đã có mã setup đang hiệu lực. Tạo mã mới nếu cần (mã cũ sẽ bị thay).</p>
+  {{end}}
+  <form
+    hx-post="/dashboard/telegram/setup-code"
+    hx-target="#telegram-setup"
+    hx-swap="outerHTML"
+    class="inline-form"
+  >
+    <button type="submit" class="btn btn-ghost btn-sm">Tạo mã setup mới</button>
+  </form>
+  {{end}}
+</section>

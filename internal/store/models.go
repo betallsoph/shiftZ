@@ -14,8 +14,9 @@ type Shop struct {
 	Name            string
 	Timezone        string
 	InviteCode      string
-	TelegramGroupID int64
-	Plan            string
+	TelegramGroupID            int64
+	TelegramSetupCodeExpiresAt *time.Time
+	Plan                       string
 	CreatedAt       time.Time
 }
 
@@ -122,7 +123,7 @@ type Rule struct {
 // types) so callers stay decoupled from the persistence library.
 
 func shopFromEnt(m *ent.Shop) *Shop {
-	return &Shop{
+	s := &Shop{
 		ID:              m.ID,
 		Name:            m.Name,
 		Timezone:        m.Timezone,
@@ -131,6 +132,11 @@ func shopFromEnt(m *ent.Shop) *Shop {
 		Plan:            m.Plan,
 		CreatedAt:       m.CreatedAt,
 	}
+	if m.TelegramSetupCodeExpiresAt != nil {
+		t := *m.TelegramSetupCodeExpiresAt
+		s.TelegramSetupCodeExpiresAt = &t
+	}
+	return s
 }
 
 func employeeFromEnt(m *ent.Employee) *Employee {

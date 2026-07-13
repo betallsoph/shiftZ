@@ -74,6 +74,25 @@ body {
   margin: 0;
 }
 
+.telegram-setup {
+  margin-bottom: 16px;
+}
+
+.telegram-setup-heading {
+  margin: 0 0 8px;
+  font-size: 1rem;
+}
+
+.setup-steps {
+  margin: 12px 0;
+  padding-left: 1.2rem;
+  font-size: 0.85rem;
+}
+
+.setup-steps li {
+  margin-bottom: 6px;
+}
+
 .checkbox-label {
   display: flex;
   align-items: flex-start;

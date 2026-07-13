@@ -40,7 +40,7 @@ func TestHandleAvailabilityTextCreatesDraft(t *testing.T) {
 	availability := &fakeAvailability{}
 	drafts := NewMemoryAvailabilityDraftStore(30 * time.Minute)
 
-	bot := NewBot(msgAPI, parser, shops, employees, availability, &fakeVotes{}, drafts, testLogger())
+	bot := NewBot(msgAPI, parser, shops, &fakeGroupSetup{}, employees, availability, &fakeVotes{}, drafts, testLogger())
 	if err := bot.handleAvailabilityText(context.Background(), msg, msg.Text); err != nil {
 		t.Fatal(err)
 	}
@@ -93,7 +93,7 @@ func TestHandleAvailabilityConfirmSavesAndDeletesDraft(t *testing.T) {
 
 	msgAPI := &fakeMessenger{}
 	availability := &fakeAvailability{}
-	bot := NewBot(msgAPI, &fakeParser{}, &fakeShops{}, &fakeEmployees{}, availability, &fakeVotes{}, drafts, testLogger())
+	bot := NewBot(msgAPI, &fakeParser{}, &fakeShops{}, &fakeGroupSetup{}, &fakeEmployees{}, availability, &fakeVotes{}, drafts, testLogger())
 
 	q := &CallbackQuery{
 		ID:   "cb1",
@@ -139,7 +139,7 @@ func TestHandleAvailabilityCancelDoesNotSave(t *testing.T) {
 
 	msgAPI := &fakeMessenger{}
 	availability := &fakeAvailability{}
-	bot := NewBot(msgAPI, &fakeParser{}, &fakeShops{}, &fakeEmployees{}, availability, &fakeVotes{}, drafts, testLogger())
+	bot := NewBot(msgAPI, &fakeParser{}, &fakeShops{}, &fakeGroupSetup{}, &fakeEmployees{}, availability, &fakeVotes{}, drafts, testLogger())
 
 	q := &CallbackQuery{
 		ID:   "cb2",
@@ -164,7 +164,7 @@ func TestHandleAvailabilityCancelDoesNotSave(t *testing.T) {
 func TestHandleAvailabilityConfirmExpiredDraft(t *testing.T) {
 	msgAPI := &fakeMessenger{}
 	drafts := NewMemoryAvailabilityDraftStore(time.Millisecond)
-	bot := NewBot(msgAPI, &fakeParser{}, &fakeShops{}, &fakeEmployees{}, &fakeAvailability{}, &fakeVotes{}, drafts, testLogger())
+	bot := NewBot(msgAPI, &fakeParser{}, &fakeShops{}, &fakeGroupSetup{}, &fakeEmployees{}, &fakeAvailability{}, &fakeVotes{}, drafts, testLogger())
 
 	draftID := uuid.New()
 	_, _ = drafts.Create(context.Background(), AvailabilityDraft{
@@ -191,7 +191,7 @@ func TestHandleAvailabilityConfirmWrongUser(t *testing.T) {
 	})
 
 	msgAPI := &fakeMessenger{}
-	bot := NewBot(msgAPI, &fakeParser{}, &fakeShops{}, &fakeEmployees{}, &fakeAvailability{}, &fakeVotes{}, drafts, testLogger())
+	bot := NewBot(msgAPI, &fakeParser{}, &fakeShops{}, &fakeGroupSetup{}, &fakeEmployees{}, &fakeAvailability{}, &fakeVotes{}, drafts, testLogger())
 
 	q := &CallbackQuery{ID: "cb4", From: User{ID: 99}, Data: availConfirmPrefix + draftID.String()}
 	if err := bot.handleCallback(context.Background(), q); err != nil {
@@ -210,7 +210,7 @@ func TestHandleVoteCallbackStillWorks(t *testing.T) {
 	msgAPI := &fakeMessenger{}
 	votes := &fakeVotes{}
 	employees := &fakeEmployees{emp: &store.Employee{ID: empID, ShopID: shopID}}
-	bot := NewBot(msgAPI, &fakeParser{}, &fakeShops{}, employees, &fakeAvailability{}, votes, NewMemoryAvailabilityDraftStore(0), testLogger())
+	bot := NewBot(msgAPI, &fakeParser{}, &fakeShops{}, &fakeGroupSetup{}, employees, &fakeAvailability{}, votes, NewMemoryAvailabilityDraftStore(0), testLogger())
 
 	q := &CallbackQuery{ID: "vote1", From: User{ID: 42}, Data: votePrefix + scheduleID.String()}
 	if err := bot.handleCallback(context.Background(), q); err != nil {
@@ -231,7 +231,7 @@ func TestHandleAvailabilityTextClarificationNoDraft(t *testing.T) {
 	shops := &fakeShops{shop: &store.Shop{ID: shopID, Timezone: "UTC"}}
 	employees := &fakeEmployees{emp: &store.Employee{ID: uuid.New(), ShopID: shopID}}
 	drafts := NewMemoryAvailabilityDraftStore(30 * time.Minute)
-	bot := NewBot(msgAPI, parser, shops, employees, &fakeAvailability{}, &fakeVotes{}, drafts, testLogger())
+	bot := NewBot(msgAPI, parser, shops, &fakeGroupSetup{}, employees, &fakeAvailability{}, &fakeVotes{}, drafts, testLogger())
 
 	msg := &Message{From: &User{ID: 42}, Chat: Chat{ID: 1}, Text: "maybe Monday"}
 	if err := bot.handleAvailabilityText(context.Background(), msg, msg.Text); err != nil {
@@ -254,7 +254,7 @@ func TestHandleAvailabilityTextNoProvider(t *testing.T) {
 	parser := &fakeParser{err: llm.ErrNoProvider}
 	shops := &fakeShops{shop: &store.Shop{ID: shopID, Timezone: "UTC"}}
 	employees := &fakeEmployees{emp: &store.Employee{ID: uuid.New(), ShopID: shopID}}
-	bot := NewBot(msgAPI, parser, shops, employees, &fakeAvailability{}, &fakeVotes{}, NewMemoryAvailabilityDraftStore(0), testLogger())
+	bot := NewBot(msgAPI, parser, shops, &fakeGroupSetup{}, employees, &fakeAvailability{}, &fakeVotes{}, NewMemoryAvailabilityDraftStore(0), testLogger())
 
 	msg := &Message{From: &User{ID: 42}, Chat: Chat{ID: 1}, Text: "Mon mornings"}
 	if err := bot.handleAvailabilityText(context.Background(), msg, msg.Text); err != nil {
@@ -384,4 +384,92 @@ func (f *fakeVotes) Record(_ context.Context, _, _, _ uuid.UUID) error {
 
 func testLogger() *slog.Logger {
 	return slog.New(slog.NewTextHandler(io.Discard, nil))
+}
+
+type fakeGroupSetup struct {
+	verifyFn    func(ctx context.Context, code string, now time.Time) (*store.Shop, error)
+	setFn       func(ctx context.Context, shopID uuid.UUID, groupID int64) error
+	lastShopID  uuid.UUID
+	lastGroupID int64
+}
+
+func (f *fakeGroupSetup) VerifyTelegramSetupCode(ctx context.Context, code string, now time.Time) (*store.Shop, error) {
+	if f.verifyFn != nil {
+		return f.verifyFn(ctx, code, now)
+	}
+	return nil, store.ErrInvalidCredentials
+}
+
+func (f *fakeGroupSetup) SetTelegramGroup(ctx context.Context, shopID uuid.UUID, groupID int64) error {
+	f.lastShopID = shopID
+	f.lastGroupID = groupID
+	if f.setFn != nil {
+		return f.setFn(ctx, shopID, groupID)
+	}
+	return nil
+}
+
+func TestHandleSetupPrivateChat(t *testing.T) {
+	msgAPI := &fakeMessenger{}
+	bot := NewBot(msgAPI, &fakeParser{}, &fakeShops{}, &fakeGroupSetup{}, &fakeEmployees{}, &fakeAvailability{}, &fakeVotes{}, NewMemoryAvailabilityDraftStore(0), testLogger())
+	msg := &Message{From: &User{ID: 1}, Chat: Chat{ID: 42, Type: "private"}, Text: "/setup tg_setup_abc"}
+	if err := bot.handleSetup(context.Background(), msg, msg.Text); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(msgAPI.messages[0].text, "group Telegram") {
+		t.Fatalf("message = %q", msgAPI.messages[0].text)
+	}
+}
+
+func TestHandleSetupMissingCode(t *testing.T) {
+	msgAPI := &fakeMessenger{}
+	bot := NewBot(msgAPI, &fakeParser{}, &fakeShops{}, &fakeGroupSetup{}, &fakeEmployees{}, &fakeAvailability{}, &fakeVotes{}, NewMemoryAvailabilityDraftStore(0), testLogger())
+	msg := &Message{From: &User{ID: 1}, Chat: Chat{ID: -1001, Type: "supergroup"}, Text: "/setup"}
+	if err := bot.handleSetup(context.Background(), msg, msg.Text); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(msgAPI.messages[0].text, "Cách dùng") {
+		t.Fatalf("message = %q", msgAPI.messages[0].text)
+	}
+}
+
+func TestHandleSetupInvalidCode(t *testing.T) {
+	msgAPI := &fakeMessenger{}
+	setup := &fakeGroupSetup{
+		verifyFn: func(context.Context, string, time.Time) (*store.Shop, error) {
+			return nil, store.ErrInvalidCredentials
+		},
+	}
+	bot := NewBot(msgAPI, &fakeParser{}, &fakeShops{}, setup, &fakeEmployees{}, &fakeAvailability{}, &fakeVotes{}, NewMemoryAvailabilityDraftStore(0), testLogger())
+	msg := &Message{From: &User{ID: 1}, Chat: Chat{ID: -1001, Type: "group"}, Text: "/setup tg_setup_bad"}
+	if err := bot.handleSetup(context.Background(), msg, msg.Text); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(msgAPI.messages[0].text, "không hợp lệ") {
+		t.Fatalf("message = %q", msgAPI.messages[0].text)
+	}
+}
+
+func TestHandleSetupValidCodeSetsGroup(t *testing.T) {
+	shopID := uuid.New()
+	msgAPI := &fakeMessenger{}
+	setup := &fakeGroupSetup{
+		verifyFn: func(_ context.Context, code string, _ time.Time) (*store.Shop, error) {
+			if code != "tg_setup_good" {
+				return nil, store.ErrInvalidCredentials
+			}
+			return &store.Shop{ID: shopID, Name: "Beta Cafe"}, nil
+		},
+	}
+	bot := NewBot(msgAPI, &fakeParser{}, &fakeShops{}, setup, &fakeEmployees{}, &fakeAvailability{}, &fakeVotes{}, NewMemoryAvailabilityDraftStore(0), testLogger())
+	msg := &Message{From: &User{ID: 1}, Chat: Chat{ID: -100999, Type: "supergroup"}, Text: "/setup tg_setup_good"}
+	if err := bot.handleSetup(context.Background(), msg, msg.Text); err != nil {
+		t.Fatal(err)
+	}
+	if setup.lastShopID != shopID || setup.lastGroupID != -100999 {
+		t.Fatalf("set group = %+v", setup)
+	}
+	if !strings.Contains(msgAPI.messages[0].text, "Beta Cafe") {
+		t.Fatalf("message = %q", msgAPI.messages[0].text)
+	}
 }

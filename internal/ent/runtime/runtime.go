@@ -181,11 +181,11 @@ func init() {
 	// shop.DefaultTimezone holds the default value on creation for the timezone field.
 	shop.DefaultTimezone = shopDescTimezone.Default.(string)
 	// shopDescPlan is the schema descriptor for plan field.
-	shopDescPlan := shopFields[5].Descriptor()
+	shopDescPlan := shopFields[7].Descriptor()
 	// shop.DefaultPlan holds the default value on creation for the plan field.
 	shop.DefaultPlan = shopDescPlan.Default.(string)
 	// shopDescCreatedAt is the schema descriptor for created_at field.
-	shopDescCreatedAt := shopFields[7].Descriptor()
+	shopDescCreatedAt := shopFields[9].Descriptor()
 	// shop.DefaultCreatedAt holds the default value on creation for the created_at field.
 	shop.DefaultCreatedAt = shopDescCreatedAt.Default.(func() time.Time)
 	// shopDescID is the schema descriptor for id field.

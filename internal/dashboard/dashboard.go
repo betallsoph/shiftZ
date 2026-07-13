@@ -38,6 +38,7 @@ type weekGenerator interface {
 type Server struct {
 	shops         shopReader
 	shopAuth      shopAuthenticator
+	shopTelegram  shopTelegramSetup
 	schedules     scheduleRepo
 	employees     employeeLister
 	availability  availabilityLister
@@ -61,6 +62,7 @@ func New(st *store.Store, sessions *SessionManager, onboard shopOnboarder, signu
 	return &Server{
 		shops:         st.Shops,
 		shopAuth:      st.Shops,
+		shopTelegram:  st.Shops,
 		schedules:     st.Schedules,
 		employees:     st.Employees,
 		availability:  st.Availability,
@@ -84,6 +86,7 @@ func (s *Server) Register(mux *http.ServeMux) {
 	mux.HandleFunc("GET /dashboard/week", s.handleWeek)
 	mux.HandleFunc("POST /dashboard/generate", s.handleGenerate)
 	mux.HandleFunc("POST /dashboard/schedules/{id}/approve", s.handleApprove)
+	mux.HandleFunc("POST /dashboard/telegram/setup-code", s.handleRotateTelegramSetupCode)
 }
 
 type templateSet struct {

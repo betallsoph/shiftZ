@@ -49,7 +49,7 @@ func run(log *slog.Logger) error {
 	llmSvc := llm.NewService(newProvider(cfg, log))
 	tg := telegram.NewClient(cfg.TelegramToken)
 	drafts := telegram.NewMemoryAvailabilityDraftStore(30 * time.Minute)
-	bot := telegram.NewBot(tg, llmSvc, st.Shops, st.Employees, st.Availability, st.Votes, drafts, log)
+	bot := telegram.NewBot(tg, llmSvc, st.Shops, st.Shops, st.Employees, st.Availability, st.Votes, drafts, log)
 
 	if cfg.RemindersEnabled {
 		rem := reminder.New(st.Shops, st.Shops, st.Employees, st.Availability, st.Reminders, reminderMessenger{c: tg}, log, reminder.Config{

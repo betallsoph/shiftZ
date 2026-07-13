@@ -76,6 +76,16 @@ func TelegramGroupID(v int64) predicate.Shop {
 	return predicate.Shop(sql.FieldEQ(FieldTelegramGroupID, v))
 }
 
+// TelegramSetupCodeHash applies equality check predicate on the "telegram_setup_code_hash" field. It's identical to TelegramSetupCodeHashEQ.
+func TelegramSetupCodeHash(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldEQ(FieldTelegramSetupCodeHash, v))
+}
+
+// TelegramSetupCodeExpiresAt applies equality check predicate on the "telegram_setup_code_expires_at" field. It's identical to TelegramSetupCodeExpiresAtEQ.
+func TelegramSetupCodeExpiresAt(v time.Time) predicate.Shop {
+	return predicate.Shop(sql.FieldEQ(FieldTelegramSetupCodeExpiresAt, v))
+}
+
 // Plan applies equality check predicate on the "plan" field. It's identical to PlanEQ.
 func Plan(v string) predicate.Shop {
 	return predicate.Shop(sql.FieldEQ(FieldPlan, v))
@@ -324,6 +334,131 @@ func TelegramGroupIDLT(v int64) predicate.Shop {
 // TelegramGroupIDLTE applies the LTE predicate on the "telegram_group_id" field.
 func TelegramGroupIDLTE(v int64) predicate.Shop {
 	return predicate.Shop(sql.FieldLTE(FieldTelegramGroupID, v))
+}
+
+// TelegramSetupCodeHashEQ applies the EQ predicate on the "telegram_setup_code_hash" field.
+func TelegramSetupCodeHashEQ(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldEQ(FieldTelegramSetupCodeHash, v))
+}
+
+// TelegramSetupCodeHashNEQ applies the NEQ predicate on the "telegram_setup_code_hash" field.
+func TelegramSetupCodeHashNEQ(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldNEQ(FieldTelegramSetupCodeHash, v))
+}
+
+// TelegramSetupCodeHashIn applies the In predicate on the "telegram_setup_code_hash" field.
+func TelegramSetupCodeHashIn(vs ...string) predicate.Shop {
+	return predicate.Shop(sql.FieldIn(FieldTelegramSetupCodeHash, vs...))
+}
+
+// TelegramSetupCodeHashNotIn applies the NotIn predicate on the "telegram_setup_code_hash" field.
+func TelegramSetupCodeHashNotIn(vs ...string) predicate.Shop {
+	return predicate.Shop(sql.FieldNotIn(FieldTelegramSetupCodeHash, vs...))
+}
+
+// TelegramSetupCodeHashGT applies the GT predicate on the "telegram_setup_code_hash" field.
+func TelegramSetupCodeHashGT(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldGT(FieldTelegramSetupCodeHash, v))
+}
+
+// TelegramSetupCodeHashGTE applies the GTE predicate on the "telegram_setup_code_hash" field.
+func TelegramSetupCodeHashGTE(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldGTE(FieldTelegramSetupCodeHash, v))
+}
+
+// TelegramSetupCodeHashLT applies the LT predicate on the "telegram_setup_code_hash" field.
+func TelegramSetupCodeHashLT(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldLT(FieldTelegramSetupCodeHash, v))
+}
+
+// TelegramSetupCodeHashLTE applies the LTE predicate on the "telegram_setup_code_hash" field.
+func TelegramSetupCodeHashLTE(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldLTE(FieldTelegramSetupCodeHash, v))
+}
+
+// TelegramSetupCodeHashContains applies the Contains predicate on the "telegram_setup_code_hash" field.
+func TelegramSetupCodeHashContains(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldContains(FieldTelegramSetupCodeHash, v))
+}
+
+// TelegramSetupCodeHashHasPrefix applies the HasPrefix predicate on the "telegram_setup_code_hash" field.
+func TelegramSetupCodeHashHasPrefix(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldHasPrefix(FieldTelegramSetupCodeHash, v))
+}
+
+// TelegramSetupCodeHashHasSuffix applies the HasSuffix predicate on the "telegram_setup_code_hash" field.
+func TelegramSetupCodeHashHasSuffix(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldHasSuffix(FieldTelegramSetupCodeHash, v))
+}
+
+// TelegramSetupCodeHashIsNil applies the IsNil predicate on the "telegram_setup_code_hash" field.
+func TelegramSetupCodeHashIsNil() predicate.Shop {
+	return predicate.Shop(sql.FieldIsNull(FieldTelegramSetupCodeHash))
+}
+
+// TelegramSetupCodeHashNotNil applies the NotNil predicate on the "telegram_setup_code_hash" field.
+func TelegramSetupCodeHashNotNil() predicate.Shop {
+	return predicate.Shop(sql.FieldNotNull(FieldTelegramSetupCodeHash))
+}
+
+// TelegramSetupCodeHashEqualFold applies the EqualFold predicate on the "telegram_setup_code_hash" field.
+func TelegramSetupCodeHashEqualFold(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldEqualFold(FieldTelegramSetupCodeHash, v))
+}
+
+// TelegramSetupCodeHashContainsFold applies the ContainsFold predicate on the "telegram_setup_code_hash" field.
+func TelegramSetupCodeHashContainsFold(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldContainsFold(FieldTelegramSetupCodeHash, v))
+}
+
+// TelegramSetupCodeExpiresAtEQ applies the EQ predicate on the "telegram_setup_code_expires_at" field.
+func TelegramSetupCodeExpiresAtEQ(v time.Time) predicate.Shop {
+	return predicate.Shop(sql.FieldEQ(FieldTelegramSetupCodeExpiresAt, v))
+}
+
+// TelegramSetupCodeExpiresAtNEQ applies the NEQ predicate on the "telegram_setup_code_expires_at" field.
+func TelegramSetupCodeExpiresAtNEQ(v time.Time) predicate.Shop {
+	return predicate.Shop(sql.FieldNEQ(FieldTelegramSetupCodeExpiresAt, v))
+}
+
+// TelegramSetupCodeExpiresAtIn applies the In predicate on the "telegram_setup_code_expires_at" field.
+func TelegramSetupCodeExpiresAtIn(vs ...time.Time) predicate.Shop {
+	return predicate.Shop(sql.FieldIn(FieldTelegramSetupCodeExpiresAt, vs...))
+}
+
+// TelegramSetupCodeExpiresAtNotIn applies the NotIn predicate on the "telegram_setup_code_expires_at" field.
+func TelegramSetupCodeExpiresAtNotIn(vs ...time.Time) predicate.Shop {
+	return predicate.Shop(sql.FieldNotIn(FieldTelegramSetupCodeExpiresAt, vs...))
+}
+
+// TelegramSetupCodeExpiresAtGT applies the GT predicate on the "telegram_setup_code_expires_at" field.
+func TelegramSetupCodeExpiresAtGT(v time.Time) predicate.Shop {
+	return predicate.Shop(sql.FieldGT(FieldTelegramSetupCodeExpiresAt, v))
+}
+
+// TelegramSetupCodeExpiresAtGTE applies the GTE predicate on the "telegram_setup_code_expires_at" field.
+func TelegramSetupCodeExpiresAtGTE(v time.Time) predicate.Shop {
+	return predicate.Shop(sql.FieldGTE(FieldTelegramSetupCodeExpiresAt, v))
+}
+
+// TelegramSetupCodeExpiresAtLT applies the LT predicate on the "telegram_setup_code_expires_at" field.
+func TelegramSetupCodeExpiresAtLT(v time.Time) predicate.Shop {
+	return predicate.Shop(sql.FieldLT(FieldTelegramSetupCodeExpiresAt, v))
+}
+
+// TelegramSetupCodeExpiresAtLTE applies the LTE predicate on the "telegram_setup_code_expires_at" field.
+func TelegramSetupCodeExpiresAtLTE(v time.Time) predicate.Shop {
+	return predicate.Shop(sql.FieldLTE(FieldTelegramSetupCodeExpiresAt, v))
+}
+
+// TelegramSetupCodeExpiresAtIsNil applies the IsNil predicate on the "telegram_setup_code_expires_at" field.
+func TelegramSetupCodeExpiresAtIsNil() predicate.Shop {
+	return predicate.Shop(sql.FieldIsNull(FieldTelegramSetupCodeExpiresAt))
+}
+
+// TelegramSetupCodeExpiresAtNotNil applies the NotNil predicate on the "telegram_setup_code_expires_at" field.
+func TelegramSetupCodeExpiresAtNotNil() predicate.Shop {
+	return predicate.Shop(sql.FieldNotNull(FieldTelegramSetupCodeExpiresAt))
 }
 
 // PlanEQ applies the EQ predicate on the "plan" field.

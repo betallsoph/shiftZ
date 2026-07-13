@@ -189,6 +189,7 @@ func newSignupTestServer(t *testing.T, signupEnabled bool, onboard shopOnboarder
 	srv := &Server{
 		shops:         &fakeShops{shop: &store.Shop{ID: uuid.New(), Name: "Cafe", Timezone: "UTC"}},
 		shopAuth:      &noopShopAuth{},
+		shopTelegram:  &fakeShopTelegram{},
 		schedules:     &fakeSchedules{},
 		employees:     &fakeEmployees{},
 		availability:  &fakeAvailabilityRepo{},

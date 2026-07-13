@@ -19,6 +19,7 @@ const dateLayout = "2006-01-02"
 type PageData struct {
 	Today    string
 	ShopName string
+	Telegram TelegramSetupView
 }
 
 // WeekView is the HTMX-swapped week panel.
