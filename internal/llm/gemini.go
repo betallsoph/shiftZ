@@ -13,7 +13,7 @@ import (
 
 const defaultGeminiModel = "gemini-3.5-flash"
 
-// GeminiProvider calls the Google Gemini generateContent REST API.
+// GeminiProvider calls the Google Gemini Interactions REST API.
 type GeminiProvider struct {
 	apiKey  string
 	model   string
@@ -34,34 +34,37 @@ func NewGeminiProvider(apiKey, model string) *GeminiProvider {
 	}
 }
 
-// Complete sends a generateContent request and returns model text.
+// Complete creates a stateless interaction and returns model text.
 func (p *GeminiProvider) Complete(ctx context.Context, req Request) (string, error) {
 	payload := map[string]any{
-		"contents": []map[string]any{{
-			"parts": []map[string]string{{"text": req.Prompt}},
-		}},
+		"model": p.model,
+		"input": req.Prompt,
+		"store": false,
 	}
 	if req.System != "" {
-		payload["system_instruction"] = map[string]any{
-			"parts": []map[string]string{{"text": req.System}},
-		}
+		payload["system_instruction"] = req.System
 	}
 
-	genConfig := map[string]any{}
+	genConfig := map[string]any{"thinking_level": "minimal"}
 	if req.MaxTokens > 0 {
-		genConfig["maxOutputTokens"] = req.MaxTokens
+		genConfig["max_output_tokens"] = req.MaxTokens
 	}
 	if req.Temperature > 0 || req.ResponseMIMEType != "" {
 		genConfig["temperature"] = req.Temperature
 	}
-	if req.ResponseMIMEType != "" {
-		genConfig["responseMimeType"] = req.ResponseMIMEType
-	}
-	if req.ResponseSchema != nil {
-		genConfig["responseSchema"] = req.ResponseSchema
-	}
 	if len(genConfig) > 0 {
-		payload["generationConfig"] = genConfig
+		payload["generation_config"] = genConfig
+	}
+
+	if req.ResponseMIMEType != "" || req.ResponseSchema != nil {
+		responseFormat := map[string]any{"type": "text"}
+		if req.ResponseMIMEType != "" {
+			responseFormat["mime_type"] = req.ResponseMIMEType
+		}
+		if req.ResponseSchema != nil {
+			responseFormat["schema"] = req.ResponseSchema
+		}
+		payload["response_format"] = responseFormat
 	}
 
 	body, err := json.Marshal(payload)
@@ -69,12 +72,13 @@ func (p *GeminiProvider) Complete(ctx context.Context, req Request) (string, err
 		return "", fmt.Errorf("gemini: marshal request: %w", err)
 	}
 
-	url := fmt.Sprintf("%s/models/%s:generateContent?key=%s", p.baseURL, p.model, p.apiKey)
+	url := fmt.Sprintf("%s/interactions", p.baseURL)
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(body))
 	if err != nil {
 		return "", fmt.Errorf("gemini: build request: %w", err)
 	}
 	httpReq.Header.Set("Content-Type", "application/json")
+	httpReq.Header.Set("x-goog-api-key", p.apiKey)
 
 	resp, err := p.client.Do(httpReq)
 	if err != nil {
@@ -90,7 +94,7 @@ func (p *GeminiProvider) Complete(ctx context.Context, req Request) (string, err
 		return "", fmt.Errorf("gemini: API %s: %s", resp.Status, geminiErrorMessage(respBody))
 	}
 
-	var parsed geminiGenerateResponse
+	var parsed geminiInteractionResponse
 	if err := json.Unmarshal(respBody, &parsed); err != nil {
 		return "", fmt.Errorf("gemini: decode response: %w", err)
 	}
@@ -101,14 +105,14 @@ func (p *GeminiProvider) Complete(ctx context.Context, req Request) (string, err
 	return text, nil
 }
 
-type geminiGenerateResponse struct {
-	Candidates []struct {
-		Content struct {
-			Parts []struct {
-				Text string `json:"text"`
-			} `json:"parts"`
+type geminiInteractionResponse struct {
+	Steps []struct {
+		Type    string `json:"type"`
+		Content []struct {
+			Type string `json:"type"`
+			Text string `json:"text"`
 		} `json:"content"`
-	} `json:"candidates"`
+	} `json:"steps"`
 	Error *struct {
 		Code    int    `json:"code"`
 		Message string `json:"message"`
@@ -116,18 +120,25 @@ type geminiGenerateResponse struct {
 	} `json:"error,omitempty"`
 }
 
-func (r geminiGenerateResponse) text() (string, error) {
+func (r geminiInteractionResponse) text() (string, error) {
 	if r.Error != nil && r.Error.Message != "" {
 		return "", fmt.Errorf("gemini: %s", r.Error.Message)
 	}
-	if len(r.Candidates) == 0 {
-		return "", fmt.Errorf("gemini: empty candidates")
+	var text strings.Builder
+	for _, step := range r.Steps {
+		if step.Type != "model_output" {
+			continue
+		}
+		for _, content := range step.Content {
+			if content.Type == "text" {
+				text.WriteString(content.Text)
+			}
+		}
 	}
-	parts := r.Candidates[0].Content.Parts
-	if len(parts) == 0 || strings.TrimSpace(parts[0].Text) == "" {
-		return "", fmt.Errorf("gemini: empty candidate text")
+	if strings.TrimSpace(text.String()) == "" {
+		return "", fmt.Errorf("gemini: empty model output")
 	}
-	return parts[0].Text, nil
+	return text.String(), nil
 }
 
 func geminiErrorMessage(body []byte) string {

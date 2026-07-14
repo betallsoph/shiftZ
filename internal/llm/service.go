@@ -32,25 +32,25 @@ Rules:
 
 func availabilityResponseSchema() map[string]any {
 	return map[string]any{
-		"type": "OBJECT",
+		"type": "object",
 		"properties": map[string]any{
 			"slots": map[string]any{
-				"type": "ARRAY",
+				"type": "array",
 				"items": map[string]any{
-					"type": "OBJECT",
+					"type": "object",
 					"properties": map[string]any{
-						"start":      map[string]any{"type": "STRING"},
-						"end":        map[string]any{"type": "STRING"},
-						"preference": map[string]any{"type": "INTEGER"},
-						"note":       map[string]any{"type": "STRING"},
+						"start":      map[string]any{"type": "string"},
+						"end":        map[string]any{"type": "string"},
+						"preference": map[string]any{"type": "integer"},
+						"note":       map[string]any{"type": "string"},
 					},
 					"required": []string{"start", "end", "preference"},
 				},
 			},
-			"uncertain": map[string]any{"type": "BOOLEAN"},
+			"uncertain": map[string]any{"type": "boolean"},
 			"questions": map[string]any{
-				"type":  "ARRAY",
-				"items": map[string]any{"type": "STRING"},
+				"type":  "array",
+				"items": map[string]any{"type": "string"},
 			},
 		},
 		"required": []string{"slots", "uncertain", "questions"},

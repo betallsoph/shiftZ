@@ -22,11 +22,14 @@ func TestNewGeminiProviderDefaultModel(t *testing.T) {
 func TestGeminiProviderBuildsStructuredRequest(t *testing.T) {
 	var got map[string]any
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if !strings.Contains(r.URL.Path, ":generateContent") {
+		if r.URL.Path != "/interactions" {
 			t.Fatalf("path = %q", r.URL.Path)
 		}
-		if r.URL.Query().Get("key") != "test-key" {
-			t.Fatalf("key = %q", r.URL.Query().Get("key"))
+		if r.URL.Query().Has("key") {
+			t.Fatal("API key must not be sent in the query string")
+		}
+		if r.Header.Get("x-goog-api-key") != "test-key" {
+			t.Fatalf("x-goog-api-key header = %q", r.Header.Get("x-goog-api-key"))
 		}
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
@@ -36,7 +39,7 @@ func TestGeminiProviderBuildsStructuredRequest(t *testing.T) {
 			t.Fatal(err)
 		}
 		w.Header().Set("Content-Type", "application/json")
-		_, _ = w.Write([]byte(`{"candidates":[{"content":{"parts":[{"text":"{\"ok\":true}"}]}}]}`))
+		_, _ = w.Write([]byte(`{"steps":[{"type":"model_output","content":[{"type":"text","text":"{\"ok\":true}"}]}]}`))
 	}))
 	defer srv.Close()
 
@@ -44,7 +47,7 @@ func TestGeminiProviderBuildsStructuredRequest(t *testing.T) {
 	p.baseURL = srv.URL
 	p.client = srv.Client()
 
-	schema := map[string]any{"type": "OBJECT"}
+	schema := map[string]any{"type": "object"}
 	_, err := p.Complete(context.Background(), Request{
 		System:           "system prompt",
 		Prompt:           "user prompt",
@@ -57,33 +60,38 @@ func TestGeminiProviderBuildsStructuredRequest(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	sys, ok := got["system_instruction"].(map[string]any)
-	if !ok {
+	if got["model"] != "gemini-3.5-flash" || got["input"] != "user prompt" {
+		t.Fatalf("model/input = %v/%v", got["model"], got["input"])
+	}
+	if got["store"] != false {
+		t.Fatalf("store = %v, want false", got["store"])
+	}
+	if got["system_instruction"] != "system prompt" {
 		t.Fatalf("system_instruction = %#v", got["system_instruction"])
 	}
-	gen, ok := got["generationConfig"].(map[string]any)
+	gen, ok := got["generation_config"].(map[string]any)
 	if !ok {
-		t.Fatalf("generationConfig = %#v", got["generationConfig"])
+		t.Fatalf("generation_config = %#v", got["generation_config"])
 	}
-	if gen["responseMimeType"] != "application/json" {
-		t.Fatalf("responseMimeType = %v", gen["responseMimeType"])
+	if gen["max_output_tokens"] != float64(1200) {
+		t.Fatalf("max_output_tokens = %v", gen["max_output_tokens"])
 	}
-	if gen["maxOutputTokens"] != float64(1200) {
-		t.Fatalf("maxOutputTokens = %v", gen["maxOutputTokens"])
+	if gen["thinking_level"] != "minimal" {
+		t.Fatalf("thinking_level = %v", gen["thinking_level"])
 	}
-	schemaGot, ok := gen["responseSchema"].(map[string]any)
-	if !ok || schemaGot["type"] != "OBJECT" {
-		t.Fatalf("responseSchema = %#v", gen["responseSchema"])
+	format, ok := got["response_format"].(map[string]any)
+	if !ok || format["mime_type"] != "application/json" {
+		t.Fatalf("response_format = %#v", got["response_format"])
 	}
-	parts, ok := sys["parts"].([]any)
-	if !ok || len(parts) == 0 {
-		t.Fatalf("system parts = %#v", sys["parts"])
+	schemaGot, ok := format["schema"].(map[string]any)
+	if !ok || schemaGot["type"] != "object" {
+		t.Fatalf("schema = %#v", format["schema"])
 	}
 }
 
-func TestGeminiProviderExtractsCandidateText(t *testing.T) {
+func TestGeminiProviderExtractsModelOutputText(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		_, _ = w.Write([]byte(`{"candidates":[{"content":{"parts":[{"text":"hello"}]}}]}`))
+		_, _ = w.Write([]byte(`{"steps":[{"type":"thought","content":[{"type":"text","text":"ignore"}]},{"type":"model_output","content":[{"type":"text","text":"hello"}]}]}`))
 	}))
 	defer srv.Close()
 
