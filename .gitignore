@@ -8,3 +8,5 @@ coverage.*
 
 # Local env
 .env
+.env.*
+!.env.example

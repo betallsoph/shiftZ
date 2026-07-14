@@ -184,7 +184,7 @@ Reminders are **disabled** by default. Choose a mode:
 | ---- | -------- |
 | `disabled` | Default — no reminder processing |
 | `loop` | Always-on host or local dev (`REMINDERS_ENABLED=true` also selects loop) |
-| `http` | Cloud Run / scale-to-zero — Cloud Scheduler POSTs to `/internal/reminders/tick` |
+| `http` | Scale-to-zero hosting — an external scheduler POSTs to `/internal/reminders/tick` |
 
 **Loop mode** (local dev or always-on):
 
@@ -195,14 +195,14 @@ export REMINDERS_ENABLED=true
 export REMINDER_TICK_INTERVAL=1m
 ```
 
-**HTTP mode** (production on Cloud Run):
+**HTTP mode** (for hosts that need an external scheduler):
 
 ```sh
 export REMINDER_MODE=http
 export REMINDER_TRIGGER_SECRET='<random-secret>'   # openssl rand -base64 32
 ```
 
-Cloud Scheduler calls the internal endpoint (keep the secret private):
+Configure the scheduler to call the internal endpoint (keep the secret private):
 
 ```sh
 curl -i -X POST https://<app-domain>/internal/reminders/tick \
@@ -275,14 +275,19 @@ Beta/production runs **one service** via `cmd/app` (or the Docker image below) o
 | `cmd/server`   | Local dev — dashboard only |
 | `cmd/bot`      | Local dev — Telegram webhook + reminders only |
 
-```sh
-# Production / beta
-go run ./cmd/app
+On the target VPS, production runs with `compose.prod.yml`. The app port binds
+only to loopback so a host-level Cloudflare Tunnel can expose it without an
+additional Nginx container:
 
-# Docker
-docker build -t shiftz:local .
-docker run --rm -p 8080:8080 --env-file .env shiftz:local
+```sh
+cd /opt/shiftz
+SHIFTZ_IMAGE=ghcr.io/betallsoph/shiftz:latest \
+  docker compose -f compose.prod.yml up -d
 ```
+
+The full one-time bootstrap, GitHub secrets and tunnel configuration are in
+`deploy/vps/README.md`. `docker-compose.yml` remains the local Postgres-only
+development stack.
 
 Set `COOKIE_SECURE=true` when serving over HTTPS.
 
@@ -303,8 +308,7 @@ COOKIE_SECURE=true            # HTTPS deployments
 LLM_PROVIDER=gemini
 LLM_API_KEY=...               # required when LLM_PROVIDER=gemini
 LLM_MODEL=gemini-3.5-flash
-REMINDER_MODE=http
-REMINDER_TRIGGER_SECRET=...   # openssl rand -base64 32
+REMINDER_MODE=loop            # always-on VPS
 ```
 
 Keep `DEV_API_ENABLED` unset or `false` in production.
@@ -313,7 +317,7 @@ Keep `OWNER_SIGNUP_ENABLED` unset or `false` in production unless you want open 
 ### Optional runtime env
 
 ```sh
-APP_ADDR=:8080                # or rely on platform PORT
+APP_ADDR=:8088                # production container listen address
 ENT_DEBUG=false
 REMINDER_TICK_INTERVAL=1m
 DB_MAX_OPEN_CONNS=5
@@ -343,9 +347,13 @@ Use `/livez` for platform liveness probes. Do **not** point frequent liveness ch
 - First request after scale-to-zero can be slower; readiness checks via `/readyz` are fine during deploy verification.
 - Keep pool sizes small (`DB_MAX_OPEN_CONNS=5` default) on free/beta tiers.
 
-### CI
+### CI/CD
 
-GitHub Actions runs `go test ./...` and `go vet ./...` on every push and pull request (see `.github/workflows/ci.yml`).
+GitHub Actions runs `go test ./...` and `go vet ./...` on every push and pull
+request. Pushes to `main` also build a `linux/arm64` image on GitHub-hosted
+runners, push it to GHCR, apply Atlas migrations, deploy over SSH, verify
+health, and roll back the image on startup failure. See
+`.github/workflows/deploy-vps.yml`.
 
 ## Data layer: ent + Atlas
 

@@ -1,0 +1,36 @@
+name: shiftz-prod
+
+services:
+  app:
+    image: ${SHIFTZ_IMAGE:-ghcr.io/betallsoph/shiftz:latest}
+    restart: unless-stopped
+    init: true
+    env_file:
+      - ${SHIFTZ_ENV_FILE:-.env.production}
+    environment:
+      APP_ADDR: :8088
+      REMINDER_MODE: ${SHIFTZ_REMINDER_MODE:-loop}
+    ports:
+      - "127.0.0.1:${SHIFTZ_PORT:-8088}:8088"
+    read_only: true
+    tmpfs:
+      - /tmp:size=32m,mode=1777
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    cpus: ${SHIFTZ_CPUS:-0.70}
+    mem_limit: ${SHIFTZ_MEMORY:-768m}
+    pids_limit: 128
+    stop_grace_period: 15s
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8088/livez"]
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

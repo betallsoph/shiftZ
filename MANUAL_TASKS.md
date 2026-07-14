@@ -20,8 +20,8 @@ File nay khong thay the README. No la checklist van hanh: tao account, lay key, 
 openssl rand -base64 32
 ```
 
-- [ ] Chon hosting cho unified service (`cmd/app` hoac Docker image).
-- [ ] Tro domain/HTTPS neu deploy public beta.
+- [ ] VPS co Docker Engine + Compose plugin va user deploy chay duoc Docker.
+- [ ] Them hostname shiftZ vao Cloudflare Tunnel dang co.
 
 ## 2. Bien Moi Truong Production
 
@@ -36,20 +36,19 @@ TELEGRAM_WEBHOOK_SECRET='...'
 LLM_PROVIDER=gemini
 LLM_API_KEY='...'
 LLM_MODEL='gemini-3.5-flash'
-REMINDER_MODE=http
-REMINDER_TRIGGER_SECRET='...'
+REMINDER_MODE=loop
 DEV_API_ENABLED=false
+OWNER_SIGNUP_ENABLED=false
 DB_MAX_OPEN_CONNS=5
 DB_MAX_IDLE_CONNS=2
 DB_CONN_MAX_LIFETIME=30m
 DB_CONN_MAX_IDLE_TIME=5m
 ```
 
-Listen address (chon mot):
+Listen address tren VPS:
 
 ```sh
-APP_ADDR=':8080'    # uu tien cao nhat
-# hoac de platform set PORT (vi du Render/Fly map PORT -> :PORT)
+APP_ADDR=':8088'
 ```
 
 Dung rieng cho migration:
@@ -58,23 +57,19 @@ Dung rieng cho migration:
 MIGRATION_DATABASE_URL='Neon direct URL'
 ```
 
-Khong bat `DEV_API_ENABLED` tren production tru khi dang debug co chu dich.
+Khong bat `DEV_API_ENABLED` tren production. Chi bat
+`OWNER_SIGNUP_ENABLED=true` trong luc tao shop dau tien, sau do tat lai.
 
-Local dev van co the dung hai binary tach (`cmd/server` + `cmd/bot`) voi `SERVER_ADDR` / `BOT_ADDR` va `REMINDER_MODE=loop`.
-
-Cloud Scheduler (Task 21) se goi:
-
-```sh
-POST https://<app-domain>/internal/reminders/tick
-Header: X-ShiftZ-Reminder-Secret: <REMINDER_TRIGGER_SECRET>
-```
-
-Dat Cloud Run `max instances = 1` de tranh tick chong nhau giua instances.
+VPS always-on chay reminder loop trong cung container. Khong can Cloud
+Scheduler hay `REMINDER_TRIGGER_SECRET`.
 
 ## 3. Database Va Migration
 
 - [ ] Confirm dang dung Neon direct URL cho migration, khong dung pooled URL.
-- [ ] Apply migrations **truoc** deploy (app khong tu chay migration khi startup):
+- [ ] Luu Neon direct URL vao GitHub Environment `production`, secret
+  `MIGRATION_DATABASE_URL`.
+- [ ] Workflow deploy se apply migrations **truoc** khi restart app.
+- [ ] Neu can fallback bang tay:
 
 ```sh
 atlas migrate apply --dir file://migrations --url "$MIGRATION_DATABASE_URL"
@@ -94,9 +89,19 @@ atlas migrate apply --dir file://migrations --url "$MIGRATION_DATABASE_URL"
 - [ ] Check Neon dashboard xem database co tables moi sau migration.
 - [ ] Ghi lai Neon project id / branch / region vao noi quan ly rieng.
 
-## 4. Deploy Service
+## 4. Deploy Service Tren VPS
 
-- [ ] Deploy `cmd/app` (hoac Docker image tu `Dockerfile`).
+- [ ] Tao `/opt/shiftz`, owner la SSH deploy user.
+- [ ] Tao `/opt/shiftz/.env.production` tu `.env.example`, `chmod 600`.
+- [ ] Neu GHCR package private, `docker login ghcr.io` tren VPS bang PAT co
+  `read:packages`.
+- [ ] Tao GitHub Environment `production` va cac secrets trong
+  `deploy/vps/README.md`.
+- [ ] Sau khi VPS va secrets da san sang, tao repository variable
+  `VPS_DEPLOY_ENABLED=true`.
+- [ ] Cloudflare Tunnel host route vao `http://127.0.0.1:8088`; khong can Nginx.
+- [ ] Push `main` hoac chay workflow `Deploy VPS` bang tay.
+- [ ] Confirm Compose dung image SHA moi va container healthy.
 - [ ] Liveness probe dung `/livez`.
 - [ ] Readiness probe dung `/readyz`.
 - [ ] Khong cau hinh liveness probe vao `/readyz`, vi no ping DB va co the danh thuc Neon.
@@ -175,6 +180,7 @@ go run ./cmd/seed
 - [ ] Check Neon usage: CU-hours, storage, active connections.
 - [ ] Check hosting memory/CPU/restart.
 - [ ] Check CI tren GitHub Actions van pass.
+- [ ] Check workflow `Deploy VPS` build ARM64, migrate va health-check thanh cong.
 
 ## 9. Viec Chua Tu Dong Hoa
 
