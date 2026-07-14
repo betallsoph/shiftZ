@@ -275,14 +275,17 @@ Beta/production runs **one service** via `cmd/app` (or the Docker image below) o
 | `cmd/server`   | Local dev — dashboard only |
 | `cmd/bot`      | Local dev — Telegram webhook + reminders only |
 
-On the target VPS, production runs with `compose.prod.yml`. The app port binds
-only to loopback so a host-level Cloudflare Tunnel can expose it without an
-additional Nginx container:
+On the target VPS, clone the repository once, create `.env`, and run the
+production Compose file. The app binds only to loopback, so a host-level
+Cloudflare Tunnel can expose it without Nginx:
 
 ```sh
-cd /opt/shiftz
-SHIFTZ_IMAGE=ghcr.io/betallsoph/shiftz:latest \
-  docker compose -f compose.prod.yml up -d
+git clone https://github.com/betallsoph/shiftZ.git
+cd shiftZ
+cp .env.example .env
+docker compose -f compose.prod.yml build app
+docker compose -f compose.prod.yml --profile tools run --rm migrate
+docker compose -f compose.prod.yml up -d app
 ```
 
 The full one-time bootstrap, GitHub secrets and tunnel configuration are in
@@ -350,10 +353,9 @@ Use `/livez` for platform liveness probes. Do **not** point frequent liveness ch
 ### CI/CD
 
 GitHub Actions runs `go test ./...` and `go vet ./...` on every push and pull
-request. Pushes to `main` also build a `linux/arm64` image on GitHub-hosted
-runners, push it to GHCR, apply Atlas migrations, deploy over SSH, verify
-health, and roll back the image on startup failure. See
-`.github/workflows/deploy-vps.yml`.
+request. Pushes to `main` also SSH into the VPS, pull the repository, build the
+ARM64 image there, apply Atlas migrations from VPS `.env`, restart Compose,
+and verify health. See `.github/workflows/deploy-vps.yml`.
 
 ## Data layer: ent + Atlas
 

@@ -5,190 +5,62 @@ on:
     branches: [main]
   workflow_dispatch:
 
-permissions:
-  contents: read
-
 concurrency:
   group: shiftz-production
   cancel-in-progress: false
 
 jobs:
-  test:
-    if: github.event_name == 'workflow_dispatch' || vars.VPS_DEPLOY_ENABLED == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
-        with:
-          go-version-file: go.mod
-          cache: true
-      - run: go test ./...
-      - run: go vet ./...
-
-  build:
-    if: github.event_name == 'workflow_dispatch' || vars.VPS_DEPLOY_ENABLED == 'true'
+  deploy:
+    name: Deploy shiftZ
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    needs: test
-    permissions:
-      contents: read
-      packages: write
-    outputs:
-      image: ${{ steps.image.outputs.image }}
-      repository: ${{ steps.image.outputs.repository }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Resolve image name
-        id: image
-        shell: bash
-        run: |
-          repository="ghcr.io/${GITHUB_REPOSITORY,,}"
-          echo "repository=$repository" >> "$GITHUB_OUTPUT"
-          echo "image=$repository:sha-${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
-
-      - uses: docker/setup-buildx-action@v4
-
-      - uses: docker/login-action@v4
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build and push ARM64 image
-        uses: docker/build-push-action@v7
-        with:
-          context: .
-          platforms: linux/arm64
-          push: true
-          tags: |
-            ${{ steps.image.outputs.image }}
-            ${{ steps.image.outputs.repository }}:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          provenance: true
-          sbom: true
-
-  migrate:
-    if: github.event_name == 'workflow_dispatch' || vars.VPS_DEPLOY_ENABLED == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    needs: build
     environment: production
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: ariga/setup-atlas@v0.3
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.2.0
         with:
-          version: v1.2.0
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          port: 22
+          command_timeout: 15m
+          script: |
+            set -euo pipefail
+            cd "${{ secrets.DEPLOY_PATH }}"
 
-      - name: Apply production migrations
-        env:
-          MIGRATION_DATABASE_URL: ${{ secrets.MIGRATION_DATABASE_URL }}
-        run: |
-          test -n "$MIGRATION_DATABASE_URL"
-          atlas migrate apply \
-            --dir file://migrations \
-            --url "$MIGRATION_DATABASE_URL"
+            echo "==> Pull latest code"
+            git fetch origin main
+            git reset --hard origin/main
 
-  deploy:
-    if: github.event_name == 'workflow_dispatch' || vars.VPS_DEPLOY_ENABLED == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    needs: [build, migrate]
-    environment: production
-    permissions:
-      contents: read
-      packages: read
-    steps:
-      - uses: actions/checkout@v4
+            if [ ! -f .env ]; then
+              echo "Missing ${{ secrets.DEPLOY_PATH }}/.env"
+              exit 1
+            fi
 
-      - name: Configure SSH
-        shell: bash
-        env:
-          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
-          VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
-        run: |
-          test -n "$VPS_SSH_KEY"
-          test -n "$VPS_KNOWN_HOSTS"
-          install -m 700 -d ~/.ssh
-          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-          printf '%s\n' "$VPS_KNOWN_HOSTS" > ~/.ssh/known_hosts
-          chmod 600 ~/.ssh/known_hosts
+            echo "==> Build ARM64 image on VPS"
+            docker compose -f compose.prod.yml build app
 
-      - name: Authenticate VPS to GHCR
-        shell: bash
-        env:
-          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GHCR_USERNAME: ${{ github.actor }}
-          VPS_HOST: ${{ secrets.VPS_HOST }}
-          VPS_USER: ${{ secrets.VPS_USER }}
-          VPS_PORT: ${{ secrets.VPS_PORT }}
-        run: |
-          test -n "$VPS_HOST"
-          test -n "$VPS_USER"
-          port="${VPS_PORT:-22}"
-          printf '%s' "$GHCR_TOKEN" | ssh -p "$port" "$VPS_USER@$VPS_HOST" \
-            "docker login ghcr.io -u '$GHCR_USERNAME' --password-stdin"
+            echo "==> Apply Neon migrations"
+            docker compose -f compose.prod.yml --profile tools run --rm migrate
 
-      - name: Upload production Compose file
-        shell: bash
-        env:
-          VPS_HOST: ${{ secrets.VPS_HOST }}
-          VPS_USER: ${{ secrets.VPS_USER }}
-          VPS_PORT: ${{ secrets.VPS_PORT }}
-        run: |
-          test -n "$VPS_HOST"
-          test -n "$VPS_USER"
-          port="${VPS_PORT:-22}"
-          scp -P "$port" compose.prod.yml "$VPS_USER@$VPS_HOST:/opt/shiftz/compose.prod.yml"
+            echo "==> Restart shiftZ on port 8088"
+            docker compose -f compose.prod.yml up -d --no-deps --remove-orphans app
 
-      - name: Pull, restart, and verify
-        shell: bash
-        env:
-          IMAGE: ${{ needs.build.outputs.image }}
-          VPS_HOST: ${{ secrets.VPS_HOST }}
-          VPS_USER: ${{ secrets.VPS_USER }}
-          VPS_PORT: ${{ secrets.VPS_PORT }}
-        run: |
-          port="${VPS_PORT:-22}"
-          ssh -p "$port" "$VPS_USER@$VPS_HOST" \
-            "SHIFTZ_IMAGE='$IMAGE' bash -s" <<'REMOTE'
-          set -euo pipefail
-          cd /opt/shiftz
-
-          previous_id="$(docker compose -f compose.prod.yml ps -q app 2>/dev/null || true)"
-          previous_image=""
-          if [ -n "$previous_id" ]; then
-            previous_image="$(docker inspect --format '{{.Config.Image}}' "$previous_id")"
-          fi
-
-          docker compose -f compose.prod.yml pull app
-          docker compose -f compose.prod.yml up -d --no-deps --remove-orphans app
-
-          app_id="$(docker compose -f compose.prod.yml ps -q app)"
-          healthy=false
-          for _ in $(seq 1 30); do
-            health="$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' "$app_id")"
-            if [ "$health" = "healthy" ]; then
-              if docker exec "$app_id" wget -qO- http://127.0.0.1:8088/readyz >/dev/null; then
+            echo "==> Wait for health checks"
+            healthy=false
+            for _ in $(seq 1 30); do
+              if curl -fsS http://127.0.0.1:8088/livez >/dev/null && \
+                 curl -fsS http://127.0.0.1:8088/readyz >/dev/null; then
                 healthy=true
                 break
               fi
-            fi
-            sleep 2
-          done
+              sleep 2
+            done
 
-          if [ "$healthy" != true ]; then
-            docker compose -f compose.prod.yml logs --tail=100 app
-            if [ -n "$previous_image" ]; then
-              echo "Deploy failed; rolling back to $previous_image"
-              SHIFTZ_IMAGE="$previous_image" docker compose -f compose.prod.yml up -d --no-deps app
+            if [ "$healthy" != true ]; then
+              docker compose -f compose.prod.yml logs --tail=100 app
+              exit 1
             fi
-            exit 1
-          fi
 
-          docker compose -f compose.prod.yml ps
-          REMOTE
+            docker compose -f compose.prod.yml ps
+            docker image prune -f

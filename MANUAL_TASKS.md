@@ -60,19 +60,18 @@ MIGRATION_DATABASE_URL='Neon direct URL'
 Khong bat `DEV_API_ENABLED` tren production. Chi bat
 `OWNER_SIGNUP_ENABLED=true` trong luc tao shop dau tien, sau do tat lai.
 
-VPS always-on chay reminder loop trong cung container. Khong can Cloud
-Scheduler hay `REMINDER_TRIGGER_SECRET`.
+VPS always-on chay reminder loop trong cung container. Khong can external
+scheduler hay `REMINDER_TRIGGER_SECRET`.
 
 ## 3. Database Va Migration
 
 - [ ] Confirm dang dung Neon direct URL cho migration, khong dung pooled URL.
-- [ ] Luu Neon direct URL vao GitHub Environment `production`, secret
-  `MIGRATION_DATABASE_URL`.
+- [ ] Luu Neon direct URL trong file `.env` tren VPS.
 - [ ] Workflow deploy se apply migrations **truoc** khi restart app.
 - [ ] Neu can fallback bang tay:
 
 ```sh
-atlas migrate apply --dir file://migrations --url "$MIGRATION_DATABASE_URL"
+docker compose -f compose.prod.yml --profile tools run --rm migrate
 ```
 
 - [ ] Neu co schema change moi:
@@ -83,7 +82,7 @@ DEV_DATABASE_URL='postgres://shiftbot:shiftbot@localhost:5432/dev?sslmode=disabl
   go run ./cmd/migratediff <migration_name>
 go test ./...
 go vet ./...
-atlas migrate apply --dir file://migrations --url "$MIGRATION_DATABASE_URL"
+docker compose -f compose.prod.yml --profile tools run --rm migrate
 ```
 
 - [ ] Check Neon dashboard xem database co tables moi sau migration.
@@ -91,17 +90,13 @@ atlas migrate apply --dir file://migrations --url "$MIGRATION_DATABASE_URL"
 
 ## 4. Deploy Service Tren VPS
 
-- [ ] Tao `/opt/shiftz`, owner la SSH deploy user.
-- [ ] Tao `/opt/shiftz/.env.production` tu `.env.example`, `chmod 600`.
-- [ ] Neu GHCR package private, `docker login ghcr.io` tren VPS bang PAT co
-  `read:packages`.
+- [ ] Clone repo vao `/home/ubuntu/shiftZ`.
+- [ ] Tao `/home/ubuntu/shiftZ/.env` tu `.env.example`, `chmod 600`.
 - [ ] Tao GitHub Environment `production` va cac secrets trong
   `deploy/vps/README.md`.
-- [ ] Sau khi VPS va secrets da san sang, tao repository variable
-  `VPS_DEPLOY_ENABLED=true`.
 - [ ] Cloudflare Tunnel host route vao `http://127.0.0.1:8088`; khong can Nginx.
 - [ ] Push `main` hoac chay workflow `Deploy VPS` bang tay.
-- [ ] Confirm Compose dung image SHA moi va container healthy.
+- [ ] Confirm Compose build thanh cong va container healthy.
 - [ ] Liveness probe dung `/livez`.
 - [ ] Readiness probe dung `/readyz`.
 - [ ] Khong cau hinh liveness probe vao `/readyz`, vi no ping DB va co the danh thuc Neon.

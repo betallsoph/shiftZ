@@ -1,72 +1,55 @@
 # VPS Deployment
 
-shiftZ runs as one ARM64 Docker container. Neon remains external. A host-level
-Cloudflare Tunnel routes the public hostname to `http://127.0.0.1:8088`, so no
-additional Nginx container is required.
+shiftZ uses the same deployment pattern as Roomio: clone the repository once,
+keep `.env` on the VPS, then let GitHub Actions SSH in, pull `main`, build, run
+migrations, and restart Docker Compose.
 
-## One-Time VPS Bootstrap
+Cloudflare Tunnel routes the public hostname to `http://127.0.0.1:8088`. No
+Nginx is required.
 
-Install Docker Engine with the Compose plugin, then prepare the deploy folder:
-
-```sh
-sudo mkdir -p /opt/shiftz
-sudo chown "$USER":"$USER" /opt/shiftz
-```
-
-Create `/opt/shiftz/.env.production` from `.env.example`, fill the real values,
-and lock it down:
+## First VPS Setup
 
 ```sh
-chmod 600 /opt/shiftz/.env.production
+cd /home/ubuntu
+git clone https://github.com/betallsoph/shiftZ.git
+cd shiftZ
+
+cp .env.example .env
+nano .env
+chmod 600 .env
+
+docker compose -f compose.prod.yml build app
+docker compose -f compose.prod.yml --profile tools run --rm migrate
+docker compose -f compose.prod.yml up -d app
 ```
 
-The SSH deploy user must be able to run Docker without an interactive sudo
-prompt. The workflow logs the VPS into GHCR with its short-lived
-`GITHUB_TOKEN`, so automated deployments do not need a personal access token.
-For a manual image pull outside GitHub Actions, use a GitHub PAT with
-`read:packages`:
+Use the Neon pooled URL for `DATABASE_URL` and the direct URL for
+`MIGRATION_DATABASE_URL`.
 
-```sh
-read -rsp 'GHCR PAT: ' GHCR_PAT; echo
-printf '%s' "$GHCR_PAT" | docker login ghcr.io -u betallsoph --password-stdin
-unset GHCR_PAT
-```
+## GitHub Actions
 
-## GitHub Production Secrets
-
-Create a GitHub Environment named `production`, then add:
+Create a GitHub Environment named `production` with four secrets:
 
 | Secret | Value |
 | --- | --- |
-| `MIGRATION_DATABASE_URL` | Neon direct, non-pooler URL |
-| `VPS_HOST` | VPS hostname or IP |
-| `VPS_USER` | SSH deploy user |
-| `VPS_PORT` | SSH port; optional, defaults to `22` |
-| `VPS_SSH_KEY` | Private deployment key |
-| `VPS_KNOWN_HOSTS` | Verified SSH host-key line |
+| `DEPLOY_HOST` | VPS IP or hostname |
+| `DEPLOY_USER` | `ubuntu` |
+| `DEPLOY_SSH_KEY` | Contents of the private key used to SSH into the VPS |
+| `DEPLOY_PATH` | `/home/ubuntu/shiftZ` |
 
-Create the repository variable `VPS_DEPLOY_ENABLED=true` only after all secrets
-and `/opt/shiftz/.env.production` are ready. Until then, pushes to `main` skip
-the deploy jobs. A manually dispatched workflow always attempts a deployment.
+Every push to `main`, or a manual `Deploy VPS` workflow run, performs:
 
-Generate the known-hosts line from a trusted machine and compare its
-fingerprint with the VPS console before saving it:
+1. `git fetch` and `git reset --hard origin/main`.
+2. Build the ARM64 image directly on the VPS.
+3. Apply Atlas migrations using the direct Neon URL from VPS `.env`.
+4. Restart the app and verify `/livez` plus `/readyz`.
 
-```sh
-ssh-keyscan -H -p 22 YOUR_VPS_HOST
-```
-
-Pushes to `main` now perform:
-
-1. Build a `linux/arm64` image on GitHub Actions.
-2. Push SHA and `latest` tags to GHCR.
-3. Apply Atlas migrations to Neon.
-4. Upload `compose.prod.yml` and restart the VPS service.
-5. Verify `/livez` and `/readyz`; roll back the image if startup fails.
+No GHCR account, PAT, repository variable, migration secret, or `/opt` folder
+is required.
 
 ## Cloudflare Tunnel
 
-Add one ingress rule to the existing host-level tunnel:
+Insert this hostname before the existing final catch-all rule:
 
 ```yaml
 ingress:
@@ -75,12 +58,12 @@ ingress:
   - service: http_status:404
 ```
 
-Keep the final catch-all rule already present in your tunnel configuration.
-Reload/restart `cloudflared`, then set the Telegram webhook:
+Then reload `cloudflared` and configure Telegram:
 
 ```sh
+cd /home/ubuntu/shiftZ
 set -a
-source /opt/shiftz/.env.production
+source .env
 set +a
 
 curl "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/setWebhook" \
@@ -91,25 +74,17 @@ curl "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/setWebhook" \
 ## Manual Operations
 
 ```sh
-cd /opt/shiftz
+cd /home/ubuntu/shiftZ
 
-# Status and logs
+git pull
+docker compose -f compose.prod.yml build app
+docker compose -f compose.prod.yml --profile tools run --rm migrate
+docker compose -f compose.prod.yml up -d app
+
 docker compose -f compose.prod.yml ps
 docker compose -f compose.prod.yml logs -f --tail=100 app
-
-# Manual pull/restart using latest
-SHIFTZ_IMAGE=ghcr.io/betallsoph/shiftz:latest \
-  docker compose -f compose.prod.yml pull app
-SHIFTZ_IMAGE=ghcr.io/betallsoph/shiftz:latest \
-  docker compose -f compose.prod.yml up -d --no-deps app
 ```
 
-The Compose service is capped at `0.70` CPU by default to leave CPU time for
-Roomio. Override with `SHIFTZ_CPUS` only after observing real VPS metrics. For
-a maintenance start without the reminder loop, set
-`SHIFTZ_REMINDER_MODE=disabled` on the Compose command.
-
-This Compose file assumes `cloudflared` runs directly on the VPS host. If the
-tunnel itself runs in Docker, attach it to the `shiftz-prod_default` network
-and route to `http://app:8088`; the loopback published port is not reachable
-from a separate container.
+The app is capped at `0.70` CPU and `768m` memory to leave capacity for Roomio.
+If `cloudflared` runs in Docker instead of directly on the host, attach it to
+`shiftz-prod_default` and route to `http://app:8088`.

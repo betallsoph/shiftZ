@@ -2,14 +2,14 @@ name: shiftz-prod
 
 services:
   app:
-    image: ${SHIFTZ_IMAGE:-ghcr.io/betallsoph/shiftz:latest}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: shiftz:local
     restart: unless-stopped
     init: true
     env_file:
-      - ${SHIFTZ_ENV_FILE:-.env.production}
-    environment:
-      APP_ADDR: :8088
-      REMINDER_MODE: ${SHIFTZ_REMINDER_MODE:-loop}
+      - .env
     ports:
       - "127.0.0.1:${SHIFTZ_PORT:-8088}:8088"
     read_only: true
@@ -34,3 +34,18 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+
+  migrate:
+    image: arigaio/atlas:1.2.2
+    profiles: [tools]
+    volumes:
+      - ./migrations:/migrations:ro
+    command:
+      - migrate
+      - apply
+      - --dir
+      - file:///migrations
+      - --revisions-schema
+      - public
+      - --url
+      - ${MIGRATION_DATABASE_URL:?MIGRATION_DATABASE_URL must be set in .env}
