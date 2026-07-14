@@ -18,9 +18,7 @@ cp .env.example .env
 nano .env
 chmod 600 .env
 
-docker compose -f compose.prod.yml build app
-docker compose -f compose.prod.yml --profile tools run --rm migrate
-docker compose -f compose.prod.yml up -d app
+docker compose up -d --build
 ```
 
 Use the Neon pooled URL for `DATABASE_URL` and the direct URL for
@@ -40,9 +38,9 @@ Create a GitHub Environment named `production` with four secrets:
 Every push to `main`, or a manual `Deploy VPS` workflow run, performs:
 
 1. `git fetch` and `git reset --hard origin/main`.
-2. Build the ARM64 image directly on the VPS.
-3. Apply Atlas migrations using the direct Neon URL from VPS `.env`.
-4. Restart the app and verify `/livez` plus `/readyz`.
+2. Run `docker compose up -d --build`.
+3. Compose builds ARM64, applies Atlas migrations, then starts the app.
+4. Verify `/livez` plus `/readyz`.
 
 No GHCR account, PAT, repository variable, migration secret, or `/opt` folder
 is required.
@@ -77,12 +75,10 @@ curl "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/setWebhook" \
 cd /home/ubuntu/shiftZ
 
 git pull
-docker compose -f compose.prod.yml build app
-docker compose -f compose.prod.yml --profile tools run --rm migrate
-docker compose -f compose.prod.yml up -d app
+docker compose up -d --build
 
-docker compose -f compose.prod.yml ps
-docker compose -f compose.prod.yml logs -f --tail=100 app
+docker compose ps
+docker compose logs -f --tail=100 app
 ```
 
 The app is capped at `0.70` CPU and `768m` memory to leave capacity for Roomio.

@@ -71,7 +71,7 @@ scheduler hay `REMINDER_TRIGGER_SECRET`.
 - [ ] Neu can fallback bang tay:
 
 ```sh
-docker compose -f compose.prod.yml --profile tools run --rm migrate
+docker compose up -d --build
 ```
 
 - [ ] Neu co schema change moi:
@@ -82,7 +82,7 @@ DEV_DATABASE_URL='postgres://shiftbot:shiftbot@localhost:5432/dev?sslmode=disabl
   go run ./cmd/migratediff <migration_name>
 go test ./...
 go vet ./...
-docker compose -f compose.prod.yml --profile tools run --rm migrate
+docker compose up -d --build
 ```
 
 - [ ] Check Neon dashboard xem database co tables moi sau migration.

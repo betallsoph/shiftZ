@@ -37,14 +37,8 @@ jobs:
               exit 1
             fi
 
-            echo "==> Build ARM64 image on VPS"
-            docker compose -f compose.prod.yml build app
-
-            echo "==> Apply Neon migrations"
-            docker compose -f compose.prod.yml --profile tools run --rm migrate
-
-            echo "==> Restart shiftZ on port 8088"
-            docker compose -f compose.prod.yml up -d --no-deps --remove-orphans app
+            echo "==> Build, migrate, and restart shiftZ on port 8088"
+            docker compose up -d --build --remove-orphans
 
             echo "==> Wait for health checks"
             healthy=false
@@ -58,9 +52,9 @@ jobs:
             done
 
             if [ "$healthy" != true ]; then
-              docker compose -f compose.prod.yml logs --tail=100 app
+              docker compose logs --tail=100 app migrate
               exit 1
             fi
 
-            docker compose -f compose.prod.yml ps
+            docker compose ps
             docker image prune -f

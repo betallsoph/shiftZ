@@ -45,7 +45,7 @@ Requires Go 1.24+, Docker, and the [Atlas CLI](https://atlasgo.io/docs)
 
 ```sh
 # 1. Start Postgres
-docker compose up -d db
+docker compose -f compose.local.yml up -d db
 
 # 2. Apply migrations with Atlas
 export DATABASE_URL='postgres://shiftbot:shiftbot@localhost:5432/shiftbot?sslmode=disable'
@@ -283,14 +283,11 @@ Cloudflare Tunnel can expose it without Nginx:
 git clone https://github.com/betallsoph/shiftZ.git
 cd shiftZ
 cp .env.example .env
-docker compose -f compose.prod.yml build app
-docker compose -f compose.prod.yml --profile tools run --rm migrate
-docker compose -f compose.prod.yml up -d app
+docker compose up -d --build
 ```
 
 The full one-time bootstrap, GitHub secrets and tunnel configuration are in
-`deploy/vps/README.md`. `docker-compose.yml` remains the local Postgres-only
-development stack.
+`deploy/vps/README.md`. Local Postgres uses `compose.local.yml` explicitly.
 
 Set `COOKIE_SECURE=true` when serving over HTTPS.
 
@@ -368,7 +365,7 @@ go generate ./internal/ent
 
 # 2. Regenerate the migration diff. Atlas needs a scratch "dev database"
 #    to replay migrations against — never point this at real data.
-docker compose up -d db
+docker compose -f compose.local.yml up -d db
 psql 'postgres://shiftbot:shiftbot@localhost:5432/shiftbot?sslmode=disable' \
   -c 'CREATE DATABASE dev;' 2>/dev/null || true
 DEV_DATABASE_URL='postgres://shiftbot:shiftbot@localhost:5432/dev?sslmode=disable' \
