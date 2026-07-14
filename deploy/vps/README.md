@@ -21,8 +21,10 @@ chmod 600 /opt/shiftz/.env.production
 ```
 
 The SSH deploy user must be able to run Docker without an interactive sudo
-prompt. If the GHCR package is private, log in once on the VPS with a GitHub PAT
-that has `read:packages`:
+prompt. The workflow logs the VPS into GHCR with its short-lived
+`GITHUB_TOKEN`, so automated deployments do not need a personal access token.
+For a manual image pull outside GitHub Actions, use a GitHub PAT with
+`read:packages`:
 
 ```sh
 read -rsp 'GHCR PAT: ' GHCR_PAT; echo
