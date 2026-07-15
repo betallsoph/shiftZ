@@ -1,210 +1,104 @@
-# Manual Tasks Checklist
+# Manual Production Checklist
 
-Nhung viec phai tu lam bang tay khi dua shiftZ tu local/dev len beta production.
+Nhung viec chi chu tai khoan GCP, Cloudflare, GitHub, Neon va Telegram moi co
+the tu lam. Production hien tai la GCP `e2-micro` + systemd, khong dung Docker
+tren VM. Huong dan chi tiet nam tai `deploy/gcp/README.md`.
 
-File nay khong thay the README. No la checklist van hanh: tao account, lay key, set env, apply migration, deploy, test, va cac viec chua tu dong hoa.
+## 1. Tai Khoan Va Chi Phi
 
-## 1. Tai Khoan Va Dich Vu Can Tao
+- [ ] Kiem tra Compute Engine Free Tier hien tai truoc khi tao VM.
+- [ ] Bat billing cho GCP project dung.
+- [ ] Tao budget alerts o cac moc nho, vi budget khong phai hard spending cap.
+- [ ] Chap nhan external IPv4 dang chay co the ton khoang USD 3.60/thang.
+- [ ] Theo doi outbound; Compute Engine Free Tier chi co khoang 1 GB/thang.
+- [ ] Khong tao snapshot, premium disk, load balancer, Cloud NAT hoac static IP
+  thua neu chua hieu chi phi.
 
-- [ ] Tao Neon project cho Postgres production/beta.
-- [ ] Lay Neon pooled connection string cho app runtime.
-- [ ] Lay Neon direct connection string cho Atlas migrations.
-- [ ] Tao Telegram bot bang BotFather.
-- [ ] Luu `TELEGRAM_BOT_TOKEN`.
-- [ ] Tao `TELEGRAM_WEBHOOK_SECRET` ngau nhien.
-- [ ] Tao Google AI Studio / Gemini API key.
-- [ ] Chon Gemini model ban dau, vi du `gemini-3.5-flash` hoac model Flash re hon neu dang co.
-- [ ] Tao `SESSION_SECRET`:
+## 2. GCP VM
 
-```sh
-openssl rand -base64 32
-```
+- [ ] Tao non-Spot `e2-micro` trong `us-west1`, `us-central1` hoac `us-east1`.
+- [ ] Chon Ubuntu 24.04 LTS amd64.
+- [ ] Chon `pd-standard`, toi da 30 GB neu muon nam trong disk allowance.
+- [ ] Khong mo 80, 443 hoac 8088.
+- [ ] Cho phep SSH 22 de GitHub-hosted Actions deploy.
+- [ ] Tao SSH key rieng `shiftz_github_actions`.
+- [ ] Upload `deploy/gcp` va public key, sau do chay `bootstrap.sh`.
+- [ ] Test login `shiftz-deploy` truoc khi dong phien admin ban dau.
 
-- [ ] VPS co Docker Engine + Compose plugin va user deploy chay duoc Docker.
-- [ ] Them hostname shiftZ vao Cloudflare Tunnel dang co.
+## 3. Runtime Secrets Tren VM
 
-## 2. Bien Moi Truong Production
+- [ ] Dien `/etc/shiftz/shiftz.env` va giu mode `600`, owner `root:root`.
+- [ ] Dung Neon pooled URL cho `DATABASE_URL`.
+- [ ] Khong dat Neon direct URL trong runtime env.
+- [ ] Tao `SESSION_SECRET` bang `openssl rand -base64 32`.
+- [ ] Dien `TELEGRAM_BOT_TOKEN` va `TELEGRAM_WEBHOOK_SECRET`.
+- [ ] Dien Google AI Studio key vao `LLM_API_KEY`.
+- [ ] Confirm `APP_ADDR=127.0.0.1:8088`.
+- [ ] Confirm `COOKIE_SECURE=true`.
+- [ ] Confirm `REMINDER_MODE=loop`.
+- [ ] Confirm `DEV_API_ENABLED=false`.
+- [ ] Chi bat `OWNER_SIGNUP_ENABLED=true` khi muon mo public signup.
 
-Set cho unified runtime (`cmd/app`):
+## 4. Cloudflare Tunnel
 
-```sh
-DATABASE_URL='Neon pooled URL'
-SESSION_SECRET='...'
-COOKIE_SECURE=true
-TELEGRAM_BOT_TOKEN='...'
-TELEGRAM_WEBHOOK_SECRET='...'
-LLM_PROVIDER=gemini
-LLM_API_KEY='...'
-LLM_MODEL='gemini-3.5-flash'
-REMINDER_MODE=loop
-DEV_API_ENABLED=false
-OWNER_SIGNUP_ENABLED=false
-DB_MAX_OPEN_CONNS=5
-DB_MAX_IDLE_CONNS=2
-DB_CONN_MAX_LIFETIME=30m
-DB_CONN_MAX_IDLE_TIME=5m
-```
+- [ ] Tao remotely managed tunnel cho shiftZ.
+- [ ] Tao public hostname route den `http://127.0.0.1:8088`.
+- [ ] Cai `cloudflared` truc tiep tren host.
+- [ ] Install tunnel thanh systemd service bang token.
+- [ ] Confirm `systemctl status cloudflared` dang active.
+- [ ] Khong commit hoac dua tunnel token vao GitHub log.
 
-Listen address tren VPS:
+## 5. GitHub Environment
 
-```sh
-APP_ADDR=':8088'
-```
+- [ ] Tao Environment ten chinh xac `production`.
+- [ ] Them `DEPLOY_HOST`.
+- [ ] Them `DEPLOY_USER=shiftz-deploy`.
+- [ ] Them private key vao `DEPLOY_SSH_KEY`.
+- [ ] Lay SSH host key tu VM console/phien da verify, them vao
+  `DEPLOY_KNOWN_HOSTS`.
+- [ ] Them Neon direct URL vao `MIGRATION_DATABASE_URL`.
+- [ ] Chay workflow `Deploy GCP` lan dau.
+- [ ] Confirm Atlas migration xong truoc buoc upload/restart.
+- [ ] Confirm artifact `shiftz-linux-amd64-*` xuat hien trong workflow run.
 
-Dung rieng cho migration:
+## 6. Telegram Webhook
 
-```sh
-MIGRATION_DATABASE_URL='Neon direct URL'
-```
+- [ ] Dang ky `https://<app-domain>/telegram/webhook` bang BotFather token.
+- [ ] Gui cung `TELEGRAM_WEBHOOK_SECRET` trong `secret_token`.
+- [ ] Goi `getWebhookInfo` va confirm URL dung, khong co recent error.
+- [ ] Test `/start <invite-code>` trong private chat.
+- [ ] Test parse availability, Confirm va Cancel.
+- [ ] Test `/setup <code>` trong Telegram group.
 
-Khong bat `DEV_API_ENABLED` tren production. Chi bat
-`OWNER_SIGNUP_ENABLED=true` trong luc tao shop dau tien, sau do tat lai.
+## 7. Smoke Test
 
-VPS always-on chay reminder loop trong cung container. Khong can external
-scheduler hay `REMINDER_TRIGGER_SECRET`.
+- [ ] Local VM `/livez` tra 200.
+- [ ] Local VM `/readyz` tra 200.
+- [ ] Public `/livez` va `/readyz` tra 200 qua Cloudflare.
+- [ ] `/login` load duoc, login sai token bi tu choi.
+- [ ] Static CSS va JavaScript load duoc.
+- [ ] `/api/...` tra 404 khi `DEV_API_ENABLED=false`.
+- [ ] Employee submit availability va dashboard hien submission.
+- [ ] Generate va approve schedule thanh cong.
+- [ ] Reminder loop khong gui trung khi tick lap lai.
 
-## 3. Database Va Migration
+## 8. Van Hanh
 
-- [ ] Confirm dang dung Neon direct URL cho migration, khong dung pooled URL.
-- [ ] Luu Neon direct URL trong file `.env` tren VPS.
-- [ ] Workflow deploy se apply migrations **truoc** khi restart app.
-- [ ] Neu can fallback bang tay:
+- [ ] Xem service: `sudo systemctl status shiftz.service`.
+- [ ] Xem log: `journalctl -u shiftz.service -n 100 --no-pager`.
+- [ ] Restart: `sudo systemctl restart shiftz.service`.
+- [ ] Rollback binary: `sudo /usr/local/sbin/shiftz-rollback`.
+- [ ] Nho rang rollback binary khong rollback migration database.
+- [ ] Moi migration production phai tuong thich voi binary cu ngay truoc no.
+- [ ] Theo doi GCP CPU, RAM, swap, restart, disk va network egress.
+- [ ] Theo doi Neon usage va Gemini quota.
+- [ ] Rotate deploy key, bot token, webhook secret va API key dinh ky.
 
-```sh
-docker compose up -d --build
-```
+## 9. Incident
 
-- [ ] Neu co schema change moi:
-
-```sh
-go generate ./internal/ent
-DEV_DATABASE_URL='postgres://shiftbot:shiftbot@localhost:5432/dev?sslmode=disable' \
-  go run ./cmd/migratediff <migration_name>
-go test ./...
-go vet ./...
-docker compose up -d --build
-```
-
-- [ ] Check Neon dashboard xem database co tables moi sau migration.
-- [ ] Ghi lai Neon project id / branch / region vao noi quan ly rieng.
-
-## 4. Deploy Service Tren VPS
-
-- [ ] Clone repo vao `/home/ubuntu/shiftZ`.
-- [ ] Tao `/home/ubuntu/shiftZ/.env` tu `.env.example`, `chmod 600`.
-- [ ] Tao GitHub Environment `production` va cac secrets trong
-  `deploy/vps/README.md`.
-- [ ] Cloudflare Tunnel host route vao `http://127.0.0.1:8088`; khong can Nginx.
-- [ ] Push `main` hoac chay workflow `Deploy VPS` bang tay.
-- [ ] Confirm Compose build thanh cong va container healthy.
-- [ ] Liveness probe dung `/livez`.
-- [ ] Readiness probe dung `/readyz`.
-- [ ] Khong cau hinh liveness probe vao `/readyz`, vi no ping DB va co the danh thuc Neon.
-- [ ] Confirm `/api/...` tra 404 khi `DEV_API_ENABLED=false`.
-- [ ] Confirm `/login` mo duoc.
-- [ ] Confirm static assets `/static/dashboard.css` va `/static/dashboard.js` load duoc.
-
-## 5. Telegram Webhook
-
-Sau khi app co public HTTPS URL:
-
-```sh
-curl "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/setWebhook" \
-  -d "url=https://<app-domain>/telegram/webhook" \
-  -d "secret_token=$TELEGRAM_WEBHOOK_SECRET"
-```
-
-- [ ] Goi `getWebhookInfo` de confirm webhook dung URL:
-
-```sh
-curl "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/getWebhookInfo"
-```
-
-- [ ] Gui `/start <invite-code>` tu Telegram user test.
-- [ ] Gui availability mau.
-- [ ] Confirm bot hoi Confirm/Cancel.
-- [ ] Bam Confirm va confirm DB co availability.
-
-## 6. Tao Shop Dau Tien
-
-Neu owner onboarding da duoc deploy:
-
-- [ ] Bat `OWNER_SIGNUP_ENABLED=true` neu signup duoc gate bang env.
-- [ ] Vao `/signup`.
-- [ ] Tao shop.
-- [ ] Luu lai:
-  - Shop ID
-  - Owner dashboard token
-  - Invite code
-- [ ] Dang nhap `/login` bang Shop ID + owner token.
-
-Neu owner onboarding chua duoc deploy:
-
-- [ ] Chay seed tren moi truong local/staging de demo:
-
-```sh
-go run ./cmd/seed
-```
-
-- [ ] Hoac tao shop/token bang tool/admin SQL rieng.
-- [ ] Dam bao shop co `dashboard_token_hash`.
-- [ ] Dam bao shop co shift templates.
-- [ ] Luu owner token o password manager. Plaintext token chi nen xuat hien mot lan.
-
-## 7. Smoke Test Beta
-
-- [ ] `GET /livez` tra 200.
-- [ ] `GET /readyz` tra 200.
-- [ ] `/login` sai token bi tu choi.
-- [ ] `/login` dung token vao dashboard duoc.
-- [ ] Dashboard khong co o nhap `shop_id`.
-- [ ] Employee join Telegram bang invite code.
-- [ ] Employee gui availability va Confirm.
-- [ ] Dashboard hien availability submission status.
-- [ ] Generate schedule thanh cong.
-- [ ] Approve schedule thanh cong.
-- [ ] Generate lai cung shop/week tra duplicate/existing behavior dung.
-- [ ] Reminder loop khong spam khi tick lap lai.
-
-## 8. Viec Van Hanh Hang Tuan
-
-- [ ] Check log app sau moc Thursday 10:00 local: reminder da gui.
-- [ ] Check log app sau moc Saturday 10:00 local: nag chi gui nguoi chua submit.
-- [ ] Check error tu Gemini parsing.
-- [ ] Check Telegram webhook errors.
-- [ ] Check Neon usage: CU-hours, storage, active connections.
-- [ ] Check hosting memory/CPU/restart.
-- [ ] Check CI tren GitHub Actions van pass.
-- [ ] Check workflow `Deploy VPS` build ARM64, migrate va health-check thanh cong.
-
-## 9. Viec Chua Tu Dong Hoa
-
-- [ ] Reset owner dashboard token khi chu quan lam mat token.
-- [ ] Doi timezone/shop info tu dashboard.
-- [ ] Billing/free-tier enforcement.
-- [ ] Backup/restore drill.
-- [ ] Alert khi bot webhook fail.
-- [ ] Alert khi reminders failed delivery tang cao.
-- [ ] Retry policy cho failed reminder delivery.
-- [ ] Manual schedule editing.
-- [ ] Full auth/account/email flow.
-
-## 10. Khi Co Incident
-
-- [ ] Kiem tra `/livez` de biet process con song khong.
-- [ ] Kiem tra `/readyz` de biet DB co ket noi duoc khong.
-- [ ] Kiem tra Neon status/dashboard.
-- [ ] Kiem tra hosting logs cua unified app.
-- [ ] Kiem tra Telegram `getWebhookInfo`.
-- [ ] Neu Gemini loi, bot co the khong parse availability moi; thong bao user gui lai sau.
-- [ ] Neu DB loi, tam dung deploy/migration va khong generate schedule moi.
-
-## 11. Nguyen Tac An Toan
-
-- [ ] Khong commit `.env` hoac plaintext token.
-- [ ] Khong dung `DEV_API_ENABLED=true` o production mac dinh.
-- [ ] Khong dung Neon pooled URL cho Atlas migration.
-- [ ] Khong point liveness probe vao `/readyz`.
-- [ ] Khong log owner dashboard token sau khi tao xong.
-- [ ] Rotating `SESSION_SECRET` se logout tat ca dashboard sessions.
-- [ ] Khi test production, dung shop test rieng, khong dung shop khach that.
+- [ ] `/livez` fail: xem status va journal cua `shiftz.service`.
+- [ ] `/readyz` fail: check Neon status, URL, pool va outbound network.
+- [ ] Public fail nhung local healthy: check `cloudflared.service` va DNS.
+- [ ] Telegram fail: check `getWebhookInfo` va webhook secret.
+- [ ] Deploy fail sau migration: giu binary cu, khong rollback DB tuy tien.
+- [ ] OOM/swap lien tuc: nang machine type va dieu chinh systemd limits.

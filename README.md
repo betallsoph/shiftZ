@@ -40,7 +40,7 @@ ent types stay behind `internal/store`.
 
 ## Run locally
 
-Requires Go 1.24+, Docker, and the [Atlas CLI](https://atlasgo.io/docs)
+Requires Go 1.25+, Docker, and the [Atlas CLI](https://atlasgo.io/docs)
 (`curl -sSf https://atlasgo.sh | sh`).
 
 ```sh
@@ -150,7 +150,8 @@ export TELEGRAM_WEBHOOK_SECRET='some-random-string'
 go run ./cmd/bot
 ```
 
-For **production/beta**, run a single service with `go run ./cmd/app` (or the Docker image). Register the webhook on the same domain:
+For **production/beta**, run the built `cmd/app` binary as the systemd service
+described below. Register the webhook on the same domain:
 
 ```txt
 https://<app-domain>/telegram/webhook
@@ -265,7 +266,8 @@ export LLM_MODEL='gemini-3.5-flash'   # optional; swap for cheaper Flash-Lite-st
 ## Production / beta deployment
 
 Local dev uses Docker Postgres and split binaries (`cmd/server` + `cmd/bot`).
-Beta/production runs **one service** via `cmd/app` (or the Docker image below) on a single domain with one Neon pooled connection.
+Beta/production runs **one static `cmd/app` binary** under systemd on a GCP
+Compute Engine `e2-micro`, with one Neon pooled connection.
 
 ### Binaries
 
@@ -275,19 +277,15 @@ Beta/production runs **one service** via `cmd/app` (or the Docker image below) o
 | `cmd/server`   | Local dev — dashboard only |
 | `cmd/bot`      | Local dev — Telegram webhook + reminders only |
 
-On the target VPS, clone the repository once, create `.env`, and run the
-production Compose file. The app binds only to loopback, so a host-level
-Cloudflare Tunnel can expose it without Nginx:
+GitHub Actions tests and builds `linux/amd64`, applies Atlas migrations with the
+Neon direct URL, uploads only the binary over verified SSH, and restarts the
+service with automatic health-check rollback. The VM does not run Docker, Go,
+Git, Atlas, or a repository clone.
 
-```sh
-git clone https://github.com/betallsoph/shiftZ.git
-cd shiftZ
-cp .env.example .env
-docker compose up -d --build
-```
-
-The full one-time bootstrap, GitHub secrets and tunnel configuration are in
-`deploy/vps/README.md`. Local Postgres uses `compose.local.yml` explicitly.
+The full GCP bootstrap, GitHub Environment secrets, host-level Cloudflare
+Tunnel setup, cost warnings, webhook setup, and recovery procedure are in
+[`deploy/gcp/README.md`](deploy/gcp/README.md). Production has no Docker or
+Compose path. `compose.local.yml` exists only for the local development database.
 
 Set `COOKIE_SECURE=true` when serving over HTTPS.
 
@@ -308,7 +306,7 @@ COOKIE_SECURE=true            # HTTPS deployments
 LLM_PROVIDER=gemini
 LLM_API_KEY=...               # required when LLM_PROVIDER=gemini
 LLM_MODEL=gemini-3.5-flash
-REMINDER_MODE=loop            # always-on VPS
+REMINDER_MODE=loop            # always-on Compute Engine VM
 ```
 
 Keep `DEV_API_ENABLED` unset or `false` in production.
@@ -317,7 +315,7 @@ Keep `OWNER_SIGNUP_ENABLED` unset or `false` in production unless you want open 
 ### Optional runtime env
 
 ```sh
-APP_ADDR=:8088                # production container listen address
+APP_ADDR=127.0.0.1:8088       # systemd app, reachable only through the host
 ENT_DEBUG=false
 REMINDER_TICK_INTERVAL=1m
 DB_MAX_OPEN_CONNS=5
@@ -350,9 +348,14 @@ Use `/livez` for platform liveness probes. Do **not** point frequent liveness ch
 ### CI/CD
 
 GitHub Actions runs `go test ./...` and `go vet ./...` on every push and pull
-request. Pushes to `main` also SSH into the VPS, pull the repository, build the
-ARM64 image there, apply Atlas migrations from VPS `.env`, restart Compose,
-and verify health. See `.github/workflows/deploy-vps.yml`.
+request. Pushes to `main` also run `.github/workflows/deploy-gcp.yml`: build a
+static Linux amd64 artifact, migrate Neon, upload via strict SSH host-key
+verification, atomically activate the binary, and verify `/livez` plus
+`/readyz`. Failed health checks automatically restore the previous binary.
+
+Database migrations are not automatically rolled back. Schema changes must
+remain compatible with the previously deployed binary so binary rollback is
+safe.
 
 ## Data layer: ent + Atlas
 
