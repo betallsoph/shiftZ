@@ -8,7 +8,6 @@
   --blue-200: #bfdbfe;
   --blue-300: #93c5fd;
   --blue-400: #60a5fa;
-  --eel-green: #00c97a;
   --tap-depth: 1px;
 }
 
@@ -1040,8 +1039,17 @@ body {
 
 .dashboard-intro {
   display: flex;
-  justify-content: flex-end;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
   margin-bottom: 18px;
+}
+
+.dashboard-shop-title {
+  margin: 0;
+  font-size: 2rem;
+  line-height: 1.15;
+  letter-spacing: 0;
 }
 
 .dashboard-eyebrow {
@@ -1136,7 +1144,7 @@ body {
 
 .panel-heading h2 {
   margin: 0;
-  color: var(--eel-green);
+  color: #2563eb;
   font-size: 1.2rem;
   line-height: 1.25;
   letter-spacing: 0;
@@ -1585,7 +1593,8 @@ body {
     flex-direction: column;
   }
 
-  .dashboard-intro h1 {
+  .dashboard-intro h1,
+  .dashboard-shop-title {
     font-size: 1.65rem;
   }
 
