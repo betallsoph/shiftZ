@@ -4,9 +4,9 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>shiftbot</title>
-    <link rel="stylesheet" href="/static/dashboard.css?v=20260716-14" />
+    <link rel="stylesheet" href="/static/dashboard.css?v=20260716-15" />
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
-    <script src="/static/dashboard.js?v=20260716-5" defer></script>
+    <script src="/static/dashboard.js?v=20260716-6" defer></script>
   </head>
   <body class="roomio-grid-bg dashboard-page">
     <header class="dashboard-topbar">
@@ -25,9 +25,24 @@
     <main class="dashboard-container">
       <section class="dashboard-intro">
         <h1 class="dashboard-shop-title">{{.ShopName}}</h1>
-        {{if .InviteCode}}<div class="invite-code">
-          <span>Mã mời nhân viên</span>
-          <code>{{.InviteCode}}</code>
+        {{if .EmployeeInviteURL}}<div class="employee-invite">
+          <div class="employee-invite-copy">
+            <strong>Mời nhân viên</strong>
+            <span>Gửi link để nhân viên mở bot và tham gia quán.</span>
+          </div>
+          <div class="employee-invite-actions">
+            <button
+              type="button"
+              class="btn btn-ghost btn-sm"
+              data-copy-text="{{.EmployeeInviteURL}}"
+            >Sao chép link</button>
+            <a
+              class="btn btn-primary btn-sm"
+              href="{{.EmployeeInviteShareURL}}"
+              target="_blank"
+              rel="noopener noreferrer"
+            >Gửi qua Telegram</a>
+          </div>
         </div>{{end}}
       </section>
 

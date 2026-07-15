@@ -51,9 +51,15 @@ type Server struct {
 	planner       weekGenerator
 	onboarding    shopOnboarder
 	signupEnabled bool
+	botUsername   string
 	sessions      *SessionManager
 	log           *slog.Logger
 	tmpl          *templateSet
+}
+
+// SetTelegramBotUsername configures the public bot username used for employee invites.
+func (s *Server) SetTelegramBotUsername(username string) {
+	s.botUsername = normalizeTelegramUsername(username)
 }
 
 // New wires the dashboard on top of the store and planner.

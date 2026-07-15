@@ -153,7 +153,7 @@ curl "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/setWebhook" \
 
 Employees interact with the bot in **private chat** only (DM). Group chats accept `/setup` for owner dashboard connection; other group messages are ignored.
 
-1. Employee joins with `/start <invite-code>` in a private chat with the bot.
+1. The owner sends the Telegram invite link from the dashboard; the employee opens it and starts the bot in a private chat.
 2. If an owner has suspended the employee, `/start` will not re-activate them — the owner must use the dashboard **Nhân viên** panel.
 3. Employee sends availability in plain language.
 4. Bot parses the message (using the shop timezone) and replies with a short summary plus **Confirm** / **Cancel** buttons.
@@ -228,6 +228,7 @@ export LLM_MODEL='gemini-3.5-flash'   # optional; swap for cheaper Flash-Lite-st
 | `SERVER_ADDR`             | server          | `:8080` | REST API / dashboard listen address (dev)      |
 | `BOT_ADDR`                | bot             | `:8081` | Webhook listen address (dev)                   |
 | `TELEGRAM_BOT_TOKEN`      | app, bot        | —       | Bot token from @BotFather                      |
+| `TELEGRAM_BOT_USERNAME`   | app, server     | —       | Public bot username used for employee invite links |
 | `TELEGRAM_WEBHOOK_SECRET` | app, bot        | —       | Must match `secret_token` given to setWebhook  |
 | `LLM_PROVIDER`            | app, bot (opt.) | —       | Model backend (`gemini`); empty disables LLM   |
 | `LLM_API_KEY`             | app, bot        | —       | Required when `LLM_PROVIDER=gemini` (app prod) |
@@ -289,6 +290,7 @@ https://<app-domain>/telegram/webhook
 ```sh
 DATABASE_URL=...              # Neon pooled connection string
 TELEGRAM_BOT_TOKEN=...
+TELEGRAM_BOT_USERNAME=shiftzz_bot
 TELEGRAM_WEBHOOK_SECRET=...
 SESSION_SECRET=...            # openssl rand -base64 32
 COOKIE_SECURE=true            # HTTPS deployments

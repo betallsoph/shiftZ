@@ -131,7 +131,7 @@ curl "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/setWebhook" \
 curl "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/getWebhookInfo"
 ```
 
-- [ ] Gui `/start <invite-code>` tu Telegram user test.
+- [ ] Từ dashboard, gửi link mời Telegram cho user test và bấm Start.
 - [ ] Gui availability mau.
 - [ ] Confirm bot hoi Confirm/Cancel.
 - [ ] Bam Confirm va confirm DB co availability.
@@ -142,7 +142,6 @@ curl "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/getWebhookInfo"
 - [ ] Luu lai:
   - Shop ID
   - Dashboard username
-  - Invite code
 - [ ] Dang nhap `/login` bang username da cap.
 
 - [ ] Hoac tao shop/token bang tool/admin SQL rieng.

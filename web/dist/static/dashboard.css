@@ -1102,9 +1102,10 @@ body {
   font-weight: 600;
 }
 
-.invite-code {
+.employee-invite {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 12px;
   padding: 10px 12px;
   border: 1px solid #bfdbfe;
@@ -1112,16 +1113,25 @@ body {
   background: #eff6ff;
 }
 
-.invite-code span {
-  color: #52525b;
-  font-size: 0.72rem;
-  font-weight: 800;
+.employee-invite-copy {
+  display: grid;
+  gap: 2px;
 }
 
-.invite-code code {
-  color: #1d4ed8;
-  font-size: 0.82rem;
-  font-weight: 800;
+.employee-invite-copy strong {
+  font-size: 0.8rem;
+}
+
+.employee-invite-copy span {
+  color: #52525b;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.employee-invite-actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 8px;
 }
 
 .dashboard-tabs {
@@ -1653,9 +1663,14 @@ body {
     font-size: 1.45rem;
   }
 
-  .invite-code {
+  .employee-invite {
+    align-items: stretch;
+    flex-direction: column;
     width: 100%;
-    justify-content: space-between;
+  }
+
+  .employee-invite-actions .btn {
+    flex: 1;
   }
 
   .dashboard-tool {

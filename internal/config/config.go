@@ -37,6 +37,8 @@ type Config struct {
 
 	// TelegramToken is the bot token from @BotFather.
 	TelegramToken string
+	// TelegramBotUsername is the public bot username used in employee invite links.
+	TelegramBotUsername string
 	// TelegramWebhookSecret must match the secret_token passed to
 	// setWebhook; empty disables the check (local development only).
 	TelegramWebhookSecret string
@@ -95,6 +97,7 @@ func Load() *Config {
 		BotAddr:               envOr("BOT_ADDR", ":8081"),
 		AppAddr:               os.Getenv("APP_ADDR"),
 		TelegramToken:         os.Getenv("TELEGRAM_BOT_TOKEN"),
+		TelegramBotUsername:   os.Getenv("TELEGRAM_BOT_USERNAME"),
 		TelegramWebhookSecret: os.Getenv("TELEGRAM_WEBHOOK_SECRET"),
 		LLMProvider:           os.Getenv("LLM_PROVIDER"),
 		LLMAPIKey:             os.Getenv("LLM_API_KEY"),
@@ -189,6 +192,9 @@ func (c *Config) RequireProduction() error {
 	}
 	if err := c.RequireTelegram(); err != nil {
 		return err
+	}
+	if strings.TrimSpace(c.TelegramBotUsername) == "" {
+		return fmt.Errorf("config: TELEGRAM_BOT_USERNAME is required")
 	}
 	if c.TelegramWebhookSecret == "" {
 		return fmt.Errorf("config: TELEGRAM_WEBHOOK_SECRET is required")

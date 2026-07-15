@@ -51,6 +51,7 @@ func wire(ctx context.Context, cfg *config.Config, st *store.Store, log *slog.Lo
 	if err != nil {
 		return nil, err
 	}
+	dash.SetTelegramBotUsername(cfg.TelegramBotUsername)
 	if cfg.OwnerSignupEnabled {
 		log.Info("owner signup enabled")
 	}

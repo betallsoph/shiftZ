@@ -73,6 +73,7 @@ func run(log *slog.Logger) error {
 	if err != nil {
 		return err
 	}
+	dash.SetTelegramBotUsername(cfg.TelegramBotUsername)
 	if cfg.OwnerSignupEnabled {
 		log.Info("owner signup enabled")
 	}

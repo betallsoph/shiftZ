@@ -42,6 +42,13 @@ func TestOwnerSignupEnabledTrue(t *testing.T) {
 	}
 }
 
+func TestLoadTelegramBotUsername(t *testing.T) {
+	t.Setenv("TELEGRAM_BOT_USERNAME", "shiftzz_bot")
+	if got := Load().TelegramBotUsername; got != "shiftzz_bot" {
+		t.Fatalf("TelegramBotUsername = %q", got)
+	}
+}
+
 func TestResolveAppAddrPrefersAPPAddr(t *testing.T) {
 	t.Setenv("APP_ADDR", ":9000")
 	t.Setenv("PORT", "10000")
@@ -117,9 +124,21 @@ func TestRequireProductionMissingTelegramToken(t *testing.T) {
 }
 
 func TestRequireProductionMissingWebhookSecret(t *testing.T) {
-	cfg := &Config{DatabaseURL: "postgres://x", SessionSecret: "s", TelegramToken: "t"}
+	cfg := &Config{DatabaseURL: "postgres://x", SessionSecret: "s", TelegramToken: "t", TelegramBotUsername: "bot"}
 	if err := cfg.RequireProduction(); err == nil {
 		t.Fatal("want error for missing TELEGRAM_WEBHOOK_SECRET")
+	}
+}
+
+func TestRequireProductionMissingTelegramBotUsername(t *testing.T) {
+	cfg := &Config{
+		DatabaseURL:           "postgres://x",
+		SessionSecret:         "s",
+		TelegramToken:         "t",
+		TelegramWebhookSecret: "w",
+	}
+	if err := cfg.RequireProduction(); err == nil {
+		t.Fatal("want error for missing TELEGRAM_BOT_USERNAME")
 	}
 }
 
@@ -128,6 +147,7 @@ func TestRequireProductionGeminiMissingAPIKey(t *testing.T) {
 		DatabaseURL:           "postgres://x",
 		SessionSecret:         "s",
 		TelegramToken:         "t",
+		TelegramBotUsername:   "bot",
 		TelegramWebhookSecret: "w",
 		LLMProvider:           "gemini",
 	}
@@ -141,6 +161,7 @@ func TestRequireProductionOK(t *testing.T) {
 		DatabaseURL:           "postgres://x",
 		SessionSecret:         "s",
 		TelegramToken:         "t",
+		TelegramBotUsername:   "bot",
 		TelegramWebhookSecret: "w",
 		LLMProvider:           "gemini",
 		LLMAPIKey:             "key",

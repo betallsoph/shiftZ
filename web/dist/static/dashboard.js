@@ -84,6 +84,40 @@
     { passive: true }
   );
 
+  async function copyText(text) {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      return;
+    }
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.append(textarea);
+    textarea.select();
+    document.execCommand('copy');
+    textarea.remove();
+  }
+
+  document.addEventListener('click', async (event) => {
+    if (!(event.target instanceof Element)) return;
+    const button = event.target.closest('[data-copy-text]');
+    if (!(button instanceof HTMLButtonElement)) return;
+    const text = button.dataset.copyText;
+    if (!text) return;
+
+    const originalLabel = button.textContent;
+    try {
+      await copyText(text);
+      button.textContent = 'Đã sao chép';
+    } catch {
+      button.textContent = 'Không thể sao chép';
+    }
+    window.setTimeout(() => {
+      button.textContent = originalLabel;
+    }, 1800);
+  });
+
   document.addEventListener(
     'click',
     (event) => {
