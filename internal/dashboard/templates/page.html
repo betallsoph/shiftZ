@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>shiftbot</title>
-    <link rel="stylesheet" href="/static/dashboard.css?v=20260716-8" />
+    <link rel="stylesheet" href="/static/dashboard.css?v=20260716-9" />
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
     <script src="/static/dashboard.js?v=20260716-4" defer></script>
   </head>
@@ -15,7 +15,6 @@
           <img class="dashboard-logo" src="/static/shiftbot-logo.png?v=20260716-2" alt="ShiftBot" />
         </a>
         <div class="dashboard-account">
-          <span class="dashboard-shop-name">{{.ShopName}}</span>
           <form method="post" action="/logout" class="logout-form">
             <button type="submit" class="text-button">Đăng xuất</button>
           </form>
@@ -24,17 +23,12 @@
     </header>
 
     <main class="dashboard-container">
-      <section class="dashboard-intro">
-        <div>
-          <p class="dashboard-eyebrow">Không gian quản lý</p>
-          <h1>Lịch làm việc</h1>
-          <p class="dashboard-subtitle">{{.ShopName}}</p>
-        </div>
-        {{if .InviteCode}}<div class="invite-code">
+      {{if .InviteCode}}<section class="dashboard-intro">
+        <div class="invite-code">
           <span>Mã mời nhân viên</span>
           <code>{{.InviteCode}}</code>
-        </div>{{end}}
-      </section>
+        </div>
+      </section>{{end}}
 
       <nav class="dashboard-tabs" aria-label="Điều hướng dashboard">
         <a href="#schedule-section">Lịch tuần</a>
