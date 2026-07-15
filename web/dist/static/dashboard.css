@@ -8,6 +8,7 @@
   --blue-200: #bfdbfe;
   --blue-300: #93c5fd;
   --blue-400: #60a5fa;
+  --eel-green: #00c97a;
   --tap-depth: 1px;
 }
 
@@ -1045,8 +1046,7 @@ body {
   margin-bottom: 26px;
 }
 
-.dashboard-eyebrow,
-.panel-kicker {
+.dashboard-eyebrow {
   margin: 0 0 5px;
   color: #2563eb;
   font-size: 0.7rem;
@@ -1138,6 +1138,7 @@ body {
 
 .panel-heading h2 {
   margin: 0;
+  color: var(--eel-green);
   font-size: 1.2rem;
   line-height: 1.25;
   letter-spacing: 0;
