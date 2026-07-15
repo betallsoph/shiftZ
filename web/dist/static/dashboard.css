@@ -1141,14 +1141,45 @@ body {
 }
 
 .dashboard-tabs a:hover,
-.dashboard-tabs a:focus-visible {
+.dashboard-tabs a:focus-visible,
+.dashboard-tabs a.is-active {
   border-bottom-color: #2563eb;
   color: #18181b;
   outline: none;
 }
 
+.dashboard-view {
+  display: none;
+  margin-bottom: 8px;
+}
+
+.dashboard-view.is-active {
+  display: block;
+}
+
+.dashboard-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.dashboard-section-title {
+  margin: 0 0 12px;
+  color: #2563eb;
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+.dashboard-section-header .dashboard-section-title {
+  margin-bottom: 0;
+}
+
 .dashboard-tool {
-  margin: 0 0 20px;
+  margin: 0;
   padding: 24px;
   border: 2px solid #18181b;
   border-radius: 8px;
@@ -1165,14 +1196,6 @@ body {
 
 .panel-heading-compact {
   margin-bottom: 16px;
-}
-
-.panel-heading h2 {
-  margin: 0;
-  color: #2563eb;
-  font-size: 1.2rem;
-  line-height: 1.25;
-  letter-spacing: 0;
 }
 
 .panel-error {
@@ -1621,6 +1644,10 @@ body {
   .dashboard-intro h1,
   .dashboard-shop-title {
     font-size: 1.65rem;
+  }
+
+  .dashboard-section-title {
+    font-size: 1.45rem;
   }
 
   .invite-code {

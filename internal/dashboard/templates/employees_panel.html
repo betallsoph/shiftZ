@@ -1,93 +1,90 @@
-<section id="employees-panel" class="employees-panel dashboard-tool">
-  <div class="panel-heading">
-    <div>
-      <h2>Nhân viên</h2>
-    </div>
-  </div>
-
-  {{if .Error}}
-  <p class="panel-error" role="alert">{{.Error}}</p>
-  {{end}}
-
-  {{if .Employees}}
-  <ul class="employee-list">
-    {{range .Employees}}
-    <li class="employee-row{{if not .IsActive}} is-inactive{{end}}">
-      <div class="employee-summary">
-        <div class="employee-avatar" aria-hidden="true">NV</div>
-        <div class="employee-primary">
-          <div class="employee-title-line">
-            <span class="employee-name">{{.DisplayName}}</span>
-            <span class="status-dot status-dot-{{if .IsActive}}active{{else}}muted{{end}}">{{.StatusLabel}}</span>
-          </div>
-          <div class="employee-meta">
-            <span>{{.RoleLabel}}</span>
-            <span>{{.MaxHoursLabel}} giờ/tuần</span>
-            {{if .TelegramLinked}}<span>Telegram đã liên kết</span>{{end}}
-          </div>
-        </div>
-        <div class="employee-actions">
-          {{if .IsActive}}
-          <button
-            type="button"
-            class="text-button text-button-danger"
-            hx-post="/dashboard/employees/{{.ID}}/deactivate"
-            hx-target="#employees-panel"
-            hx-swap="outerHTML"
-          >
-            Tạm ngưng
-          </button>
-          {{else}}
-          <button
-            type="button"
-            class="text-button"
-            hx-post="/dashboard/employees/{{.ID}}/activate"
-            hx-target="#employees-panel"
-            hx-swap="outerHTML"
-          >
-            Bật lại
-          </button>
-          {{end}}
-        </div>
-      </div>
-
-      <details class="inline-editor employee-editor" {{if .FieldError}}open{{end}}>
-        <summary class="text-action">Chỉnh sửa thông tin</summary>
-        <form
-          class="employee-form control-form editor-form"
-          hx-post="/dashboard/employees/{{.ID}}"
-          hx-target="#employees-panel"
-          hx-swap="outerHTML"
-        >
-          {{if .FieldError}}
-          <p class="panel-error" role="alert">{{.FieldError}}</p>
-          {{end}}
-          <div class="employee-form-row">
-            <label>
-              Tên hiển thị
-              <input class="input" type="text" name="display_name" value="{{.Form.DisplayName}}" required />
-            </label>
-            <label>
-              Vai trò
-              <input class="input" type="text" name="role" value="{{.Form.Role}}" placeholder="Barista" />
-            </label>
-            <label>
-              Giờ mỗi tuần
-              <input class="input" type="number" name="max_hours_per_week" min="0.1" max="168" step="0.5" value="{{.Form.MaxHoursPerWeek}}" required />
-            </label>
-          </div>
-          <div class="control-actions">
-            <button type="submit" class="btn btn-primary btn-sm">Lưu thay đổi</button>
-          </div>
-        </form>
-      </details>
-    </li>
+<section id="employees-panel" class="dashboard-view" data-dashboard-view="employees">
+  <h2 class="dashboard-section-title">Nhân viên</h2>
+  <div class="dashboard-tool employees-panel">
+    {{if .Error}}
+    <p class="panel-error" role="alert">{{.Error}}</p>
     {{end}}
-  </ul>
-  {{else}}
-  <div class="compact-empty-state">
-    <p>Chưa có nhân viên.</p>
-    <span>Gửi mã mời phía trên để nhân viên tham gia qua Telegram.</span>
+
+    {{if .Employees}}
+    <ul class="employee-list">
+      {{range .Employees}}
+      <li class="employee-row{{if not .IsActive}} is-inactive{{end}}">
+        <div class="employee-summary">
+          <div class="employee-avatar" aria-hidden="true">NV</div>
+          <div class="employee-primary">
+            <div class="employee-title-line">
+              <span class="employee-name">{{.DisplayName}}</span>
+              <span class="status-dot status-dot-{{if .IsActive}}active{{else}}muted{{end}}">{{.StatusLabel}}</span>
+            </div>
+            <div class="employee-meta">
+              <span>{{.RoleLabel}}</span>
+              <span>{{.MaxHoursLabel}} giờ/tuần</span>
+              {{if .TelegramLinked}}<span>Telegram đã liên kết</span>{{end}}
+            </div>
+          </div>
+          <div class="employee-actions">
+            {{if .IsActive}}
+            <button
+              type="button"
+              class="text-button text-button-danger"
+              hx-post="/dashboard/employees/{{.ID}}/deactivate"
+              hx-target="#employees-panel"
+              hx-swap="outerHTML"
+            >
+              Tạm ngưng
+            </button>
+            {{else}}
+            <button
+              type="button"
+              class="text-button"
+              hx-post="/dashboard/employees/{{.ID}}/activate"
+              hx-target="#employees-panel"
+              hx-swap="outerHTML"
+            >
+              Bật lại
+            </button>
+            {{end}}
+          </div>
+        </div>
+
+        <details class="inline-editor employee-editor" {{if .FieldError}}open{{end}}>
+          <summary class="text-action">Chỉnh sửa thông tin</summary>
+          <form
+            class="employee-form control-form editor-form"
+            hx-post="/dashboard/employees/{{.ID}}"
+            hx-target="#employees-panel"
+            hx-swap="outerHTML"
+          >
+            {{if .FieldError}}
+            <p class="panel-error" role="alert">{{.FieldError}}</p>
+            {{end}}
+            <div class="employee-form-row">
+              <label>
+                Tên hiển thị
+                <input class="input" type="text" name="display_name" value="{{.Form.DisplayName}}" required />
+              </label>
+              <label>
+                Vai trò
+                <input class="input" type="text" name="role" value="{{.Form.Role}}" placeholder="Barista" />
+              </label>
+              <label>
+                Giờ mỗi tuần
+                <input class="input" type="number" name="max_hours_per_week" min="0.1" max="168" step="0.5" value="{{.Form.MaxHoursPerWeek}}" required />
+              </label>
+            </div>
+            <div class="control-actions">
+              <button type="submit" class="btn btn-primary btn-sm">Lưu thay đổi</button>
+            </div>
+          </form>
+        </details>
+      </li>
+      {{end}}
+    </ul>
+    {{else}}
+    <div class="compact-empty-state">
+      <p>Chưa có nhân viên.</p>
+      <span>Gửi mã mời phía trên để nhân viên tham gia qua Telegram.</span>
+    </div>
+    {{end}}
   </div>
-  {{end}}
 </section>

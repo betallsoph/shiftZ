@@ -4,9 +4,9 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>shiftbot</title>
-    <link rel="stylesheet" href="/static/dashboard.css?v=20260716-12" />
+    <link rel="stylesheet" href="/static/dashboard.css?v=20260716-13" />
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
-    <script src="/static/dashboard.js?v=20260716-4" defer></script>
+    <script src="/static/dashboard.js?v=20260716-5" defer></script>
   </head>
   <body class="roomio-grid-bg dashboard-page">
     <header class="dashboard-topbar">
@@ -32,57 +32,52 @@
       </section>
 
       <nav class="dashboard-tabs" aria-label="Điều hướng dashboard">
-        <a href="#schedule-section">Lịch tuần</a>
-        <a href="#employees-panel">Nhân viên</a>
-        <a href="#shifts-panel">Ca làm việc</a>
-        <a href="#telegram-setup">Telegram</a>
+        <a href="#schedule-section" data-tab-link>Lịch tuần</a>
+        <a href="#employees-panel" data-tab-link>Nhân viên</a>
+        <a href="#shifts-panel" data-tab-link>Ca làm việc</a>
+        <a href="#telegram-setup" data-tab-link>Telegram</a>
       </nav>
 
-      <section id="schedule-section" class="dashboard-tool schedule-workspace">
-        <div class="panel-heading">
-          <div>
-            <h2>Xếp lịch</h2>
-          </div>
+      <section id="schedule-section" class="dashboard-view is-active" data-dashboard-view="schedule">
+        <h2 class="dashboard-section-title">Xếp lịch</h2>
+        <div class="dashboard-tool schedule-workspace">
+          <form id="week-form" class="week-toolbar">
+            <label class="week-date-field">
+              <span>Tuần bắt đầu</span>
+              <input class="input" type="date" name="week_start" value="{{.Today}}" />
+            </label>
+            <div class="control-actions">
+              <button
+                type="button"
+                class="btn btn-ghost"
+                hx-get="/dashboard/week"
+                hx-include="#week-form"
+                hx-target="#week-panel"
+                hx-swap="innerHTML"
+              >
+                Tải lịch
+              </button>
+              <button
+                type="button"
+                class="btn btn-primary"
+                hx-post="/dashboard/generate"
+                hx-include="#week-form"
+                hx-target="#week-panel"
+                hx-swap="innerHTML"
+              >
+                Tạo lịch
+              </button>
+            </div>
+          </form>
+          <section id="week-panel" class="week-panel">
+            {{template "empty.html" .}}
+          </section>
         </div>
-        <form id="week-form" class="week-toolbar">
-          <label class="week-date-field">
-            <span>Tuần bắt đầu</span>
-            <input class="input" type="date" name="week_start" value="{{.Today}}" />
-          </label>
-          <div class="control-actions">
-            <button
-              type="button"
-              class="btn btn-ghost"
-              hx-get="/dashboard/week"
-              hx-include="#week-form"
-              hx-target="#week-panel"
-              hx-swap="innerHTML"
-            >
-              Tải lịch
-            </button>
-            <button
-              type="button"
-              class="btn btn-primary"
-              hx-post="/dashboard/generate"
-              hx-include="#week-form"
-              hx-target="#week-panel"
-              hx-swap="innerHTML"
-            >
-              Tạo lịch
-            </button>
-          </div>
-        </form>
-        <section id="week-panel" class="week-panel">
-          {{template "empty.html" .}}
-        </section>
       </section>
 
       {{template "employees_panel.html" .Employees}}
-
-      <div class="dashboard-settings-grid">
-        {{template "shifts_panel.html" .Shifts}}
-        {{template "telegram_setup.html" .Telegram}}
-      </div>
+      {{template "shifts_panel.html" .Shifts}}
+      {{template "telegram_setup.html" .Telegram}}
     </main>
   </body>
 </html>

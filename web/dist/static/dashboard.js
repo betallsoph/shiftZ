@@ -115,4 +115,57 @@
     },
     { passive: true }
   );
+
+  const DASHBOARD_VIEW_IDS = [
+    'schedule-section',
+    'employees-panel',
+    'shifts-panel',
+    'telegram-setup',
+  ];
+
+  function initDashboardTabs() {
+    const tabBar = document.querySelector('.dashboard-tabs');
+    if (!tabBar) return;
+
+    const links = tabBar.querySelectorAll('[data-tab-link]');
+    const views = DASHBOARD_VIEW_IDS.map((id) => document.getElementById(id)).filter(Boolean);
+
+    function showView(viewID) {
+      const targetID = DASHBOARD_VIEW_IDS.includes(viewID) ? viewID : 'schedule-section';
+      views.forEach((view) => {
+        view.classList.toggle('is-active', view.id === targetID);
+      });
+      links.forEach((link) => {
+        const active = link.getAttribute('href') === `#${targetID}`;
+        link.classList.toggle('is-active', active);
+        if (active) link.setAttribute('aria-current', 'page');
+        else link.removeAttribute('aria-current');
+      });
+      if (window.location.hash !== `#${targetID}`) {
+        history.replaceState(null, '', `#${targetID}`);
+      }
+    }
+
+    tabBar.addEventListener('click', (event) => {
+      const link = event.target instanceof Element ? event.target.closest('[data-tab-link]') : null;
+      if (!link) return;
+      event.preventDefault();
+      const viewID = link.getAttribute('href')?.slice(1);
+      if (viewID) showView(viewID);
+    });
+
+    const initial = window.location.hash.slice(1);
+    showView(initial);
+  }
+
+  document.body.addEventListener('htmx:afterSwap', (event) => {
+    const target = event.detail.target;
+    if (!(target instanceof HTMLElement) || !target.classList.contains('dashboard-view')) return;
+    const activeLink = document.querySelector('[data-tab-link].is-active');
+    if (activeLink?.getAttribute('href') === `#${target.id}`) {
+      target.classList.add('is-active');
+    }
+  });
+
+  initDashboardTabs();
 })();
