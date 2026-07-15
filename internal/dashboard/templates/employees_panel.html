@@ -5,6 +5,66 @@
     <p class="panel-error" role="alert">{{.Error}}</p>
     {{end}}
 
+    {{if .EmployeeInviteURL}}
+    <div class="employee-invite">
+      <div class="employee-invite-copy">
+        <strong>Mời nhân viên</strong>
+        <span>Gửi link để nhân viên mở bot và tham gia quán.</span>
+      </div>
+      <div class="employee-invite-actions">
+        <button
+          type="button"
+          class="btn btn-ghost btn-sm"
+          data-copy-text="{{.EmployeeInviteURL}}"
+        >Sao chép link</button>
+        <a
+          class="btn btn-primary btn-sm"
+          href="{{.EmployeeInviteShareURL}}"
+          target="_blank"
+          rel="noopener noreferrer"
+        >Gửi qua Telegram</a>
+      </div>
+    </div>
+    {{end}}
+
+    <div class="employees-telegram-block">
+      <div class="dashboard-section-header">
+        <h3 class="employees-heading">Telegram</h3>
+        <span class="status-dot status-dot-{{if .Telegram.Connected}}active{{else}}muted{{end}}">
+          {{if .Telegram.Connected}}Đã kết nối{{else}}Chưa kết nối{{end}}
+        </span>
+      </div>
+      <div class="telegram-setup">
+        {{if .Telegram.Connected}}
+        <p class="panel-meta">Group chat ID <code>{{.Telegram.TelegramGroupID}}</code></p>
+        {{else}}
+          {{if .Telegram.SetupCode}}
+          <div class="setup-code-block">
+            <span>Mã setup</span>
+            <code>{{.Telegram.SetupCode}}</code>
+            {{if .Telegram.SetupExpiresAt}}<small>Hết hạn {{.Telegram.SetupExpiresAt}}</small>{{end}}
+          </div>
+          <ol class="setup-steps">
+            <li>Thêm bot vào group Telegram của quán.</li>
+            <li>Gửi <code>/setup {{.Telegram.SetupCode}}</code> trong group.</li>
+          </ol>
+          {{else if .Telegram.HasPendingSetup}}
+          <p class="panel-meta">Đang có một mã setup còn hiệu lực.</p>
+          {{else}}
+          <p class="panel-meta">Kết nối group để bot có thể làm việc cùng quán.</p>
+          {{end}}
+          <form
+            hx-post="/dashboard/telegram/setup-code"
+            hx-target="#employees-panel"
+            hx-swap="outerHTML"
+            class="panel-footer-action"
+          >
+            <button type="submit" class="btn btn-ghost btn-sm">{{if .Telegram.SetupCode}}Tạo mã khác{{else}}Tạo mã setup{{end}}</button>
+          </form>
+        {{end}}
+      </div>
+    </div>
+
     {{if .Employees}}
     <ul class="employee-list">
       {{range .Employees}}
@@ -83,7 +143,7 @@
     {{else}}
     <div class="compact-empty-state">
       <p>Chưa có nhân viên.</p>
-      <span>Gửi mã mời phía trên để nhân viên tham gia qua Telegram.</span>
+      <span>Dùng link mời ở trên để nhân viên tham gia qua Telegram.</span>
     </div>
     {{end}}
   </div>

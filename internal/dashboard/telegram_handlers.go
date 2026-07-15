@@ -64,12 +64,5 @@ func (s *Server) handleRotateTelegramSetupCode(w http.ResponseWriter, r *http.Re
 		return
 	}
 	view := buildTelegramSetupView(shop, code, expiresAt, now)
-	s.renderTelegramSetup(w, view)
-}
-
-func (s *Server) renderTelegramSetup(w http.ResponseWriter, view TelegramSetupView) {
-	if err := s.tmpl.render(w, "telegram_setup.html", view); err != nil {
-		s.log.Error("render telegram setup", "err", err)
-		http.Error(w, "template error", http.StatusInternalServerError)
-	}
+	s.renderEmployeesPanel(r.Context(), sess.ShopID, nil, "", &view, w)
 }

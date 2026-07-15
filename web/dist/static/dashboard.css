@@ -305,6 +305,18 @@ body {
   margin-bottom: 16px;
 }
 
+.employees-telegram-block {
+  margin: 16px 0;
+}
+
+.employees-telegram-block .dashboard-section-header {
+  margin-bottom: 8px;
+}
+
+.employees-telegram-block .dashboard-section-header .employees-heading {
+  margin-bottom: 0;
+}
+
 .employees-heading {
   margin: 0 0 12px;
   font-size: 1rem;

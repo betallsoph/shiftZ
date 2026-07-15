@@ -17,13 +17,10 @@ const dateLayout = "2006-01-02"
 
 // PageData is the main dashboard shell.
 type PageData struct {
-	Today                  string
-	ShopName               string
-	EmployeeInviteURL      string
-	EmployeeInviteShareURL string
-	Telegram               TelegramSetupView
-	Shifts                 ShiftsPanelView
-	Employees              EmployeesPanelView
+	Today     string
+	ShopName  string
+	Shifts    ShiftsPanelView
+	Employees EmployeesPanelView
 }
 
 // WeekView is the HTMX-swapped week panel.
