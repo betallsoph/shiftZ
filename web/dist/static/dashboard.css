@@ -1,8 +1,33 @@
 /* Roomio Soft Neobrutalism — plain CSS port for the ShiftBot dashboard */
 
+@font-face {
+  font-family: "Google Sans";
+  src: url("/static/fonts/GoogleSansOTF/GoogleSans-Regular.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Google Sans";
+  src: url("/static/fonts/GoogleSansOTF/GoogleSans-Medium.otf") format("opentype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Google Sans";
+  src: url("/static/fonts/GoogleSansOTF/GoogleSans-Bold.otf") format("opentype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --shadow-primary: 4px 4px 0 -1px #000;
   --shadow-secondary: 2px 2px 0 -1px #000;
+  --font-sans: "Google Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --blue-50: #eff6ff;
   --blue-100: #dbeafe;
   --blue-200: #bfdbfe;
@@ -20,7 +45,7 @@
 body {
   margin: 0;
   min-height: 100vh;
-  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-family: var(--font-sans);
   font-size: 15px;
   line-height: 1.5;
   color: #000;
