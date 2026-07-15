@@ -116,16 +116,9 @@ For local dev, `SESSION_SECRET` can be omitted (the server generates an ephemera
 In production, set a long random `SESSION_SECRET` (for example `openssl rand -base64 32`).
 Set `COOKIE_SECURE=true` when serving the dashboard over HTTPS.
 
-### Connect Telegram group
+### Telegram bot
 
-After logging in, use the **Telegram group** panel on the dashboard:
-
-1. Click **Tạo mã setup mới** to generate a setup code (shown once; expires in 30 minutes).
-2. Add the bot to your shop's Telegram group.
-3. In the group, send `/setup tg_setup_...` with the code from the dashboard.
-4. The dashboard should show **Đã kết nối** with the group chat ID.
-
-Setup codes are hashed at rest and cleared after a successful connection.
+The **Nhân viên** panel shows Telegram group connection status (read-only): **Đã kết nối** with the group chat ID when linked, otherwise **Chưa kết nối**. Employee onboarding uses the **Mời nhân viên** invite link from that panel.
 
 ```sh
 # 6. Run the Telegram bot (webhook mode) — local dev only; production uses cmd/app
@@ -151,7 +144,7 @@ curl "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/setWebhook" \
 
 ### Availability intake
 
-Employees interact with the bot in **private chat** only (DM). Group chats accept `/setup` for owner dashboard connection; other group messages are ignored.
+Employees interact with the bot in **private chat** only (DM). Messages in group chats are ignored.
 
 1. The owner sends the Telegram invite link from the dashboard; the employee opens it and starts the bot in a private chat.
 2. If an owner has suspended the employee, `/start` will not re-activate them — the owner must use the dashboard **Nhân viên** panel.
