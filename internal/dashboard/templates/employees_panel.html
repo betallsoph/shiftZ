@@ -38,29 +38,7 @@
         {{if .Telegram.Connected}}
         <p class="panel-meta">Group chat ID <code>{{.Telegram.TelegramGroupID}}</code></p>
         {{else}}
-          {{if .Telegram.SetupCode}}
-          <div class="setup-code-block">
-            <span>Mã setup</span>
-            <code>{{.Telegram.SetupCode}}</code>
-            {{if .Telegram.SetupExpiresAt}}<small>Hết hạn {{.Telegram.SetupExpiresAt}}</small>{{end}}
-          </div>
-          <ol class="setup-steps">
-            <li>Thêm bot vào group Telegram của quán.</li>
-            <li>Gửi <code>/setup {{.Telegram.SetupCode}}</code> trong group.</li>
-          </ol>
-          {{else if .Telegram.HasPendingSetup}}
-          <p class="panel-meta">Đang có một mã setup còn hiệu lực.</p>
-          {{else}}
-          <p class="panel-meta">Kết nối group để bot có thể làm việc cùng quán.</p>
-          {{end}}
-          <form
-            hx-post="/dashboard/telegram/setup-code"
-            hx-target="#employees-panel"
-            hx-swap="outerHTML"
-            class="panel-footer-action"
-          >
-            <button type="submit" class="btn btn-ghost btn-sm">{{if .Telegram.SetupCode}}Tạo mã khác{{else}}Tạo mã setup{{end}}</button>
-          </form>
+        <p class="panel-meta">Thêm bot vào group Telegram của quán để bot làm việc cùng nhân viên.</p>
         {{end}}
       </div>
     </div>

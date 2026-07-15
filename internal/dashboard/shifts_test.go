@@ -153,7 +153,6 @@ func newShiftsTestServer(t *testing.T, shopID uuid.UUID, shifts *fakeShifts) (*S
 	srv := &Server{
 		shops:         &fakeShops{shop: &store.Shop{ID: shopID, Name: "Cafe", Timezone: "UTC"}},
 		shopAuth:      &noopShopAuth{},
-		shopTelegram:  &fakeShopTelegram{},
 		shifts:        shifts,
 		schedules:     &fakeSchedules{},
 		employees:     &fakeEmployees{},

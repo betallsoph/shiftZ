@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/google/uuid"
 
@@ -129,7 +128,7 @@ func roleDisplayLabel(role string) string {
 	return "chưa đặt"
 }
 
-func (s *Server) renderEmployeesPanel(ctx context.Context, shopID uuid.UUID, pending *employeePendingEdit, panelErr string, telegram *TelegramSetupView, w http.ResponseWriter) {
+func (s *Server) renderEmployeesPanel(ctx context.Context, shopID uuid.UUID, pending *employeePendingEdit, panelErr string, w http.ResponseWriter) {
 	shop, err := s.shops.ByID(ctx, shopID)
 	if err != nil {
 		s.log.Error("load shop for employees panel", "err", err)
@@ -137,10 +136,7 @@ func (s *Server) renderEmployeesPanel(ctx context.Context, shopID uuid.UUID, pen
 		return
 	}
 	inviteURL, inviteShareURL := employeeInviteLinks(s.botUsername, shop.InviteCode)
-	tg := buildTelegramSetupView(shop, "", time.Time{}, time.Now())
-	if telegram != nil {
-		tg = *telegram
-	}
+	tg := buildTelegramSetupView(shop)
 	employees, err := s.employeeMgmt.ListAllByShop(ctx, shopID)
 	if err != nil {
 		s.log.Error("list employees", "err", err)
@@ -163,7 +159,7 @@ func (s *Server) handleUpdateEmployee(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := r.ParseForm(); err != nil {
-		s.renderEmployeesPanel(r.Context(), sess.ShopID, nil, "dữ liệu form không hợp lệ", nil, w)
+		s.renderEmployeesPanel(r.Context(), sess.ShopID, nil, "dữ liệu form không hợp lệ", w)
 		return
 	}
 	employeeID, err := uuid.Parse(r.PathValue("id"))
@@ -178,7 +174,7 @@ func (s *Server) handleUpdateEmployee(w http.ResponseWriter, r *http.Request) {
 			employeeID: employeeID,
 			form:       form,
 			errMsg:     parseErr.Error(),
-		}, "", nil, w)
+		}, "", w)
 		return
 	}
 	if _, err := s.employeeMgmt.Update(r.Context(), sess.ShopID, employeeID, input); err != nil {
@@ -191,7 +187,7 @@ func (s *Server) handleUpdateEmployee(w http.ResponseWriter, r *http.Request) {
 				employeeID: employeeID,
 				form:       form,
 				errMsg:     store.ValidationMessage(err),
-			}, "", nil, w)
+			}, "", w)
 			return
 		}
 		s.log.Error("update employee", "err", err)
@@ -199,10 +195,10 @@ func (s *Server) handleUpdateEmployee(w http.ResponseWriter, r *http.Request) {
 			employeeID: employeeID,
 			form:       form,
 			errMsg:     "cập nhật nhân viên thất bại",
-		}, "", nil, w)
+		}, "", w)
 		return
 	}
-	s.renderEmployeesPanel(r.Context(), sess.ShopID, nil, "", nil, w)
+	s.renderEmployeesPanel(r.Context(), sess.ShopID, nil, "", w)
 }
 
 func (s *Server) handleActivateEmployee(w http.ResponseWriter, r *http.Request) {
@@ -229,10 +225,10 @@ func (s *Server) handleSetEmployeeActive(w http.ResponseWriter, r *http.Request,
 			return
 		}
 		s.log.Error("set employee active", "err", err)
-		s.renderEmployeesPanel(r.Context(), sess.ShopID, nil, "cập nhật trạng thái thất bại", nil, w)
+		s.renderEmployeesPanel(r.Context(), sess.ShopID, nil, "cập nhật trạng thái thất bại", w)
 		return
 	}
-	s.renderEmployeesPanel(r.Context(), sess.ShopID, nil, "", nil, w)
+	s.renderEmployeesPanel(r.Context(), sess.ShopID, nil, "", w)
 }
 
 func parseEmployeeForm(r *http.Request) EmployeeFormView {

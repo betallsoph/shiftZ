@@ -221,21 +221,6 @@ body {
   margin-bottom: 16px;
 }
 
-.telegram-setup-heading {
-  margin: 0 0 8px;
-  font-size: 1rem;
-}
-
-.setup-steps {
-  margin: 12px 0;
-  padding-left: 1.2rem;
-  font-size: 0.85rem;
-}
-
-.setup-steps li {
-  margin-bottom: 6px;
-}
-
 .shifts-panel {
   margin-bottom: 16px;
 }
@@ -1508,46 +1493,10 @@ body {
   background: #22c55e;
 }
 
-.setup-code-block {
-  display: grid;
-  gap: 6px;
-  padding: 14px;
-  border-radius: 8px;
-  background: #eff6ff;
-}
-
-.setup-code-block span {
-  color: #52525b;
-  font-size: 0.7rem;
-  font-weight: 800;
-}
-
-.setup-code-block code {
-  overflow-wrap: anywhere;
-  color: #1d4ed8;
-  font-size: 0.76rem;
-  font-weight: 800;
-}
-
-.setup-code-block small,
 .panel-meta {
   color: #71717a;
   font-size: 0.74rem;
-}
-
-.panel-meta {
   margin: 0;
-}
-
-.setup-steps {
-  margin: 14px 0;
-  padding-left: 18px;
-  color: #52525b;
-  font-size: 0.76rem;
-}
-
-.panel-footer-action {
-  margin-top: 16px;
 }
 
 .dashboard-page .alert {

@@ -174,7 +174,6 @@ func newEmployeesTestServer(t *testing.T, shopID uuid.UUID, employees *fakeEmplo
 	srv := &Server{
 		shops:         &fakeShops{shop: &store.Shop{ID: shopID, Name: "Cafe", Timezone: "UTC"}},
 		shopAuth:      &noopShopAuth{},
-		shopTelegram:  &fakeShopTelegram{},
 		shifts:        &fakeShifts{},
 		schedules:     &fakeSchedules{},
 		employees:     &fakeEmployees{},

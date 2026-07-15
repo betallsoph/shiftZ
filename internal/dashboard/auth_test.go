@@ -229,7 +229,6 @@ func testDashboardWithAuth(t *testing.T, shopID uuid.UUID, validToken string, sh
 	srv := &Server{
 		shops:         shops,
 		shopAuth:      &fakeShopAuth{shop: shops.shop},
-		shopTelegram:  &fakeShopTelegram{},
 		shifts:        &fakeShifts{},
 		schedules:     &fakeSchedules{},
 		employees:     &fakeEmployees{},
