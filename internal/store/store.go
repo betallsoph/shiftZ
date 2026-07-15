@@ -50,15 +50,15 @@ type Store struct {
 	// repositories (seeding, future schedule persistence).
 	Client *ent.Client
 
-	Shops        *ShopRepo
-	Employees    *EmployeeRepo
-	Shifts       *ShiftRepo
-	Availability        *AvailabilityRepo
-	AvailabilityDrafts  *AvailabilityDraftRepo
-	Schedules           *ScheduleRepo
-	Rules        *RuleRepo
-	Votes        *VoteRepo
-	Reminders    *ReminderDeliveryRepo
+	Shops              *ShopRepo
+	Employees          *EmployeeRepo
+	Shifts             *ShiftRepo
+	Availability       *AvailabilityRepo
+	AvailabilityDrafts *AvailabilityDraftRepo
+	Schedules          *ScheduleRepo
+	Rules              *RuleRepo
+	Votes              *VoteRepo
+	Reminders          *ReminderDeliveryRepo
 
 	db *sql.DB
 }
@@ -88,17 +88,17 @@ func NewWithOptions(ctx context.Context, databaseURL string, debug bool, opts Op
 		client = client.Debug()
 	}
 	return &Store{
-		Client:       client,
-		Shops:        &ShopRepo{client: client},
-		Employees:    &EmployeeRepo{client: client},
-		Shifts:       &ShiftRepo{client: client},
+		Client:             client,
+		Shops:              &ShopRepo{client: client},
+		Employees:          &EmployeeRepo{client: client},
+		Shifts:             &ShiftRepo{client: client},
 		Availability:       &AvailabilityRepo{client: client},
 		AvailabilityDrafts: &AvailabilityDraftRepo{client: client, ttl: DefaultAvailabilityDraftTTL},
 		Schedules:          &ScheduleRepo{client: client},
-		Rules:        &RuleRepo{client: client},
-		Votes:        &VoteRepo{client: client},
-		Reminders:    &ReminderDeliveryRepo{client: client},
-		db:           db,
+		Rules:              &RuleRepo{client: client},
+		Votes:              &VoteRepo{client: client},
+		Reminders:          &ReminderDeliveryRepo{client: client},
+		db:                 db,
 	}, nil
 }
 
@@ -106,16 +106,16 @@ func NewWithOptions(ctx context.Context, databaseURL string, debug bool, opts Op
 // tests and tools that manage their own database connection.
 func NewWithClient(client *ent.Client) *Store {
 	return &Store{
-		Client:       client,
-		Shops:        &ShopRepo{client: client},
-		Employees:    &EmployeeRepo{client: client},
-		Shifts:       &ShiftRepo{client: client},
+		Client:             client,
+		Shops:              &ShopRepo{client: client},
+		Employees:          &EmployeeRepo{client: client},
+		Shifts:             &ShiftRepo{client: client},
 		Availability:       &AvailabilityRepo{client: client},
 		AvailabilityDrafts: &AvailabilityDraftRepo{client: client, ttl: DefaultAvailabilityDraftTTL},
 		Schedules:          &ScheduleRepo{client: client},
-		Rules:        &RuleRepo{client: client},
-		Votes:        &VoteRepo{client: client},
-		Reminders:    &ReminderDeliveryRepo{client: client},
+		Rules:              &RuleRepo{client: client},
+		Votes:              &VoteRepo{client: client},
+		Reminders:          &ReminderDeliveryRepo{client: client},
 	}
 }
 

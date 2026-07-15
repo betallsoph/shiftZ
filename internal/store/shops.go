@@ -17,6 +17,11 @@ type ShopRepo struct {
 	client *ent.Client
 }
 
+// ShopRepoFromClient returns a ShopRepo backed by an ent client (e.g. in a transaction).
+func ShopRepoFromClient(client *ent.Client) *ShopRepo {
+	return &ShopRepo{client: client}
+}
+
 // CreatedShopCredentials is returned once when a shop is created with a dashboard token.
 type CreatedShopCredentials struct {
 	Shop       *Shop

@@ -7879,6 +7879,7 @@ type ShopMutation struct {
 	telegram_setup_code_expires_at *time.Time
 	plan                           *string
 	dashboard_token_hash           *string
+	dashboard_username             *string
 	created_at                     *time.Time
 	clearedFields                  map[string]struct{}
 	employees                      map[uuid.UUID]struct{}
@@ -8358,6 +8359,55 @@ func (m *ShopMutation) ResetDashboardTokenHash() {
 	delete(m.clearedFields, shop.FieldDashboardTokenHash)
 }
 
+// SetDashboardUsername sets the "dashboard_username" field.
+func (m *ShopMutation) SetDashboardUsername(s string) {
+	m.dashboard_username = &s
+}
+
+// DashboardUsername returns the value of the "dashboard_username" field in the mutation.
+func (m *ShopMutation) DashboardUsername() (r string, exists bool) {
+	v := m.dashboard_username
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDashboardUsername returns the old "dashboard_username" field's value of the Shop entity.
+// If the Shop object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ShopMutation) OldDashboardUsername(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDashboardUsername is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDashboardUsername requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDashboardUsername: %w", err)
+	}
+	return oldValue.DashboardUsername, nil
+}
+
+// ClearDashboardUsername clears the value of the "dashboard_username" field.
+func (m *ShopMutation) ClearDashboardUsername() {
+	m.dashboard_username = nil
+	m.clearedFields[shop.FieldDashboardUsername] = struct{}{}
+}
+
+// DashboardUsernameCleared returns if the "dashboard_username" field was cleared in this mutation.
+func (m *ShopMutation) DashboardUsernameCleared() bool {
+	_, ok := m.clearedFields[shop.FieldDashboardUsername]
+	return ok
+}
+
+// ResetDashboardUsername resets all changes to the "dashboard_username" field.
+func (m *ShopMutation) ResetDashboardUsername() {
+	m.dashboard_username = nil
+	delete(m.clearedFields, shop.FieldDashboardUsername)
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (m *ShopMutation) SetCreatedAt(t time.Time) {
 	m.created_at = &t
@@ -8806,7 +8856,7 @@ func (m *ShopMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ShopMutation) Fields() []string {
-	fields := make([]string, 0, 9)
+	fields := make([]string, 0, 10)
 	if m.name != nil {
 		fields = append(fields, shop.FieldName)
 	}
@@ -8830,6 +8880,9 @@ func (m *ShopMutation) Fields() []string {
 	}
 	if m.dashboard_token_hash != nil {
 		fields = append(fields, shop.FieldDashboardTokenHash)
+	}
+	if m.dashboard_username != nil {
+		fields = append(fields, shop.FieldDashboardUsername)
 	}
 	if m.created_at != nil {
 		fields = append(fields, shop.FieldCreatedAt)
@@ -8858,6 +8911,8 @@ func (m *ShopMutation) Field(name string) (ent.Value, bool) {
 		return m.Plan()
 	case shop.FieldDashboardTokenHash:
 		return m.DashboardTokenHash()
+	case shop.FieldDashboardUsername:
+		return m.DashboardUsername()
 	case shop.FieldCreatedAt:
 		return m.CreatedAt()
 	}
@@ -8885,6 +8940,8 @@ func (m *ShopMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldPlan(ctx)
 	case shop.FieldDashboardTokenHash:
 		return m.OldDashboardTokenHash(ctx)
+	case shop.FieldDashboardUsername:
+		return m.OldDashboardUsername(ctx)
 	case shop.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	}
@@ -8952,6 +9009,13 @@ func (m *ShopMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetDashboardTokenHash(v)
 		return nil
+	case shop.FieldDashboardUsername:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDashboardUsername(v)
+		return nil
 	case shop.FieldCreatedAt:
 		v, ok := value.(time.Time)
 		if !ok {
@@ -9013,6 +9077,9 @@ func (m *ShopMutation) ClearedFields() []string {
 	if m.FieldCleared(shop.FieldDashboardTokenHash) {
 		fields = append(fields, shop.FieldDashboardTokenHash)
 	}
+	if m.FieldCleared(shop.FieldDashboardUsername) {
+		fields = append(fields, shop.FieldDashboardUsername)
+	}
 	return fields
 }
 
@@ -9035,6 +9102,9 @@ func (m *ShopMutation) ClearField(name string) error {
 		return nil
 	case shop.FieldDashboardTokenHash:
 		m.ClearDashboardTokenHash()
+		return nil
+	case shop.FieldDashboardUsername:
+		m.ClearDashboardUsername()
 		return nil
 	}
 	return fmt.Errorf("unknown Shop nullable field %s", name)
@@ -9067,6 +9137,9 @@ func (m *ShopMutation) ResetField(name string) error {
 		return nil
 	case shop.FieldDashboardTokenHash:
 		m.ResetDashboardTokenHash()
+		return nil
+	case shop.FieldDashboardUsername:
+		m.ResetDashboardUsername()
 		return nil
 	case shop.FieldCreatedAt:
 		m.ResetCreatedAt()

@@ -16,6 +16,11 @@ type ShiftRepo struct {
 	client *ent.Client
 }
 
+// ShiftRepoFromClient returns a ShiftRepo backed by an ent client (e.g. in a transaction).
+func ShiftRepoFromClient(client *ent.Client) *ShiftRepo {
+	return &ShiftRepo{client: client}
+}
+
 // ListByShop returns active shift templates for a shop, ordered by weekday,
 // start time, then name.
 func (r *ShiftRepo) ListByShop(ctx context.Context, shopID uuid.UUID) ([]*Shift, error) {

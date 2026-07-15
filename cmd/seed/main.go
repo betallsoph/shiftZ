@@ -40,14 +40,12 @@ func run(log *slog.Logger) error {
 	if err != nil {
 		return err
 	}
-	ownerToken, err := store.NewDashboardToken()
+	creds, err := st.Shops.ProvisionDashboardAccount(ctx, shop.ID, "demo.cafe", "free")
 	if err != nil {
 		return err
 	}
-	if err := st.Shops.SetDashboardTokenHash(ctx, shop.ID, store.HashDashboardToken(ownerToken)); err != nil {
-		return err
-	}
-	log.Info("created shop", "id", shop.ID, "invite_code", shop.InviteCode)
+	ownerToken := creds.OwnerToken
+	log.Info("created shop", "id", shop.ID, "invite_code", shop.InviteCode, "dashboard_username", "demo.cafe")
 
 	// Fake Telegram ids; real employees enroll through /start <invite-code>.
 	staff := []struct {
@@ -127,6 +125,6 @@ func run(log *slog.Logger) error {
 	}
 	log.Info("created availabilities", "week_start", monday.Format("2006-01-02"), "employees", len(employees))
 
-	fmt.Printf("\nSeeded. Shop ID: %s\nOwner dashboard token: %s\nJoin the demo shop in Telegram with:\n  /start %s\n", shop.ID, ownerToken, shop.InviteCode)
+	fmt.Printf("\nSeeded. Shop ID: %s\nDashboard username: demo.cafe\nOwner dashboard token: %s\nJoin the demo shop in Telegram with:\n  /start %s\n", shop.ID, ownerToken, shop.InviteCode)
 	return nil
 }

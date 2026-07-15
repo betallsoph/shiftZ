@@ -56,9 +56,9 @@ func TestSignupPOSTMissingName(t *testing.T) {
 	_, mux := newSignupTestServer(t, true, &fakeOnboarder{})
 
 	form := url.Values{
-		"shop_name":              {""},
-		"timezone":               {"UTC"},
-		"create_default_shifts":  {"on"},
+		"shop_name":             {""},
+		"timezone":              {"UTC"},
+		"create_default_shifts": {"on"},
 	}
 	req := httptest.NewRequest(http.MethodPost, "/signup", strings.NewReader(form.Encode()))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
@@ -121,8 +121,11 @@ func TestSignupPOSTSuccessShowsCredentials(t *testing.T) {
 	if !strings.Contains(body, "abc123") {
 		t.Fatalf("missing invite code, body = %q", body)
 	}
-	if !strings.Contains(body, "/login") {
-		t.Fatalf("missing login link, body = %q", body)
+	if !strings.Contains(body, "/login/legacy") {
+		t.Fatalf("missing legacy login link, body = %q", body)
+	}
+	if got := rec.Header().Get("Cache-Control"); got != "no-store" {
+		t.Fatalf("Cache-Control = %q", got)
 	}
 	if !fake.createDefaultShifts {
 		t.Fatal("expected default shifts requested")

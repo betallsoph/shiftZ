@@ -14,6 +14,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/betallsoph/shiftz/internal/admin"
 	"github.com/betallsoph/shiftz/internal/api"
 	"github.com/betallsoph/shiftz/internal/config"
 	"github.com/betallsoph/shiftz/internal/dashboard"
@@ -76,6 +77,15 @@ func run(log *slog.Logger) error {
 		log.Info("owner signup enabled")
 	}
 	dash.Register(mux)
+
+	adminPortal, err := admin.New(cfg, admin.NewProvisionService(st), admin.NewShopService(st), log)
+	if err != nil {
+		return err
+	}
+	if cfg.AdminPortalEnabled {
+		log.Info("admin portal enabled")
+	}
+	adminPortal.Register(mux)
 
 	dist, err := fs.Sub(web.Dist, "dist")
 	if err != nil {

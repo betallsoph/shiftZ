@@ -20,6 +20,15 @@ File nay khong thay the README. No la checklist van hanh: tao account, lay key, 
 openssl rand -base64 32
 ```
 
+- [ ] (Khuyen nghi) Bat admin portal va tao bcrypt hash cho mat khau admin:
+
+```sh
+openssl rand -base64 32   # ADMIN_SESSION_SECRET
+printf '%s' 'your-strong-password' | go run ./cmd/hashpassword
+```
+
+Canh bao: mat khau yeu (vi du chi dung cho beta noi bo) nen doi truoc khi mo rong cong khai.
+
 - [ ] VPS co Docker Engine + Compose plugin va user deploy chay duoc Docker.
 - [ ] Them hostname shiftZ vao Cloudflare Tunnel dang co.
 
@@ -39,6 +48,10 @@ LLM_MODEL='gemini-3.5-flash'
 REMINDER_MODE=loop
 DEV_API_ENABLED=false
 OWNER_SIGNUP_ENABLED=false
+ADMIN_PORTAL_ENABLED=true
+ADMIN_USERNAME='...'
+ADMIN_PASSWORD_HASH='...'
+ADMIN_SESSION_SECRET='...'
 DB_MAX_OPEN_CONNS=5
 DB_MAX_IDLE_CONNS=2
 DB_CONN_MAX_LIFETIME=30m

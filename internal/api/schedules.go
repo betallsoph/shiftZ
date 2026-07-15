@@ -16,10 +16,10 @@ import (
 const dateLayout = "2006-01-02"
 
 type generateResponse struct {
-	ShopID     string           `json:"shop_id"`
-	WeekStart  string           `json:"week_start"`
-	Candidates []candidateJSON  `json:"candidates"`
-	Warnings   []string         `json:"warnings"`
+	ShopID     string          `json:"shop_id"`
+	WeekStart  string          `json:"week_start"`
+	Candidates []candidateJSON `json:"candidates"`
+	Warnings   []string        `json:"warnings"`
 }
 
 type candidateJSON struct {

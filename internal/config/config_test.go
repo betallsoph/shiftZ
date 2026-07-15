@@ -1,6 +1,10 @@
 package config
 
-import "testing"
+import (
+	"testing"
+
+	"golang.org/x/crypto/bcrypt"
+)
 
 func TestDevAPIEnabledDefault(t *testing.T) {
 	t.Setenv("DEV_API_ENABLED", "")
@@ -147,6 +151,79 @@ func TestRequireProductionOK(t *testing.T) {
 	}
 	if err := cfg.RequireProduction(); err != nil {
 		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestRequireAdminPortalMissingUsername(t *testing.T) {
+	cfg := &Config{AdminPortalEnabled: true, AdminPasswordHash: "h", AdminSessionSecret: "s"}
+	if err := cfg.RequireAdminPortal(); err == nil {
+		t.Fatal("want error")
+	}
+}
+
+func TestRequireAdminPortalOKWhenDisabled(t *testing.T) {
+	cfg := &Config{AdminPortalEnabled: false}
+	if err := cfg.RequireAdminPortal(); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestRequireAdminPortalRejectsInvalidPasswordHash(t *testing.T) {
+	cfg := &Config{
+		AdminPortalEnabled: true,
+		AdminUsername:      "admin",
+		AdminPasswordHash:  "not-bcrypt",
+		AdminSessionSecret: "01234567890123456789012345678901",
+	}
+	if err := cfg.RequireAdminPortal(); err == nil {
+		t.Fatal("want error for invalid ADMIN_PASSWORD_HASH")
+	}
+}
+
+func TestRequireAdminPortalRejectsShortSessionSecret(t *testing.T) {
+	hash, err := bcrypt.GenerateFromPassword([]byte("test-password"), bcrypt.MinCost)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cfg := &Config{
+		AdminPortalEnabled: true,
+		AdminUsername:      "admin",
+		AdminPasswordHash:  string(hash),
+		AdminSessionSecret: "too-short",
+	}
+	if err := cfg.RequireAdminPortal(); err == nil {
+		t.Fatal("want error for short ADMIN_SESSION_SECRET")
+	}
+}
+
+func TestRequireAdminPortalOK(t *testing.T) {
+	hash, err := bcrypt.GenerateFromPassword([]byte("test-password"), bcrypt.MinCost)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cfg := &Config{
+		AdminPortalEnabled: true,
+		AdminUsername:      "admin",
+		AdminPasswordHash:  string(hash),
+		AdminSessionSecret: "01234567890123456789012345678901",
+	}
+	if err := cfg.RequireAdminPortal(); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestRequireProductionAdminPortalEnabledMissingSecret(t *testing.T) {
+	cfg := &Config{
+		DatabaseURL:           "postgres://x",
+		SessionSecret:         "s",
+		TelegramToken:         "t",
+		TelegramWebhookSecret: "w",
+		AdminPortalEnabled:    true,
+		AdminUsername:         "admin",
+		AdminPasswordHash:     "hash",
+	}
+	if err := cfg.RequireProduction(); err == nil {
+		t.Fatal("want error for missing ADMIN_SESSION_SECRET")
 	}
 }
 

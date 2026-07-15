@@ -34,6 +34,8 @@ type Shop struct {
 	Plan string `json:"plan,omitempty"`
 	// DashboardTokenHash holds the value of the "dashboard_token_hash" field.
 	DashboardTokenHash *string `json:"dashboard_token_hash,omitempty"`
+	// DashboardUsername holds the value of the "dashboard_username" field.
+	DashboardUsername *string `json:"dashboard_username,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -133,7 +135,7 @@ func (*Shop) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case shop.FieldTelegramGroupID:
 			values[i] = new(sql.NullInt64)
-		case shop.FieldName, shop.FieldTimezone, shop.FieldInviteCode, shop.FieldTelegramSetupCodeHash, shop.FieldPlan, shop.FieldDashboardTokenHash:
+		case shop.FieldName, shop.FieldTimezone, shop.FieldInviteCode, shop.FieldTelegramSetupCodeHash, shop.FieldPlan, shop.FieldDashboardTokenHash, shop.FieldDashboardUsername:
 			values[i] = new(sql.NullString)
 		case shop.FieldTelegramSetupCodeExpiresAt, shop.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -210,6 +212,13 @@ func (_m *Shop) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.DashboardTokenHash = new(string)
 				*_m.DashboardTokenHash = value.String
+			}
+		case shop.FieldDashboardUsername:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field dashboard_username", values[i])
+			} else if value.Valid {
+				_m.DashboardUsername = new(string)
+				*_m.DashboardUsername = value.String
 			}
 		case shop.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -315,6 +324,11 @@ func (_m *Shop) String() string {
 	builder.WriteString(", ")
 	if v := _m.DashboardTokenHash; v != nil {
 		builder.WriteString("dashboard_token_hash=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.DashboardUsername; v != nil {
+		builder.WriteString("dashboard_username=")
 		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")

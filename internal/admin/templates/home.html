@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>shiftZ — Admin</title>
+    <link rel="stylesheet" href="/static/dashboard.css" />
+  </head>
+  <body class="roomio-grid-bg">
+    <header class="site-header">
+      <h1>shiftZ Admin</h1>
+      <p>Quản lý quán và cấp tài khoản chủ quán</p>
+    </header>
+    <main class="container">
+      {{if .Error}}
+      <div class="alert alert-error"><strong>Lỗi</strong> — {{.Error}}</div>
+      {{end}}
+
+      <section class="controls card">
+        <h2>Tạo quán mới</h2>
+        <form method="post" action="/admin/shops" class="control-form">
+          <input type="hidden" name="csrf_token" value="{{.CSRFToken}}" />
+          <label>
+            Tên quán
+            <input class="input" type="text" name="shop_name" required />
+          </label>
+          <label>
+            Timezone
+            <input class="input" type="text" name="timezone" value="Asia/Ho_Chi_Minh" required />
+          </label>
+          <label>
+            Dashboard username
+            <input class="input" type="text" name="dashboard_username" placeholder="demo.cafe" required />
+          </label>
+          <label>
+            Gói dịch vụ
+            <select class="input" name="plan">
+              <option value="free">free</option>
+              <option value="starter">starter</option>
+              <option value="pro">pro</option>
+            </select>
+          </label>
+          <label class="checkbox-row">
+            <input type="checkbox" name="create_default_shifts" value="1" checked />
+            Tạo ca mặc định
+          </label>
+          <div class="control-actions">
+            <button type="submit" class="btn btn-primary">Tạo quán</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="controls card">
+        <div class="panel-header">
+          <h2>Danh sách quán</h2>
+          <form method="post" action="/admin/logout">
+            <input type="hidden" name="csrf_token" value="{{.CSRFToken}}" />
+            <button type="submit" class="btn btn-ghost">Đăng xuất</button>
+          </form>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Tên</th>
+                <th>Username</th>
+                <th>Plan</th>
+                <th>Timezone</th>
+                <th>Tạo</th>
+                <th>Telegram</th>
+                <th>Thao tác</th>
+              </tr>
+            </thead>
+            <tbody>
+              {{range .Shops}}
+              <tr>
+                <td>{{.Name}}</td>
+                <td>{{.UsernameDisplay}}</td>
+                <td>{{.Plan}}</td>
+                <td>{{.Timezone}}</td>
+                <td>{{.CreatedAt}}</td>
+                <td>{{.TelegramStatus}}</td>
+                <td>
+                  <details class="shop-actions">
+                    <summary class="btn btn-ghost btn-sm">Quản lý</summary>
+                    <div class="shop-action-forms">
+                      <form method="post" action="/admin/shops/{{.ID}}/provision" class="control-form compact">
+                        <input type="hidden" name="csrf_token" value="{{.CSRFToken}}" />
+                        <p><strong>Cấp / đổi tài khoản</strong></p>
+                        <label>
+                          Username
+                          <input class="input" type="text" name="dashboard_username" value="{{.Username}}" required />
+                        </label>
+                        <label>
+                          Plan
+                          <select class="input" name="plan">
+                            <option value="free" {{if eq .Plan "free"}}selected{{end}}>free</option>
+                            <option value="starter" {{if eq .Plan "starter"}}selected{{end}}>starter</option>
+                            <option value="pro" {{if eq .Plan "pro"}}selected{{end}}>pro</option>
+                          </select>
+                        </label>
+                        <button type="submit" class="btn btn-primary btn-sm">Cấp token mới</button>
+                      </form>
+                      <form method="post" action="/admin/shops/{{.ID}}/plan" class="control-form compact">
+                        <input type="hidden" name="csrf_token" value="{{.CSRFToken}}" />
+                        <p><strong>Đổi gói (không rotate token)</strong></p>
+                        <label>
+                          Plan
+                          <select class="input" name="plan">
+                            <option value="free" {{if eq .Plan "free"}}selected{{end}}>free</option>
+                            <option value="starter" {{if eq .Plan "starter"}}selected{{end}}>starter</option>
+                            <option value="pro" {{if eq .Plan "pro"}}selected{{end}}>pro</option>
+                          </select>
+                        </label>
+                        <button type="submit" class="btn btn-ghost btn-sm">Cập nhật plan</button>
+                      </form>
+                      <form method="post" action="/admin/shops/{{.ID}}/rotate-owner-token" class="control-form compact">
+                        <input type="hidden" name="csrf_token" value="{{.CSRFToken}}" />
+                        <p><strong>Rotate owner token</strong></p>
+                        <label class="checkbox-row">
+                          <input type="checkbox" name="confirm" value="yes" required />
+                          Tôi hiểu token cũ sẽ hết hiệu lực
+                        </label>
+                        <button type="submit" class="btn btn-danger btn-sm">Phát token mới</button>
+                      </form>
+                    </div>
+                  </details>
+                </td>
+              </tr>
+              {{end}}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

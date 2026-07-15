@@ -95,9 +95,9 @@ func TestHandleAvailabilityConfirmSavesAndDeletesDraft(t *testing.T) {
 	bot := NewBot(msgAPI, &fakeParser{}, &fakeShops{}, &fakeGroupSetup{}, &fakeEmployees{}, availability, &fakeVotes{}, drafts, testLogger())
 
 	q := &CallbackQuery{
-		ID:   "cb1",
-		From: User{ID: 42},
-		Data: availConfirmPrefix + draftID.String(),
+		ID:      "cb1",
+		From:    User{ID: 42},
+		Data:    availConfirmPrefix + draftID.String(),
 		Message: &Message{Chat: Chat{ID: 100, Type: "private"}},
 	}
 	if err := bot.handleCallback(context.Background(), q); err != nil {
@@ -141,9 +141,9 @@ func TestHandleAvailabilityCancelDoesNotSave(t *testing.T) {
 	bot := NewBot(msgAPI, &fakeParser{}, &fakeShops{}, &fakeGroupSetup{}, &fakeEmployees{}, availability, &fakeVotes{}, drafts, testLogger())
 
 	q := &CallbackQuery{
-		ID:   "cb2",
-		From: User{ID: 42},
-		Data: availCancelPrefix + draftID.String(),
+		ID:      "cb2",
+		From:    User{ID: 42},
+		Data:    availCancelPrefix + draftID.String(),
 		Message: &Message{Chat: Chat{ID: 100, Type: "private"}},
 	}
 	if err := bot.handleCallback(context.Background(), q); err != nil {
@@ -367,12 +367,12 @@ func (f *fakeEmployees) Join(_ context.Context, _ string, _ int64, displayName s
 }
 
 type fakeAvailability struct {
-	replaceCalls     int
-	lastShopID       uuid.UUID
-	lastEmployeeID   uuid.UUID
-	lastWeekStart    time.Time
-	lastSlots        []store.AvailabilitySlot
-	lastRawMessage   string
+	replaceCalls   int
+	lastShopID     uuid.UUID
+	lastEmployeeID uuid.UUID
+	lastWeekStart  time.Time
+	lastSlots      []store.AvailabilitySlot
+	lastRawMessage string
 }
 
 func (f *fakeAvailability) ReplaceWeek(_ context.Context, shopID, employeeID uuid.UUID, weekStart time.Time, slots []store.AvailabilitySlot, rawMessage string) error {

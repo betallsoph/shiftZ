@@ -66,7 +66,7 @@ func TestSessionExpiredCookieRejected(t *testing.T) {
 	}
 }
 
-func TestLoginSucceedsWithCorrectToken(t *testing.T) {
+func TestLegacyLoginSucceedsWithCorrectToken(t *testing.T) {
 	shopID := uuid.New()
 	token := "sz_owner_" + strings.Repeat("a", 48)
 	srv, mux := testDashboardWithAuth(t, shopID, token, &fakeShops{shop: &store.Shop{ID: shopID, Name: "Cafe", Timezone: "UTC"}})
@@ -75,7 +75,7 @@ func TestLoginSucceedsWithCorrectToken(t *testing.T) {
 		"shop_id":     {shopID.String()},
 		"owner_token": {token},
 	}
-	req := httptest.NewRequest(http.MethodPost, "/login", strings.NewReader(form.Encode()))
+	req := httptest.NewRequest(http.MethodPost, "/login/legacy", strings.NewReader(form.Encode()))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	rec := httptest.NewRecorder()
 	mux.ServeHTTP(rec, req)
@@ -93,6 +93,60 @@ func TestLoginSucceedsWithCorrectToken(t *testing.T) {
 	_ = srv
 }
 
+func TestLoginSucceedsWithUsername(t *testing.T) {
+	shopID := uuid.New()
+	token := "sz_owner_" + strings.Repeat("d", 48)
+	shop := &store.Shop{ID: shopID, Name: "Cafe", Timezone: "UTC", DashboardUsername: "demo.cafe"}
+	_, mux := testDashboardWithAuth(t, shopID, token, &fakeShops{shop: shop})
+
+	form := url.Values{
+		"dashboard_username": {"demo.cafe"},
+		"owner_token":        {token},
+	}
+	req := httptest.NewRequest(http.MethodPost, "/login", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	rec := httptest.NewRecorder()
+	mux.ServeHTTP(rec, req)
+	if rec.Code != http.StatusSeeOther {
+		t.Fatalf("status = %d", rec.Code)
+	}
+}
+
+func TestLoginFailsWithWrongUsernameToken(t *testing.T) {
+	shopID := uuid.New()
+	token := "sz_owner_" + strings.Repeat("e", 48)
+	shop := &store.Shop{ID: shopID, Name: "Cafe", Timezone: "UTC", DashboardUsername: "demo.cafe"}
+	_, mux := testDashboardWithAuth(t, shopID, token, &fakeShops{shop: shop})
+
+	form := url.Values{
+		"dashboard_username": {"demo.cafe"},
+		"owner_token":        {"sz_owner_wrong"},
+	}
+	req := httptest.NewRequest(http.MethodPost, "/login", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	rec := httptest.NewRecorder()
+	mux.ServeHTTP(rec, req)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d", rec.Code)
+	}
+	if !strings.Contains(rec.Body.String(), "username hoặc mật khẩu không đúng") {
+		t.Fatalf("body = %q", rec.Body.String())
+	}
+}
+
+func TestAdminCookieDoesNotAccessOwnerDashboard(t *testing.T) {
+	shopID := uuid.New()
+	srv, mux := testDashboardWithAuth(t, shopID, "sz_owner_test", &fakeShops{shop: &store.Shop{ID: shopID, Name: "Cafe", Timezone: "UTC"}})
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	req.AddCookie(&http.Cookie{Name: "shiftz_admin_session", Value: "fake-admin"})
+	rec := httptest.NewRecorder()
+	mux.ServeHTTP(rec, req)
+	if rec.Code != http.StatusSeeOther || rec.Header().Get("Location") != "/login" {
+		t.Fatalf("status=%d loc=%q", rec.Code, rec.Header().Get("Location"))
+	}
+	_ = srv
+}
+
 func TestLoginFailsWithWrongToken(t *testing.T) {
 	shopID := uuid.New()
 	_, mux := testDashboardWithAuth(t, shopID, "sz_owner_correct", &fakeShops{shop: &store.Shop{ID: shopID, Name: "Cafe", Timezone: "UTC"}})
@@ -101,7 +155,7 @@ func TestLoginFailsWithWrongToken(t *testing.T) {
 		"shop_id":     {shopID.String()},
 		"owner_token": {"sz_owner_wrong"},
 	}
-	req := httptest.NewRequest(http.MethodPost, "/login", strings.NewReader(form.Encode()))
+	req := httptest.NewRequest(http.MethodPost, "/login/legacy", strings.NewReader(form.Encode()))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	rec := httptest.NewRecorder()
 	mux.ServeHTTP(rec, req)
@@ -222,8 +276,8 @@ func testDashboardWithAuth(t *testing.T, shopID uuid.UUID, validToken string, sh
 		onboarding:    &noopOnboarder{},
 		signupEnabled: false,
 		sessions:      sessions,
-		log:          slog.New(slog.NewTextHandler(io.Discard, nil)),
-		tmpl:         &templateSet{tmpl},
+		log:           slog.New(slog.NewTextHandler(io.Discard, nil)),
+		tmpl:          &templateSet{tmpl},
 	}
 	mux := http.NewServeMux()
 	srv.Register(mux)
@@ -248,6 +302,13 @@ type fakeShopAuth struct {
 
 func (f *fakeShopAuth) VerifyDashboardToken(ctx context.Context, shopID uuid.UUID, token string) (*store.Shop, error) {
 	if shopID != f.shopID || token != f.token {
+		return nil, store.ErrInvalidCredentials
+	}
+	return f.shop, nil
+}
+
+func (f *fakeShopAuth) VerifyDashboardCredentials(ctx context.Context, username, token string) (*store.Shop, error) {
+	if f.shop == nil || store.NormalizeDashboardUsername(username) != f.shop.DashboardUsername || token != f.token {
 		return nil, store.ErrInvalidCredentials
 	}
 	return f.shop, nil

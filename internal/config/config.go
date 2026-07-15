@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/betallsoph/shiftz/internal/store"
+	"golang.org/x/crypto/bcrypt"
 )
 
 const (
@@ -72,6 +74,15 @@ type Config struct {
 	DevAPIEnabled bool
 	// OwnerSignupEnabled exposes the /signup owner onboarding flow.
 	OwnerSignupEnabled bool
+
+	// AdminPortalEnabled exposes the platform admin portal at /admin.
+	AdminPortalEnabled bool
+	// AdminUsername is the platform admin login name.
+	AdminUsername string
+	// AdminPasswordHash is the bcrypt hash of the platform admin password.
+	AdminPasswordHash string
+	// AdminSessionSecret signs admin session cookies (separate from owner sessions).
+	AdminSessionSecret string
 }
 
 // Load reads all settings from the environment, applying defaults for
@@ -102,6 +113,10 @@ func Load() *Config {
 		CookieSecure:          envBool("COOKIE_SECURE"),
 		DevAPIEnabled:         envBool("DEV_API_ENABLED"),
 		OwnerSignupEnabled:    envBool("OWNER_SIGNUP_ENABLED"),
+		AdminPortalEnabled:    envBool("ADMIN_PORTAL_ENABLED"),
+		AdminUsername:         os.Getenv("ADMIN_USERNAME"),
+		AdminPasswordHash:     os.Getenv("ADMIN_PASSWORD_HASH"),
+		AdminSessionSecret:    os.Getenv("ADMIN_SESSION_SECRET"),
 	}
 }
 
@@ -188,6 +203,29 @@ func (c *Config) RequireProduction() error {
 	}
 	if mode == ReminderModeHTTP && c.ReminderTriggerSecret == "" {
 		return fmt.Errorf("config: REMINDER_TRIGGER_SECRET is required when REMINDER_MODE=http")
+	}
+	if err := c.RequireAdminPortal(); err != nil {
+		return err
+	}
+	return nil
+}
+
+// RequireAdminPortal fails when the admin portal is enabled but credentials are missing.
+func (c *Config) RequireAdminPortal() error {
+	if !c.AdminPortalEnabled {
+		return nil
+	}
+	if strings.TrimSpace(c.AdminUsername) == "" {
+		return fmt.Errorf("config: ADMIN_USERNAME is required when ADMIN_PORTAL_ENABLED=true")
+	}
+	if c.AdminPasswordHash == "" {
+		return fmt.Errorf("config: ADMIN_PASSWORD_HASH is required when ADMIN_PORTAL_ENABLED=true")
+	}
+	if _, err := bcrypt.Cost([]byte(c.AdminPasswordHash)); err != nil {
+		return fmt.Errorf("config: ADMIN_PASSWORD_HASH must be a valid bcrypt hash")
+	}
+	if len(c.AdminSessionSecret) < 32 {
+		return fmt.Errorf("config: ADMIN_SESSION_SECRET must be at least 32 characters when ADMIN_PORTAL_ENABLED=true")
 	}
 	return nil
 }

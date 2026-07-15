@@ -3,50 +3,47 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>shiftZ — Đăng nhập</title>
+    <title>shiftZ — Đăng nhập legacy</title>
     <link rel="stylesheet" href="/static/dashboard.css" />
   </head>
   <body class="roomio-grid-bg">
     <header class="site-header">
       <h1>shiftZ</h1>
-      <p>Đăng nhập bảng xếp lịch chủ quán</p>
+      <p>Đăng nhập legacy (mã cửa hàng + token)</p>
     </header>
     <main class="container">
       <section class="controls card">
         {{if .Error}}
         <div class="alert alert-error"><strong>Lỗi</strong> — {{.Error}}</div>
         {{end}}
-        <form method="post" action="/login" class="control-form">
+        <form method="post" action="/login/legacy" class="control-form">
           <label>
-            Dashboard username
+            Mã cửa hàng
             <input
               class="input"
               type="text"
-              name="dashboard_username"
-              placeholder="demo.cafe"
-              autocomplete="username"
+              name="shop_id"
+              placeholder="uuid"
+              autocomplete="off"
               required
             />
           </label>
           <label>
-            Mật khẩu được cấp
+            Token chủ quán
             <input
               class="input"
               type="password"
               name="owner_token"
               placeholder="sz_owner_..."
-              autocomplete="current-password"
+              autocomplete="off"
               required
             />
           </label>
           <div class="control-actions">
             <button type="submit" class="btn btn-primary">Đăng nhập</button>
-            {{if .SignupEnabled}}
-            <a href="/signup" class="btn btn-ghost">Tạo quán mới</a>
-            {{end}}
           </div>
         </form>
-        <p class="meta"><a href="/login/legacy">Đăng nhập bằng mã cửa hàng (legacy)</a></p>
+        <p class="meta"><a href="/login">Quay lại đăng nhập username</a></p>
       </section>
     </main>
   </body>

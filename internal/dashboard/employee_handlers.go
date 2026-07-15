@@ -28,15 +28,15 @@ type EmployeeFormView struct {
 
 // EmployeeRowView is one employee row in the owner panel.
 type EmployeeRowView struct {
-	ID              string
-	DisplayName     string
-	RoleLabel       string
-	MaxHoursLabel   string
-	TelegramLinked  bool
-	IsActive        bool
-	StatusLabel     string
-	FieldError      string
-	Form            EmployeeFormView
+	ID             string
+	DisplayName    string
+	RoleLabel      string
+	MaxHoursLabel  string
+	TelegramLinked bool
+	IsActive       bool
+	StatusLabel    string
+	FieldError     string
+	Form           EmployeeFormView
 }
 
 // EmployeesPanelView is the HTMX-swapped employees panel.

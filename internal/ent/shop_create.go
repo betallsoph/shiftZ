@@ -119,6 +119,20 @@ func (_c *ShopCreate) SetNillableDashboardTokenHash(v *string) *ShopCreate {
 	return _c
 }
 
+// SetDashboardUsername sets the "dashboard_username" field.
+func (_c *ShopCreate) SetDashboardUsername(v string) *ShopCreate {
+	_c.mutation.SetDashboardUsername(v)
+	return _c
+}
+
+// SetNillableDashboardUsername sets the "dashboard_username" field if the given value is not nil.
+func (_c *ShopCreate) SetNillableDashboardUsername(v *string) *ShopCreate {
+	if v != nil {
+		_c.SetDashboardUsername(*v)
+	}
+	return _c
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (_c *ShopCreate) SetCreatedAt(v time.Time) *ShopCreate {
 	_c.mutation.SetCreatedAt(v)
@@ -392,6 +406,10 @@ func (_c *ShopCreate) createSpec() (*Shop, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.DashboardTokenHash(); ok {
 		_spec.SetField(shop.FieldDashboardTokenHash, field.TypeString, value)
 		_node.DashboardTokenHash = &value
+	}
+	if value, ok := _c.mutation.DashboardUsername(); ok {
+		_spec.SetField(shop.FieldDashboardUsername, field.TypeString, value)
+		_node.DashboardUsername = &value
 	}
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(shop.FieldCreatedAt, field.TypeTime, value)
@@ -681,6 +699,24 @@ func (u *ShopUpsert) ClearDashboardTokenHash() *ShopUpsert {
 	return u
 }
 
+// SetDashboardUsername sets the "dashboard_username" field.
+func (u *ShopUpsert) SetDashboardUsername(v string) *ShopUpsert {
+	u.Set(shop.FieldDashboardUsername, v)
+	return u
+}
+
+// UpdateDashboardUsername sets the "dashboard_username" field to the value that was provided on create.
+func (u *ShopUpsert) UpdateDashboardUsername() *ShopUpsert {
+	u.SetExcluded(shop.FieldDashboardUsername)
+	return u
+}
+
+// ClearDashboardUsername clears the value of the "dashboard_username" field.
+func (u *ShopUpsert) ClearDashboardUsername() *ShopUpsert {
+	u.SetNull(shop.FieldDashboardUsername)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -869,6 +905,27 @@ func (u *ShopUpsertOne) UpdateDashboardTokenHash() *ShopUpsertOne {
 func (u *ShopUpsertOne) ClearDashboardTokenHash() *ShopUpsertOne {
 	return u.Update(func(s *ShopUpsert) {
 		s.ClearDashboardTokenHash()
+	})
+}
+
+// SetDashboardUsername sets the "dashboard_username" field.
+func (u *ShopUpsertOne) SetDashboardUsername(v string) *ShopUpsertOne {
+	return u.Update(func(s *ShopUpsert) {
+		s.SetDashboardUsername(v)
+	})
+}
+
+// UpdateDashboardUsername sets the "dashboard_username" field to the value that was provided on create.
+func (u *ShopUpsertOne) UpdateDashboardUsername() *ShopUpsertOne {
+	return u.Update(func(s *ShopUpsert) {
+		s.UpdateDashboardUsername()
+	})
+}
+
+// ClearDashboardUsername clears the value of the "dashboard_username" field.
+func (u *ShopUpsertOne) ClearDashboardUsername() *ShopUpsertOne {
+	return u.Update(func(s *ShopUpsert) {
+		s.ClearDashboardUsername()
 	})
 }
 
@@ -1227,6 +1284,27 @@ func (u *ShopUpsertBulk) UpdateDashboardTokenHash() *ShopUpsertBulk {
 func (u *ShopUpsertBulk) ClearDashboardTokenHash() *ShopUpsertBulk {
 	return u.Update(func(s *ShopUpsert) {
 		s.ClearDashboardTokenHash()
+	})
+}
+
+// SetDashboardUsername sets the "dashboard_username" field.
+func (u *ShopUpsertBulk) SetDashboardUsername(v string) *ShopUpsertBulk {
+	return u.Update(func(s *ShopUpsert) {
+		s.SetDashboardUsername(v)
+	})
+}
+
+// UpdateDashboardUsername sets the "dashboard_username" field to the value that was provided on create.
+func (u *ShopUpsertBulk) UpdateDashboardUsername() *ShopUpsertBulk {
+	return u.Update(func(s *ShopUpsert) {
+		s.UpdateDashboardUsername()
+	})
+}
+
+// ClearDashboardUsername clears the value of the "dashboard_username" field.
+func (u *ShopUpsertBulk) ClearDashboardUsername() *ShopUpsertBulk {
+	return u.Update(func(s *ShopUpsert) {
+		s.ClearDashboardUsername()
 	})
 }
 

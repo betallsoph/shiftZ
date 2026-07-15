@@ -96,6 +96,11 @@ func DashboardTokenHash(v string) predicate.Shop {
 	return predicate.Shop(sql.FieldEQ(FieldDashboardTokenHash, v))
 }
 
+// DashboardUsername applies equality check predicate on the "dashboard_username" field. It's identical to DashboardUsernameEQ.
+func DashboardUsername(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldEQ(FieldDashboardUsername, v))
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.Shop {
 	return predicate.Shop(sql.FieldEQ(FieldCreatedAt, v))
@@ -599,6 +604,81 @@ func DashboardTokenHashEqualFold(v string) predicate.Shop {
 // DashboardTokenHashContainsFold applies the ContainsFold predicate on the "dashboard_token_hash" field.
 func DashboardTokenHashContainsFold(v string) predicate.Shop {
 	return predicate.Shop(sql.FieldContainsFold(FieldDashboardTokenHash, v))
+}
+
+// DashboardUsernameEQ applies the EQ predicate on the "dashboard_username" field.
+func DashboardUsernameEQ(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldEQ(FieldDashboardUsername, v))
+}
+
+// DashboardUsernameNEQ applies the NEQ predicate on the "dashboard_username" field.
+func DashboardUsernameNEQ(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldNEQ(FieldDashboardUsername, v))
+}
+
+// DashboardUsernameIn applies the In predicate on the "dashboard_username" field.
+func DashboardUsernameIn(vs ...string) predicate.Shop {
+	return predicate.Shop(sql.FieldIn(FieldDashboardUsername, vs...))
+}
+
+// DashboardUsernameNotIn applies the NotIn predicate on the "dashboard_username" field.
+func DashboardUsernameNotIn(vs ...string) predicate.Shop {
+	return predicate.Shop(sql.FieldNotIn(FieldDashboardUsername, vs...))
+}
+
+// DashboardUsernameGT applies the GT predicate on the "dashboard_username" field.
+func DashboardUsernameGT(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldGT(FieldDashboardUsername, v))
+}
+
+// DashboardUsernameGTE applies the GTE predicate on the "dashboard_username" field.
+func DashboardUsernameGTE(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldGTE(FieldDashboardUsername, v))
+}
+
+// DashboardUsernameLT applies the LT predicate on the "dashboard_username" field.
+func DashboardUsernameLT(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldLT(FieldDashboardUsername, v))
+}
+
+// DashboardUsernameLTE applies the LTE predicate on the "dashboard_username" field.
+func DashboardUsernameLTE(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldLTE(FieldDashboardUsername, v))
+}
+
+// DashboardUsernameContains applies the Contains predicate on the "dashboard_username" field.
+func DashboardUsernameContains(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldContains(FieldDashboardUsername, v))
+}
+
+// DashboardUsernameHasPrefix applies the HasPrefix predicate on the "dashboard_username" field.
+func DashboardUsernameHasPrefix(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldHasPrefix(FieldDashboardUsername, v))
+}
+
+// DashboardUsernameHasSuffix applies the HasSuffix predicate on the "dashboard_username" field.
+func DashboardUsernameHasSuffix(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldHasSuffix(FieldDashboardUsername, v))
+}
+
+// DashboardUsernameIsNil applies the IsNil predicate on the "dashboard_username" field.
+func DashboardUsernameIsNil() predicate.Shop {
+	return predicate.Shop(sql.FieldIsNull(FieldDashboardUsername))
+}
+
+// DashboardUsernameNotNil applies the NotNil predicate on the "dashboard_username" field.
+func DashboardUsernameNotNil() predicate.Shop {
+	return predicate.Shop(sql.FieldNotNull(FieldDashboardUsername))
+}
+
+// DashboardUsernameEqualFold applies the EqualFold predicate on the "dashboard_username" field.
+func DashboardUsernameEqualFold(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldEqualFold(FieldDashboardUsername, v))
+}
+
+// DashboardUsernameContainsFold applies the ContainsFold predicate on the "dashboard_username" field.
+func DashboardUsernameContainsFold(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldContainsFold(FieldDashboardUsername, v))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.

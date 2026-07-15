@@ -36,6 +36,8 @@ func (Shop) Fields() []ent.Field {
 		field.String("plan").Default("free"),
 		// SHA-256 hex hash of the owner dashboard token (never store plaintext).
 		field.String("dashboard_token_hash").Optional().Nillable(),
+		// Lowercase owner dashboard login username; optional until provisioned.
+		field.String("dashboard_username").Optional().Nillable(),
 		field.Time("created_at").Default(time.Now).Immutable(),
 	}
 }
@@ -43,6 +45,7 @@ func (Shop) Fields() []ent.Field {
 func (Shop) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("telegram_setup_code_hash").Unique(),
+		index.Fields("dashboard_username").Unique(),
 	}
 }
 

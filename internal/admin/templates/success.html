@@ -3,36 +3,39 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>shiftZ — Quán đã tạo</title>
+    <title>shiftZ — {{.Title}}</title>
     <link rel="stylesheet" href="/static/dashboard.css" />
   </head>
   <body class="roomio-grid-bg">
     <header class="site-header">
-      <h1>shiftZ</h1>
-      <p>Quán của bạn đã sẵn sàng</p>
+      <h1>shiftZ Admin</h1>
+      <p>{{.Title}}</p>
     </header>
     <main class="container">
       <section class="controls card">
         <div class="alert alert-notice">
-          <strong>Lưu ý</strong> — Token chủ quán chỉ hiển thị một lần. Sao chép ngay. Nếu mất token, hiện chưa có cách khôi phục tự động.
+          <strong>Lưu ý</strong> — Mật khẩu được cấp chỉ hiển thị một lần. Sao chép ngay trước khi rời trang.
         </div>
         <dl class="credential-list">
           <div class="credential-row">
-            <dt>Mã cửa hàng</dt>
-            <dd><code>{{.ShopID}}</code></dd>
+            <dt>Dashboard username</dt>
+            <dd><code>{{.Username}}</code></dd>
           </div>
           <div class="credential-row">
-            <dt>Token chủ quán</dt>
+            <dt>Mật khẩu được cấp</dt>
             <dd><code>{{.OwnerToken}}</code></dd>
+          </div>
+          <div class="credential-row">
+            <dt>Shop ID</dt>
+            <dd><code>{{.ShopID}}</code></dd>
           </div>
           <div class="credential-row">
             <dt>Mã mời nhân viên</dt>
             <dd><code>{{.InviteCode}}</code></dd>
           </div>
         </dl>
-        <p class="meta">Nhân viên tham gia Telegram bot bằng lệnh: <code>/start {{.InviteCode}}</code></p>
         <div class="control-actions">
-          <a href="/login/legacy" class="btn btn-primary">Đăng nhập bảng xếp lịch</a>
+          <a href="{{.BackURL}}" class="btn btn-primary">Về admin</a>
         </div>
       </section>
     </main>

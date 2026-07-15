@@ -31,6 +31,8 @@ const (
 	FieldPlan = "plan"
 	// FieldDashboardTokenHash holds the string denoting the dashboard_token_hash field in the database.
 	FieldDashboardTokenHash = "dashboard_token_hash"
+	// FieldDashboardUsername holds the string denoting the dashboard_username field in the database.
+	FieldDashboardUsername = "dashboard_username"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// EdgeEmployees holds the string denoting the employees edge name in mutations.
@@ -111,6 +113,7 @@ var Columns = []string{
 	FieldTelegramSetupCodeExpiresAt,
 	FieldPlan,
 	FieldDashboardTokenHash,
+	FieldDashboardUsername,
 	FieldCreatedAt,
 }
 
@@ -181,6 +184,11 @@ func ByPlan(opts ...sql.OrderTermOption) OrderOption {
 // ByDashboardTokenHash orders the results by the dashboard_token_hash field.
 func ByDashboardTokenHash(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDashboardTokenHash, opts...).ToFunc()
+}
+
+// ByDashboardUsername orders the results by the dashboard_username field.
+func ByDashboardUsername(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDashboardUsername, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.

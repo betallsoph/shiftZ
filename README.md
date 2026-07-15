@@ -118,10 +118,11 @@ Optional default shift templates (morning/evening every day) are created when se
 
 ### Login
 
-1. Sign in at `/login` with the shop `id` and **Owner dashboard token** from signup or `go run ./cmd/seed`.
-2. Pick a week start (next Monday works well with seeded availability).
-3. Click **Tải lịch** to view existing candidates, or **Tạo lịch** to run the planner.
-4. Click **Duyệt** on the variant you want.
+1. Sign in at `/login` with your **dashboard username** and **owner token** (mật khẩu được cấp) from the admin portal or signup.
+2. Shops created before usernames were provisioned can still use **legacy login** at `/login/legacy` with shop `id` + owner token (e.g. from `go run ./cmd/seed` before provisioning).
+3. Pick a week start (next Monday works well with seeded availability).
+4. Click **Tải lịch** to view existing candidates, or **Tạo lịch** to run the planner.
+5. Click **Duyệt** on the variant you want.
 
 The dashboard uses HTMX and calls the Go planner/store layer directly (no JSON API from the browser).
 The dashboard also shows weekly availability submission status and parsed slots.
@@ -260,6 +261,10 @@ export LLM_MODEL='gemini-3.5-flash'   # optional; swap for cheaper Flash-Lite-st
 | `COOKIE_SECURE`           | app, server     | `false` | `true` sets Secure on dashboard session cookies |
 | `DEV_API_ENABLED`         | app, server     | `false` | Enables unauthenticated dev JSON API          |
 | `OWNER_SIGNUP_ENABLED`    | app, server     | `false` | Enables `/signup` owner onboarding flow       |
+| `ADMIN_PORTAL_ENABLED`    | app, server     | `false` | Enables platform admin portal at `/admin`     |
+| `ADMIN_USERNAME`          | app, server     | —       | Platform admin login (required when portal on) |
+| `ADMIN_PASSWORD_HASH`     | app, server     | —       | bcrypt hash from `go run ./cmd/hashpassword`  |
+| `ADMIN_SESSION_SECRET`    | app, server     | —       | HMAC secret for admin cookies (separate from owner) |
 | `ENT_DEBUG`               | all (optional)  | —       | `1`/`true` logs every generated SQL statement (dev only) |
 
 ## Production / beta deployment
@@ -312,7 +317,27 @@ REMINDER_MODE=loop            # always-on VPS
 ```
 
 Keep `DEV_API_ENABLED` unset or `false` in production.
-Keep `OWNER_SIGNUP_ENABLED` unset or `false` in production unless you want open shop creation.
+Keep `OWNER_SIGNUP_ENABLED` unset or `false` in production — use the admin portal to provision shops instead.
+
+### Admin portal (platform owner)
+
+Enable with `ADMIN_PORTAL_ENABLED=true` and set:
+
+```sh
+ADMIN_USERNAME=your-admin-name
+ADMIN_PASSWORD_HASH=...       # see below
+ADMIN_SESSION_SECRET=...      # openssl rand -base64 32
+```
+
+Generate a bcrypt password hash (reads password from stdin; does not log it):
+
+```sh
+printf '%s' 'your-password' | go run ./cmd/hashpassword
+```
+
+**Security:** choose a strong password and rotate it before wider public launch. Short passwords like `ann123` are acceptable only for initial private beta — treat them as temporary.
+
+The admin portal (`/admin`) is separate from the owner dashboard: different cookie, session secret, and login. It lets you create shops, assign dashboard usernames, set plans (`free` / `starter` / `pro`), and rotate owner tokens. Owner tokens are shown once on success pages — never in URLs or logs.
 
 ### Optional runtime env
 

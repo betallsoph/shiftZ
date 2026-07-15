@@ -70,10 +70,10 @@ func TestReminderIdempotentAcrossTicks(t *testing.T) {
 	deliveries := &fakeDeliveries{}
 	messenger := &fakeMessenger{}
 	svc := newTestService(t, testDeps{
-		shops:     []*store.Shop{{ID: shopID, Timezone: "Asia/Ho_Chi_Minh"}},
-		employees: []*store.Employee{{ID: empID, ShopID: shopID, TelegramUserID: 100, IsActive: true}},
+		shops:      []*store.Shop{{ID: shopID, Timezone: "Asia/Ho_Chi_Minh"}},
+		employees:  []*store.Employee{{ID: empID, ShopID: shopID, TelegramUserID: 100, IsActive: true}},
 		deliveries: deliveries,
-		messenger: messenger,
+		messenger:  messenger,
 	})
 	svc.now = func() time.Time { return now }
 
@@ -140,10 +140,10 @@ func TestSendPendingMarksFailedOnMessengerError(t *testing.T) {
 	}
 	messenger := &fakeMessenger{err: errors.New("telegram down")}
 	svc := newTestService(t, testDeps{
-		shops:     []*store.Shop{{ID: shopID, Timezone: "UTC"}},
-		employees: []*store.Employee{{ID: empID, ShopID: shopID, TelegramUserID: 100, IsActive: true}},
+		shops:      []*store.Shop{{ID: shopID, Timezone: "UTC"}},
+		employees:  []*store.Employee{{ID: empID, ShopID: shopID, TelegramUserID: 100, IsActive: true}},
 		deliveries: deliveries,
-		messenger: messenger,
+		messenger:  messenger,
 	})
 
 	if err := svc.sendPending(context.Background()); err != nil {
@@ -171,10 +171,10 @@ func TestSendPendingMarksSent(t *testing.T) {
 	}
 	messenger := &fakeMessenger{}
 	svc := newTestService(t, testDeps{
-		shops:     []*store.Shop{{ID: shopID, Timezone: "UTC"}},
-		employees: []*store.Employee{{ID: empID, ShopID: shopID, TelegramUserID: 100, IsActive: true}},
+		shops:      []*store.Shop{{ID: shopID, Timezone: "UTC"}},
+		employees:  []*store.Employee{{ID: empID, ShopID: shopID, TelegramUserID: 100, IsActive: true}},
 		deliveries: deliveries,
-		messenger: messenger,
+		messenger:  messenger,
 	})
 
 	if err := svc.sendPending(context.Background()); err != nil {

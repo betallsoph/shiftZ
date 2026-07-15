@@ -10,14 +10,15 @@ import (
 
 // Shop is a tenant: one restaurant or cafe.
 type Shop struct {
-	ID              uuid.UUID
-	Name            string
-	Timezone        string
-	InviteCode      string
+	ID                         uuid.UUID
+	Name                       string
+	Timezone                   string
+	InviteCode                 string
 	TelegramGroupID            int64
 	TelegramSetupCodeExpiresAt *time.Time
 	Plan                       string
-	CreatedAt       time.Time
+	DashboardUsername          string
+	CreatedAt                  time.Time
 }
 
 // Employee is a staff member of one shop, linked to a Telegram account.
@@ -151,6 +152,9 @@ func shopFromEnt(m *ent.Shop) *Shop {
 	if m.TelegramSetupCodeExpiresAt != nil {
 		t := *m.TelegramSetupCodeExpiresAt
 		s.TelegramSetupCodeExpiresAt = &t
+	}
+	if m.DashboardUsername != nil {
+		s.DashboardUsername = *m.DashboardUsername
 	}
 	return s
 }

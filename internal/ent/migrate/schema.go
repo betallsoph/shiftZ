@@ -387,6 +387,7 @@ var (
 		{Name: "telegram_setup_code_expires_at", Type: field.TypeTime, Nullable: true},
 		{Name: "plan", Type: field.TypeString, Default: "free"},
 		{Name: "dashboard_token_hash", Type: field.TypeString, Nullable: true},
+		{Name: "dashboard_username", Type: field.TypeString, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 	}
 	// ShopsTable holds the schema information for the "shops" table.
@@ -399,6 +400,11 @@ var (
 				Name:    "shop_telegram_setup_code_hash",
 				Unique:  true,
 				Columns: []*schema.Column{ShopsColumns[5]},
+			},
+			{
+				Name:    "shop_dashboard_username",
+				Unique:  true,
+				Columns: []*schema.Column{ShopsColumns[9]},
 			},
 		},
 	}

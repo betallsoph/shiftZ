@@ -17,9 +17,9 @@ const dateLayout = "2006-01-02"
 
 // PageData is the main dashboard shell.
 type PageData struct {
-	Today    string
-	ShopName string
-	Telegram TelegramSetupView
+	Today     string
+	ShopName  string
+	Telegram  TelegramSetupView
 	Shifts    ShiftsPanelView
 	Employees EmployeesPanelView
 }

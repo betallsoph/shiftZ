@@ -18,11 +18,11 @@ type shopTelegramSetup interface {
 
 // TelegramSetupView is the owner Telegram group connection panel.
 type TelegramSetupView struct {
-	Connected         bool
-	TelegramGroupID   int64
-	SetupCode         string
-	SetupExpiresAt    string
-	HasPendingSetup   bool
+	Connected       bool
+	TelegramGroupID int64
+	SetupCode       string
+	SetupExpiresAt  string
+	HasPendingSetup bool
 }
 
 func buildTelegramSetupView(shop *store.Shop, plaintextCode string, expiresAt time.Time, now time.Time) TelegramSetupView {

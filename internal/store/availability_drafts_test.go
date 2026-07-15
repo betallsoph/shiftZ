@@ -154,7 +154,7 @@ func TestAvailabilityDraftRepoDeleteExpired(t *testing.T) {
 	_, err := repo.Create(ctx, AvailabilityDraft{
 		ShopID: shopRow.ID, EmployeeID: empRow.ID, TelegramUserID: 1005, ChatID: 204,
 		WeekStart: time.Date(2026, 7, 13, 0, 0, 0, 0, time.UTC), Timezone: "UTC",
-		Slots: []AvailabilitySlot{{Start: past, End: past.Add(time.Hour), Preference: 1}},
+		Slots:     []AvailabilitySlot{{Start: past, End: past.Add(time.Hour), Preference: 1}},
 		ExpiresAt: past,
 	})
 	if err != nil {
@@ -163,7 +163,7 @@ func TestAvailabilityDraftRepoDeleteExpired(t *testing.T) {
 	activeID, err := repo.Create(ctx, AvailabilityDraft{
 		ShopID: shopRow.ID, EmployeeID: empRow.ID, TelegramUserID: 1005, ChatID: 204,
 		WeekStart: time.Date(2026, 7, 13, 0, 0, 0, 0, time.UTC), Timezone: "UTC",
-		Slots: []AvailabilitySlot{{Start: now, End: now.Add(time.Hour), Preference: 1}},
+		Slots:     []AvailabilitySlot{{Start: now, End: now.Add(time.Hour), Preference: 1}},
 		ExpiresAt: future,
 	})
 	if err != nil {

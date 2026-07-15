@@ -173,6 +173,26 @@ func (_u *ShopUpdate) ClearDashboardTokenHash() *ShopUpdate {
 	return _u
 }
 
+// SetDashboardUsername sets the "dashboard_username" field.
+func (_u *ShopUpdate) SetDashboardUsername(v string) *ShopUpdate {
+	_u.mutation.SetDashboardUsername(v)
+	return _u
+}
+
+// SetNillableDashboardUsername sets the "dashboard_username" field if the given value is not nil.
+func (_u *ShopUpdate) SetNillableDashboardUsername(v *string) *ShopUpdate {
+	if v != nil {
+		_u.SetDashboardUsername(*v)
+	}
+	return _u
+}
+
+// ClearDashboardUsername clears the value of the "dashboard_username" field.
+func (_u *ShopUpdate) ClearDashboardUsername() *ShopUpdate {
+	_u.mutation.ClearDashboardUsername()
+	return _u
+}
+
 // AddEmployeeIDs adds the "employees" edge to the Employee entity by IDs.
 func (_u *ShopUpdate) AddEmployeeIDs(ids ...uuid.UUID) *ShopUpdate {
 	_u.mutation.AddEmployeeIDs(ids...)
@@ -501,6 +521,12 @@ func (_u *ShopUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.DashboardTokenHashCleared() {
 		_spec.ClearField(shop.FieldDashboardTokenHash, field.TypeString)
+	}
+	if value, ok := _u.mutation.DashboardUsername(); ok {
+		_spec.SetField(shop.FieldDashboardUsername, field.TypeString, value)
+	}
+	if _u.mutation.DashboardUsernameCleared() {
+		_spec.ClearField(shop.FieldDashboardUsername, field.TypeString)
 	}
 	if _u.mutation.EmployeesCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -974,6 +1000,26 @@ func (_u *ShopUpdateOne) ClearDashboardTokenHash() *ShopUpdateOne {
 	return _u
 }
 
+// SetDashboardUsername sets the "dashboard_username" field.
+func (_u *ShopUpdateOne) SetDashboardUsername(v string) *ShopUpdateOne {
+	_u.mutation.SetDashboardUsername(v)
+	return _u
+}
+
+// SetNillableDashboardUsername sets the "dashboard_username" field if the given value is not nil.
+func (_u *ShopUpdateOne) SetNillableDashboardUsername(v *string) *ShopUpdateOne {
+	if v != nil {
+		_u.SetDashboardUsername(*v)
+	}
+	return _u
+}
+
+// ClearDashboardUsername clears the value of the "dashboard_username" field.
+func (_u *ShopUpdateOne) ClearDashboardUsername() *ShopUpdateOne {
+	_u.mutation.ClearDashboardUsername()
+	return _u
+}
+
 // AddEmployeeIDs adds the "employees" edge to the Employee entity by IDs.
 func (_u *ShopUpdateOne) AddEmployeeIDs(ids ...uuid.UUID) *ShopUpdateOne {
 	_u.mutation.AddEmployeeIDs(ids...)
@@ -1332,6 +1378,12 @@ func (_u *ShopUpdateOne) sqlSave(ctx context.Context) (_node *Shop, err error) {
 	}
 	if _u.mutation.DashboardTokenHashCleared() {
 		_spec.ClearField(shop.FieldDashboardTokenHash, field.TypeString)
+	}
+	if value, ok := _u.mutation.DashboardUsername(); ok {
+		_spec.SetField(shop.FieldDashboardUsername, field.TypeString, value)
+	}
+	if _u.mutation.DashboardUsernameCleared() {
+		_spec.ClearField(shop.FieldDashboardUsername, field.TypeString)
 	}
 	if _u.mutation.EmployeesCleared() {
 		edge := &sqlgraph.EdgeSpec{

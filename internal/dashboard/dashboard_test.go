@@ -254,8 +254,8 @@ func testDashboard(t *testing.T, shops shopReader, schedules scheduleRepo, emplo
 		onboarding:    &noopOnboarder{},
 		signupEnabled: false,
 		sessions:      sessions,
-		log:          slog.New(slog.NewTextHandler(io.Discard, nil)),
-		tmpl:         &templateSet{tmpl},
+		log:           slog.New(slog.NewTextHandler(io.Discard, nil)),
+		tmpl:          &templateSet{tmpl},
 	}
 	_ = shopID
 	mux := http.NewServeMux()
@@ -266,5 +266,9 @@ func testDashboard(t *testing.T, shops shopReader, schedules scheduleRepo, emplo
 type noopShopAuth struct{}
 
 func (noopShopAuth) VerifyDashboardToken(ctx context.Context, shopID uuid.UUID, token string) (*store.Shop, error) {
+	return nil, store.ErrInvalidCredentials
+}
+
+func (noopShopAuth) VerifyDashboardCredentials(ctx context.Context, username, token string) (*store.Shop, error) {
 	return nil, store.ErrInvalidCredentials
 }

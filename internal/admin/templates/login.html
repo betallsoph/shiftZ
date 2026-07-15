@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>shiftZ — Admin đăng nhập</title>
+    <link rel="stylesheet" href="/static/dashboard.css" />
+  </head>
+  <body class="roomio-grid-bg">
+    <header class="site-header">
+      <h1>shiftZ Admin</h1>
+      <p>Đăng nhập quản trị nền tảng</p>
+    </header>
+    <main class="container">
+      <section class="controls card">
+        {{if .Error}}
+        <div class="alert alert-error"><strong>Lỗi</strong> — {{.Error}}</div>
+        {{end}}
+        <form method="post" action="/admin/login" class="control-form">
+          <label>
+            Tên đăng nhập
+            <input class="input" type="text" name="username" autocomplete="username" required />
+          </label>
+          <label>
+            Mật khẩu
+            <input class="input" type="password" name="password" autocomplete="current-password" required />
+          </label>
+          <div class="control-actions">
+            <button type="submit" class="btn btn-primary">Đăng nhập</button>
+          </div>
+        </form>
+      </section>
+    </main>
+  </body>
+</html>
