@@ -14,8 +14,6 @@ import (
 	"testing"
 	"time"
 
-	"golang.org/x/crypto/bcrypt"
-
 	"github.com/betallsoph/shiftz/internal/config"
 	"github.com/betallsoph/shiftz/internal/ent/enttest"
 	"github.com/betallsoph/shiftz/internal/store"
@@ -361,10 +359,6 @@ func TestAdminLogout(t *testing.T) {
 
 func testAdminConfig(t *testing.T, username, password string) *config.Config {
 	t.Helper()
-	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.MinCost)
-	if err != nil {
-		t.Fatal(err)
-	}
 	var secret [32]byte
 	if _, err := rand.Read(secret[:]); err != nil {
 		t.Fatal(err)
@@ -372,7 +366,7 @@ func testAdminConfig(t *testing.T, username, password string) *config.Config {
 	return &config.Config{
 		AdminPortalEnabled: true,
 		AdminUsername:      username,
-		AdminPasswordHash:  string(hash),
+		AdminPassword:      password,
 		AdminSessionSecret: base64.RawURLEncoding.EncodeToString(secret[:]),
 		CookieSecure:       false,
 	}

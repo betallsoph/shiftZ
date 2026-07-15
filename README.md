@@ -263,7 +263,7 @@ export LLM_MODEL='gemini-3.5-flash'   # optional; swap for cheaper Flash-Lite-st
 | `OWNER_SIGNUP_ENABLED`    | app, server     | `false` | Enables `/signup` owner onboarding flow       |
 | `ADMIN_PORTAL_ENABLED`    | app, server     | `false` | Enables platform admin portal at `/admin`     |
 | `ADMIN_USERNAME`          | app, server     | —       | Platform admin login (required when portal on) |
-| `ADMIN_PASSWORD_HASH`     | app, server     | —       | bcrypt hash from `go run ./cmd/hashpassword`  |
+| `ADMIN_PASSWORD`          | app, server     | —       | Platform admin password loaded from `.env`    |
 | `ADMIN_SESSION_SECRET`    | app, server     | —       | HMAC secret for admin cookies (separate from owner) |
 | `ENT_DEBUG`               | all (optional)  | —       | `1`/`true` logs every generated SQL statement (dev only) |
 
@@ -325,17 +325,11 @@ Enable with `ADMIN_PORTAL_ENABLED=true` and set:
 
 ```sh
 ADMIN_USERNAME=your-admin-name
-ADMIN_PASSWORD_HASH=...       # see below
+ADMIN_PASSWORD=...            # plaintext in .env; never commit or log
 ADMIN_SESSION_SECRET=...      # openssl rand -base64 32
 ```
 
-Generate a bcrypt password hash (reads password from stdin; does not log it):
-
-```sh
-printf '%s' 'your-password' | go run ./cmd/hashpassword
-```
-
-**Security:** choose a strong password and rotate it before wider public launch. Short passwords like `ann123` are acceptable only for initial private beta — treat them as temporary.
+**Security:** `.env` must remain mode `600`. Choose a strong password and rotate it before wider public launch. Short passwords like `ann123` are acceptable only for initial private beta — treat them as temporary.
 
 The admin portal (`/admin`) is separate from the owner dashboard: different cookie, session secret, and login. It lets you create shops, assign dashboard usernames, set plans (`free` / `starter` / `pro`), and rotate owner tokens. Owner tokens are shown once on success pages — never in URLs or logs.
 

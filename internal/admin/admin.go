@@ -27,7 +27,7 @@ type ShopAdmin interface {
 type Server struct {
 	enabled      bool
 	username     string
-	passwordHash string
+	password     string
 	cookieSecure bool
 	sessions     *SessionManager
 	provision    ShopProvisioner
@@ -52,7 +52,7 @@ func New(cfg *config.Config, provision ShopProvisioner, shops ShopAdmin, log *sl
 	s := &Server{
 		enabled:      cfg.AdminPortalEnabled,
 		username:     cfg.AdminUsername,
-		passwordHash: cfg.AdminPasswordHash,
+		password:     cfg.AdminPassword,
 		cookieSecure: cfg.CookieSecure,
 		provision:    provision,
 		shops:        shops,

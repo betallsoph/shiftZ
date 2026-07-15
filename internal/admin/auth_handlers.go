@@ -3,8 +3,6 @@ package admin
 import (
 	"crypto/subtle"
 	"net/http"
-
-	"golang.org/x/crypto/bcrypt"
 )
 
 type loginPageData struct {
@@ -45,7 +43,7 @@ func (s *Server) handleLoginPOST(w http.ResponseWriter, r *http.Request) {
 		s.renderLoginError(w, "đăng nhập thất bại")
 		return
 	}
-	if err := bcrypt.CompareHashAndPassword([]byte(s.passwordHash), []byte(password)); err != nil {
+	if !constantTimeEqual(password, s.password) {
 		s.limiter.recordFailure(ip, now)
 		s.renderLoginError(w, "đăng nhập thất bại")
 		return

@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/betallsoph/shiftz/internal/store"
-	"golang.org/x/crypto/bcrypt"
 )
 
 const (
@@ -79,8 +78,8 @@ type Config struct {
 	AdminPortalEnabled bool
 	// AdminUsername is the platform admin login name.
 	AdminUsername string
-	// AdminPasswordHash is the bcrypt hash of the platform admin password.
-	AdminPasswordHash string
+	// AdminPassword is the platform admin password loaded from the environment.
+	AdminPassword string
 	// AdminSessionSecret signs admin session cookies (separate from owner sessions).
 	AdminSessionSecret string
 }
@@ -115,7 +114,7 @@ func Load() *Config {
 		OwnerSignupEnabled:    envBool("OWNER_SIGNUP_ENABLED"),
 		AdminPortalEnabled:    envBool("ADMIN_PORTAL_ENABLED"),
 		AdminUsername:         os.Getenv("ADMIN_USERNAME"),
-		AdminPasswordHash:     os.Getenv("ADMIN_PASSWORD_HASH"),
+		AdminPassword:         os.Getenv("ADMIN_PASSWORD"),
 		AdminSessionSecret:    os.Getenv("ADMIN_SESSION_SECRET"),
 	}
 }
@@ -218,11 +217,8 @@ func (c *Config) RequireAdminPortal() error {
 	if strings.TrimSpace(c.AdminUsername) == "" {
 		return fmt.Errorf("config: ADMIN_USERNAME is required when ADMIN_PORTAL_ENABLED=true")
 	}
-	if c.AdminPasswordHash == "" {
-		return fmt.Errorf("config: ADMIN_PASSWORD_HASH is required when ADMIN_PORTAL_ENABLED=true")
-	}
-	if _, err := bcrypt.Cost([]byte(c.AdminPasswordHash)); err != nil {
-		return fmt.Errorf("config: ADMIN_PASSWORD_HASH must be a valid bcrypt hash")
+	if c.AdminPassword == "" {
+		return fmt.Errorf("config: ADMIN_PASSWORD is required when ADMIN_PORTAL_ENABLED=true")
 	}
 	if len(c.AdminSessionSecret) < 32 {
 		return fmt.Errorf("config: ADMIN_SESSION_SECRET must be at least 32 characters when ADMIN_PORTAL_ENABLED=true")
