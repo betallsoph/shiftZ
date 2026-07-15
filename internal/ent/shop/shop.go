@@ -23,10 +23,6 @@ const (
 	FieldInviteCode = "invite_code"
 	// FieldTelegramGroupID holds the string denoting the telegram_group_id field in the database.
 	FieldTelegramGroupID = "telegram_group_id"
-	// FieldTelegramSetupCodeHash holds the string denoting the telegram_setup_code_hash field in the database.
-	FieldTelegramSetupCodeHash = "telegram_setup_code_hash"
-	// FieldTelegramSetupCodeExpiresAt holds the string denoting the telegram_setup_code_expires_at field in the database.
-	FieldTelegramSetupCodeExpiresAt = "telegram_setup_code_expires_at"
 	// FieldPlan holds the string denoting the plan field in the database.
 	FieldPlan = "plan"
 	// FieldDashboardTokenHash holds the string denoting the dashboard_token_hash field in the database.
@@ -109,8 +105,6 @@ var Columns = []string{
 	FieldTimezone,
 	FieldInviteCode,
 	FieldTelegramGroupID,
-	FieldTelegramSetupCodeHash,
-	FieldTelegramSetupCodeExpiresAt,
 	FieldPlan,
 	FieldDashboardTokenHash,
 	FieldDashboardUsername,
@@ -164,16 +158,6 @@ func ByInviteCode(opts ...sql.OrderTermOption) OrderOption {
 // ByTelegramGroupID orders the results by the telegram_group_id field.
 func ByTelegramGroupID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTelegramGroupID, opts...).ToFunc()
-}
-
-// ByTelegramSetupCodeHash orders the results by the telegram_setup_code_hash field.
-func ByTelegramSetupCodeHash(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldTelegramSetupCodeHash, opts...).ToFunc()
-}
-
-// ByTelegramSetupCodeExpiresAt orders the results by the telegram_setup_code_expires_at field.
-func ByTelegramSetupCodeExpiresAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldTelegramSetupCodeExpiresAt, opts...).ToFunc()
 }
 
 // ByPlan orders the results by the plan field.

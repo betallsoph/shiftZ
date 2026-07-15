@@ -29,9 +29,6 @@ func (Shop) Fields() []ent.Field {
 		field.String("invite_code").Unique(),
 		// The Telegram group chat the bot posts schedules and votes into.
 		field.Int64("telegram_group_id"),
-		// SHA-256 hex hash of a short-lived Telegram group setup code.
-		field.String("telegram_setup_code_hash").Optional().Nillable(),
-		field.Time("telegram_setup_code_expires_at").Optional().Nillable(),
 		// SaaS plan tier, e.g. "free", "pro".
 		field.String("plan").Default("free"),
 		// SHA-256 hex hash of the owner dashboard token (never store plaintext).
@@ -44,7 +41,6 @@ func (Shop) Fields() []ent.Field {
 
 func (Shop) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("telegram_setup_code_hash").Unique(),
 		index.Fields("dashboard_username").Unique(),
 	}
 }

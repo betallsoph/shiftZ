@@ -63,34 +63,6 @@ func (_c *ShopCreate) SetTelegramGroupID(v int64) *ShopCreate {
 	return _c
 }
 
-// SetTelegramSetupCodeHash sets the "telegram_setup_code_hash" field.
-func (_c *ShopCreate) SetTelegramSetupCodeHash(v string) *ShopCreate {
-	_c.mutation.SetTelegramSetupCodeHash(v)
-	return _c
-}
-
-// SetNillableTelegramSetupCodeHash sets the "telegram_setup_code_hash" field if the given value is not nil.
-func (_c *ShopCreate) SetNillableTelegramSetupCodeHash(v *string) *ShopCreate {
-	if v != nil {
-		_c.SetTelegramSetupCodeHash(*v)
-	}
-	return _c
-}
-
-// SetTelegramSetupCodeExpiresAt sets the "telegram_setup_code_expires_at" field.
-func (_c *ShopCreate) SetTelegramSetupCodeExpiresAt(v time.Time) *ShopCreate {
-	_c.mutation.SetTelegramSetupCodeExpiresAt(v)
-	return _c
-}
-
-// SetNillableTelegramSetupCodeExpiresAt sets the "telegram_setup_code_expires_at" field if the given value is not nil.
-func (_c *ShopCreate) SetNillableTelegramSetupCodeExpiresAt(v *time.Time) *ShopCreate {
-	if v != nil {
-		_c.SetTelegramSetupCodeExpiresAt(*v)
-	}
-	return _c
-}
-
 // SetPlan sets the "plan" field.
 func (_c *ShopCreate) SetPlan(v string) *ShopCreate {
 	_c.mutation.SetPlan(v)
@@ -391,14 +363,6 @@ func (_c *ShopCreate) createSpec() (*Shop, *sqlgraph.CreateSpec) {
 		_spec.SetField(shop.FieldTelegramGroupID, field.TypeInt64, value)
 		_node.TelegramGroupID = value
 	}
-	if value, ok := _c.mutation.TelegramSetupCodeHash(); ok {
-		_spec.SetField(shop.FieldTelegramSetupCodeHash, field.TypeString, value)
-		_node.TelegramSetupCodeHash = &value
-	}
-	if value, ok := _c.mutation.TelegramSetupCodeExpiresAt(); ok {
-		_spec.SetField(shop.FieldTelegramSetupCodeExpiresAt, field.TypeTime, value)
-		_node.TelegramSetupCodeExpiresAt = &value
-	}
 	if value, ok := _c.mutation.Plan(); ok {
 		_spec.SetField(shop.FieldPlan, field.TypeString, value)
 		_node.Plan = value
@@ -633,42 +597,6 @@ func (u *ShopUpsert) AddTelegramGroupID(v int64) *ShopUpsert {
 	return u
 }
 
-// SetTelegramSetupCodeHash sets the "telegram_setup_code_hash" field.
-func (u *ShopUpsert) SetTelegramSetupCodeHash(v string) *ShopUpsert {
-	u.Set(shop.FieldTelegramSetupCodeHash, v)
-	return u
-}
-
-// UpdateTelegramSetupCodeHash sets the "telegram_setup_code_hash" field to the value that was provided on create.
-func (u *ShopUpsert) UpdateTelegramSetupCodeHash() *ShopUpsert {
-	u.SetExcluded(shop.FieldTelegramSetupCodeHash)
-	return u
-}
-
-// ClearTelegramSetupCodeHash clears the value of the "telegram_setup_code_hash" field.
-func (u *ShopUpsert) ClearTelegramSetupCodeHash() *ShopUpsert {
-	u.SetNull(shop.FieldTelegramSetupCodeHash)
-	return u
-}
-
-// SetTelegramSetupCodeExpiresAt sets the "telegram_setup_code_expires_at" field.
-func (u *ShopUpsert) SetTelegramSetupCodeExpiresAt(v time.Time) *ShopUpsert {
-	u.Set(shop.FieldTelegramSetupCodeExpiresAt, v)
-	return u
-}
-
-// UpdateTelegramSetupCodeExpiresAt sets the "telegram_setup_code_expires_at" field to the value that was provided on create.
-func (u *ShopUpsert) UpdateTelegramSetupCodeExpiresAt() *ShopUpsert {
-	u.SetExcluded(shop.FieldTelegramSetupCodeExpiresAt)
-	return u
-}
-
-// ClearTelegramSetupCodeExpiresAt clears the value of the "telegram_setup_code_expires_at" field.
-func (u *ShopUpsert) ClearTelegramSetupCodeExpiresAt() *ShopUpsert {
-	u.SetNull(shop.FieldTelegramSetupCodeExpiresAt)
-	return u
-}
-
 // SetPlan sets the "plan" field.
 func (u *ShopUpsert) SetPlan(v string) *ShopUpsert {
 	u.Set(shop.FieldPlan, v)
@@ -828,48 +756,6 @@ func (u *ShopUpsertOne) AddTelegramGroupID(v int64) *ShopUpsertOne {
 func (u *ShopUpsertOne) UpdateTelegramGroupID() *ShopUpsertOne {
 	return u.Update(func(s *ShopUpsert) {
 		s.UpdateTelegramGroupID()
-	})
-}
-
-// SetTelegramSetupCodeHash sets the "telegram_setup_code_hash" field.
-func (u *ShopUpsertOne) SetTelegramSetupCodeHash(v string) *ShopUpsertOne {
-	return u.Update(func(s *ShopUpsert) {
-		s.SetTelegramSetupCodeHash(v)
-	})
-}
-
-// UpdateTelegramSetupCodeHash sets the "telegram_setup_code_hash" field to the value that was provided on create.
-func (u *ShopUpsertOne) UpdateTelegramSetupCodeHash() *ShopUpsertOne {
-	return u.Update(func(s *ShopUpsert) {
-		s.UpdateTelegramSetupCodeHash()
-	})
-}
-
-// ClearTelegramSetupCodeHash clears the value of the "telegram_setup_code_hash" field.
-func (u *ShopUpsertOne) ClearTelegramSetupCodeHash() *ShopUpsertOne {
-	return u.Update(func(s *ShopUpsert) {
-		s.ClearTelegramSetupCodeHash()
-	})
-}
-
-// SetTelegramSetupCodeExpiresAt sets the "telegram_setup_code_expires_at" field.
-func (u *ShopUpsertOne) SetTelegramSetupCodeExpiresAt(v time.Time) *ShopUpsertOne {
-	return u.Update(func(s *ShopUpsert) {
-		s.SetTelegramSetupCodeExpiresAt(v)
-	})
-}
-
-// UpdateTelegramSetupCodeExpiresAt sets the "telegram_setup_code_expires_at" field to the value that was provided on create.
-func (u *ShopUpsertOne) UpdateTelegramSetupCodeExpiresAt() *ShopUpsertOne {
-	return u.Update(func(s *ShopUpsert) {
-		s.UpdateTelegramSetupCodeExpiresAt()
-	})
-}
-
-// ClearTelegramSetupCodeExpiresAt clears the value of the "telegram_setup_code_expires_at" field.
-func (u *ShopUpsertOne) ClearTelegramSetupCodeExpiresAt() *ShopUpsertOne {
-	return u.Update(func(s *ShopUpsert) {
-		s.ClearTelegramSetupCodeExpiresAt()
 	})
 }
 
@@ -1207,48 +1093,6 @@ func (u *ShopUpsertBulk) AddTelegramGroupID(v int64) *ShopUpsertBulk {
 func (u *ShopUpsertBulk) UpdateTelegramGroupID() *ShopUpsertBulk {
 	return u.Update(func(s *ShopUpsert) {
 		s.UpdateTelegramGroupID()
-	})
-}
-
-// SetTelegramSetupCodeHash sets the "telegram_setup_code_hash" field.
-func (u *ShopUpsertBulk) SetTelegramSetupCodeHash(v string) *ShopUpsertBulk {
-	return u.Update(func(s *ShopUpsert) {
-		s.SetTelegramSetupCodeHash(v)
-	})
-}
-
-// UpdateTelegramSetupCodeHash sets the "telegram_setup_code_hash" field to the value that was provided on create.
-func (u *ShopUpsertBulk) UpdateTelegramSetupCodeHash() *ShopUpsertBulk {
-	return u.Update(func(s *ShopUpsert) {
-		s.UpdateTelegramSetupCodeHash()
-	})
-}
-
-// ClearTelegramSetupCodeHash clears the value of the "telegram_setup_code_hash" field.
-func (u *ShopUpsertBulk) ClearTelegramSetupCodeHash() *ShopUpsertBulk {
-	return u.Update(func(s *ShopUpsert) {
-		s.ClearTelegramSetupCodeHash()
-	})
-}
-
-// SetTelegramSetupCodeExpiresAt sets the "telegram_setup_code_expires_at" field.
-func (u *ShopUpsertBulk) SetTelegramSetupCodeExpiresAt(v time.Time) *ShopUpsertBulk {
-	return u.Update(func(s *ShopUpsert) {
-		s.SetTelegramSetupCodeExpiresAt(v)
-	})
-}
-
-// UpdateTelegramSetupCodeExpiresAt sets the "telegram_setup_code_expires_at" field to the value that was provided on create.
-func (u *ShopUpsertBulk) UpdateTelegramSetupCodeExpiresAt() *ShopUpsertBulk {
-	return u.Update(func(s *ShopUpsert) {
-		s.UpdateTelegramSetupCodeExpiresAt()
-	})
-}
-
-// ClearTelegramSetupCodeExpiresAt clears the value of the "telegram_setup_code_expires_at" field.
-func (u *ShopUpsertBulk) ClearTelegramSetupCodeExpiresAt() *ShopUpsertBulk {
-	return u.Update(func(s *ShopUpsert) {
-		s.ClearTelegramSetupCodeExpiresAt()
 	})
 }
 

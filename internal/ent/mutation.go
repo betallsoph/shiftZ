@@ -7867,45 +7867,43 @@ func (m *ShiftMutation) ResetEdge(name string) error {
 // ShopMutation represents an operation that mutates the Shop nodes in the graph.
 type ShopMutation struct {
 	config
-	op                             Op
-	typ                            string
-	id                             *uuid.UUID
-	name                           *string
-	timezone                       *string
-	invite_code                    *string
-	telegram_group_id              *int64
-	addtelegram_group_id           *int64
-	telegram_setup_code_hash       *string
-	telegram_setup_code_expires_at *time.Time
-	plan                           *string
-	dashboard_token_hash           *string
-	dashboard_username             *string
-	created_at                     *time.Time
-	clearedFields                  map[string]struct{}
-	employees                      map[uuid.UUID]struct{}
-	removedemployees               map[uuid.UUID]struct{}
-	clearedemployees               bool
-	shifts                         map[uuid.UUID]struct{}
-	removedshifts                  map[uuid.UUID]struct{}
-	clearedshifts                  bool
-	schedules                      map[uuid.UUID]struct{}
-	removedschedules               map[uuid.UUID]struct{}
-	clearedschedules               bool
-	rules                          map[uuid.UUID]struct{}
-	removedrules                   map[uuid.UUID]struct{}
-	clearedrules                   bool
-	availabilities                 map[uuid.UUID]struct{}
-	removedavailabilities          map[uuid.UUID]struct{}
-	clearedavailabilities          bool
-	availability_drafts            map[uuid.UUID]struct{}
-	removedavailability_drafts     map[uuid.UUID]struct{}
-	clearedavailability_drafts     bool
-	reminder_deliveries            map[uuid.UUID]struct{}
-	removedreminder_deliveries     map[uuid.UUID]struct{}
-	clearedreminder_deliveries     bool
-	done                           bool
-	oldValue                       func(context.Context) (*Shop, error)
-	predicates                     []predicate.Shop
+	op                         Op
+	typ                        string
+	id                         *uuid.UUID
+	name                       *string
+	timezone                   *string
+	invite_code                *string
+	telegram_group_id          *int64
+	addtelegram_group_id       *int64
+	plan                       *string
+	dashboard_token_hash       *string
+	dashboard_username         *string
+	created_at                 *time.Time
+	clearedFields              map[string]struct{}
+	employees                  map[uuid.UUID]struct{}
+	removedemployees           map[uuid.UUID]struct{}
+	clearedemployees           bool
+	shifts                     map[uuid.UUID]struct{}
+	removedshifts              map[uuid.UUID]struct{}
+	clearedshifts              bool
+	schedules                  map[uuid.UUID]struct{}
+	removedschedules           map[uuid.UUID]struct{}
+	clearedschedules           bool
+	rules                      map[uuid.UUID]struct{}
+	removedrules               map[uuid.UUID]struct{}
+	clearedrules               bool
+	availabilities             map[uuid.UUID]struct{}
+	removedavailabilities      map[uuid.UUID]struct{}
+	clearedavailabilities      bool
+	availability_drafts        map[uuid.UUID]struct{}
+	removedavailability_drafts map[uuid.UUID]struct{}
+	clearedavailability_drafts bool
+	reminder_deliveries        map[uuid.UUID]struct{}
+	removedreminder_deliveries map[uuid.UUID]struct{}
+	clearedreminder_deliveries bool
+	done                       bool
+	oldValue                   func(context.Context) (*Shop, error)
+	predicates                 []predicate.Shop
 }
 
 var _ ent.Mutation = (*ShopMutation)(nil)
@@ -8174,104 +8172,6 @@ func (m *ShopMutation) AddedTelegramGroupID() (r int64, exists bool) {
 func (m *ShopMutation) ResetTelegramGroupID() {
 	m.telegram_group_id = nil
 	m.addtelegram_group_id = nil
-}
-
-// SetTelegramSetupCodeHash sets the "telegram_setup_code_hash" field.
-func (m *ShopMutation) SetTelegramSetupCodeHash(s string) {
-	m.telegram_setup_code_hash = &s
-}
-
-// TelegramSetupCodeHash returns the value of the "telegram_setup_code_hash" field in the mutation.
-func (m *ShopMutation) TelegramSetupCodeHash() (r string, exists bool) {
-	v := m.telegram_setup_code_hash
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldTelegramSetupCodeHash returns the old "telegram_setup_code_hash" field's value of the Shop entity.
-// If the Shop object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ShopMutation) OldTelegramSetupCodeHash(ctx context.Context) (v *string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTelegramSetupCodeHash is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTelegramSetupCodeHash requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTelegramSetupCodeHash: %w", err)
-	}
-	return oldValue.TelegramSetupCodeHash, nil
-}
-
-// ClearTelegramSetupCodeHash clears the value of the "telegram_setup_code_hash" field.
-func (m *ShopMutation) ClearTelegramSetupCodeHash() {
-	m.telegram_setup_code_hash = nil
-	m.clearedFields[shop.FieldTelegramSetupCodeHash] = struct{}{}
-}
-
-// TelegramSetupCodeHashCleared returns if the "telegram_setup_code_hash" field was cleared in this mutation.
-func (m *ShopMutation) TelegramSetupCodeHashCleared() bool {
-	_, ok := m.clearedFields[shop.FieldTelegramSetupCodeHash]
-	return ok
-}
-
-// ResetTelegramSetupCodeHash resets all changes to the "telegram_setup_code_hash" field.
-func (m *ShopMutation) ResetTelegramSetupCodeHash() {
-	m.telegram_setup_code_hash = nil
-	delete(m.clearedFields, shop.FieldTelegramSetupCodeHash)
-}
-
-// SetTelegramSetupCodeExpiresAt sets the "telegram_setup_code_expires_at" field.
-func (m *ShopMutation) SetTelegramSetupCodeExpiresAt(t time.Time) {
-	m.telegram_setup_code_expires_at = &t
-}
-
-// TelegramSetupCodeExpiresAt returns the value of the "telegram_setup_code_expires_at" field in the mutation.
-func (m *ShopMutation) TelegramSetupCodeExpiresAt() (r time.Time, exists bool) {
-	v := m.telegram_setup_code_expires_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldTelegramSetupCodeExpiresAt returns the old "telegram_setup_code_expires_at" field's value of the Shop entity.
-// If the Shop object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ShopMutation) OldTelegramSetupCodeExpiresAt(ctx context.Context) (v *time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTelegramSetupCodeExpiresAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTelegramSetupCodeExpiresAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTelegramSetupCodeExpiresAt: %w", err)
-	}
-	return oldValue.TelegramSetupCodeExpiresAt, nil
-}
-
-// ClearTelegramSetupCodeExpiresAt clears the value of the "telegram_setup_code_expires_at" field.
-func (m *ShopMutation) ClearTelegramSetupCodeExpiresAt() {
-	m.telegram_setup_code_expires_at = nil
-	m.clearedFields[shop.FieldTelegramSetupCodeExpiresAt] = struct{}{}
-}
-
-// TelegramSetupCodeExpiresAtCleared returns if the "telegram_setup_code_expires_at" field was cleared in this mutation.
-func (m *ShopMutation) TelegramSetupCodeExpiresAtCleared() bool {
-	_, ok := m.clearedFields[shop.FieldTelegramSetupCodeExpiresAt]
-	return ok
-}
-
-// ResetTelegramSetupCodeExpiresAt resets all changes to the "telegram_setup_code_expires_at" field.
-func (m *ShopMutation) ResetTelegramSetupCodeExpiresAt() {
-	m.telegram_setup_code_expires_at = nil
-	delete(m.clearedFields, shop.FieldTelegramSetupCodeExpiresAt)
 }
 
 // SetPlan sets the "plan" field.
@@ -8856,7 +8756,7 @@ func (m *ShopMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ShopMutation) Fields() []string {
-	fields := make([]string, 0, 10)
+	fields := make([]string, 0, 8)
 	if m.name != nil {
 		fields = append(fields, shop.FieldName)
 	}
@@ -8868,12 +8768,6 @@ func (m *ShopMutation) Fields() []string {
 	}
 	if m.telegram_group_id != nil {
 		fields = append(fields, shop.FieldTelegramGroupID)
-	}
-	if m.telegram_setup_code_hash != nil {
-		fields = append(fields, shop.FieldTelegramSetupCodeHash)
-	}
-	if m.telegram_setup_code_expires_at != nil {
-		fields = append(fields, shop.FieldTelegramSetupCodeExpiresAt)
 	}
 	if m.plan != nil {
 		fields = append(fields, shop.FieldPlan)
@@ -8903,10 +8797,6 @@ func (m *ShopMutation) Field(name string) (ent.Value, bool) {
 		return m.InviteCode()
 	case shop.FieldTelegramGroupID:
 		return m.TelegramGroupID()
-	case shop.FieldTelegramSetupCodeHash:
-		return m.TelegramSetupCodeHash()
-	case shop.FieldTelegramSetupCodeExpiresAt:
-		return m.TelegramSetupCodeExpiresAt()
 	case shop.FieldPlan:
 		return m.Plan()
 	case shop.FieldDashboardTokenHash:
@@ -8932,10 +8822,6 @@ func (m *ShopMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldInviteCode(ctx)
 	case shop.FieldTelegramGroupID:
 		return m.OldTelegramGroupID(ctx)
-	case shop.FieldTelegramSetupCodeHash:
-		return m.OldTelegramSetupCodeHash(ctx)
-	case shop.FieldTelegramSetupCodeExpiresAt:
-		return m.OldTelegramSetupCodeExpiresAt(ctx)
 	case shop.FieldPlan:
 		return m.OldPlan(ctx)
 	case shop.FieldDashboardTokenHash:
@@ -8980,20 +8866,6 @@ func (m *ShopMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTelegramGroupID(v)
-		return nil
-	case shop.FieldTelegramSetupCodeHash:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetTelegramSetupCodeHash(v)
-		return nil
-	case shop.FieldTelegramSetupCodeExpiresAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetTelegramSetupCodeExpiresAt(v)
 		return nil
 	case shop.FieldPlan:
 		v, ok := value.(string)
@@ -9068,12 +8940,6 @@ func (m *ShopMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *ShopMutation) ClearedFields() []string {
 	var fields []string
-	if m.FieldCleared(shop.FieldTelegramSetupCodeHash) {
-		fields = append(fields, shop.FieldTelegramSetupCodeHash)
-	}
-	if m.FieldCleared(shop.FieldTelegramSetupCodeExpiresAt) {
-		fields = append(fields, shop.FieldTelegramSetupCodeExpiresAt)
-	}
 	if m.FieldCleared(shop.FieldDashboardTokenHash) {
 		fields = append(fields, shop.FieldDashboardTokenHash)
 	}
@@ -9094,12 +8960,6 @@ func (m *ShopMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *ShopMutation) ClearField(name string) error {
 	switch name {
-	case shop.FieldTelegramSetupCodeHash:
-		m.ClearTelegramSetupCodeHash()
-		return nil
-	case shop.FieldTelegramSetupCodeExpiresAt:
-		m.ClearTelegramSetupCodeExpiresAt()
-		return nil
 	case shop.FieldDashboardTokenHash:
 		m.ClearDashboardTokenHash()
 		return nil
@@ -9125,12 +8985,6 @@ func (m *ShopMutation) ResetField(name string) error {
 		return nil
 	case shop.FieldTelegramGroupID:
 		m.ResetTelegramGroupID()
-		return nil
-	case shop.FieldTelegramSetupCodeHash:
-		m.ResetTelegramSetupCodeHash()
-		return nil
-	case shop.FieldTelegramSetupCodeExpiresAt:
-		m.ResetTelegramSetupCodeExpiresAt()
 		return nil
 	case shop.FieldPlan:
 		m.ResetPlan()
