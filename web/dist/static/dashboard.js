@@ -1,6 +1,25 @@
 (function () {
   const TAP_ACTION_DELAY = 200;
 
+  function initInteractiveAuthGrid() {
+    const page = document.querySelector('.auth-page');
+    if (!page || !window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+
+    const cellSize = 50;
+    page.addEventListener(
+      'pointermove',
+      (event) => {
+        page.style.setProperty('--grid-cell-x', `${Math.floor(event.clientX / cellSize) * cellSize}px`);
+        page.style.setProperty('--grid-cell-y', `${Math.floor(event.clientY / cellSize) * cellSize}px`);
+        page.classList.add('is-grid-hovering');
+      },
+      { passive: true }
+    );
+    page.addEventListener('pointerleave', () => page.classList.remove('is-grid-hovering'), { passive: true });
+  }
+
+  initInteractiveAuthGrid();
+
   function findTapTarget(target) {
     if (!(target instanceof Element)) return null;
     const interactive = target.closest('button, a[href], [role="button"]');
