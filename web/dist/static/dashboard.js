@@ -6,16 +6,36 @@
     if (!page || !window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
 
     const cellSize = 50;
+    const layer = document.createElement('div');
+    layer.className = 'auth-grid-effects';
+    layer.setAttribute('aria-hidden', 'true');
+    page.prepend(layer);
+
+    let lastCell = '';
     page.addEventListener(
       'pointermove',
       (event) => {
-        page.style.setProperty('--grid-cell-x', `${Math.floor(event.clientX / cellSize) * cellSize}px`);
-        page.style.setProperty('--grid-cell-y', `${Math.floor(event.clientY / cellSize) * cellSize}px`);
-        page.classList.add('is-grid-hovering');
+        const x = Math.floor(event.clientX / cellSize) * cellSize;
+        const y = Math.floor(event.clientY / cellSize) * cellSize;
+        const key = `${x}:${y}`;
+        if (key === lastCell) return;
+        lastCell = key;
+
+        const cell = document.createElement('span');
+        cell.className = 'auth-grid-cell';
+        cell.style.transform = `translate(${x}px, ${y}px)`;
+        layer.append(cell);
+        requestAnimationFrame(() => {
+          cell.classList.add('is-active');
+          window.setTimeout(() => cell.classList.remove('is-active'), 90);
+        });
+        window.setTimeout(() => cell.remove(), 1100);
       },
       { passive: true }
     );
-    page.addEventListener('pointerleave', () => page.classList.remove('is-grid-hovering'), { passive: true });
+    page.addEventListener('pointerleave', () => {
+      lastCell = '';
+    }, { passive: true });
   }
 
   initInteractiveAuthGrid();

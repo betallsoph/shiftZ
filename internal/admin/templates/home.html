@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>shiftbot — Admin</title>
-    <link rel="stylesheet" href="/static/dashboard.css?v=20260716-3" />
+    <link rel="stylesheet" href="/static/dashboard.css?v=20260716-4" />
   </head>
   <body class="roomio-grid-bg">
     <header class="site-header">
@@ -91,7 +91,7 @@
                     <div class="shop-action-forms">
                       <form method="post" action="/admin/shops/{{.ID}}/provision" class="control-form compact">
                         <input type="hidden" name="csrf_token" value="{{.CSRFToken}}" />
-                        <p><strong>Cấp / đổi tài khoản</strong></p>
+                        <p><strong>Tài khoản chủ quán</strong></p>
                         <label>
                           Username
                           <input class="input" type="text" name="dashboard_username" value="{{.Username}}" required />
@@ -104,11 +104,11 @@
                             <option value="pro" {{if eq .Plan "pro"}}selected{{end}}>pro</option>
                           </select>
                         </label>
-                        <button type="submit" class="btn btn-primary btn-sm">Cấp token mới</button>
+                        <button type="submit" class="btn btn-primary btn-sm">Lưu tài khoản</button>
                       </form>
                       <form method="post" action="/admin/shops/{{.ID}}/plan" class="control-form compact">
                         <input type="hidden" name="csrf_token" value="{{.CSRFToken}}" />
-                        <p><strong>Đổi gói (không rotate token)</strong></p>
+                        <p><strong>Đổi gói</strong></p>
                         <label>
                           Plan
                           <select class="input" name="plan">
@@ -118,15 +118,6 @@
                           </select>
                         </label>
                         <button type="submit" class="btn btn-ghost btn-sm">Cập nhật plan</button>
-                      </form>
-                      <form method="post" action="/admin/shops/{{.ID}}/rotate-owner-token" class="control-form compact">
-                        <input type="hidden" name="csrf_token" value="{{.CSRFToken}}" />
-                        <p><strong>Rotate owner token</strong></p>
-                        <label class="checkbox-row">
-                          <input type="checkbox" name="confirm" value="yes" required />
-                          Tôi hiểu token cũ sẽ hết hiệu lực
-                        </label>
-                        <button type="submit" class="btn btn-danger btn-sm">Phát token mới</button>
                       </form>
                     </div>
                   </details>

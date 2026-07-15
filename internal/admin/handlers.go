@@ -29,7 +29,6 @@ type shopRowData struct {
 type successPageData struct {
 	Title      string
 	Username   string
-	OwnerToken string
 	ShopID     string
 	InviteCode string
 	BackURL    string
@@ -92,7 +91,7 @@ func (s *Server) handleCreateShopPOST(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	creds, err := s.provision.CreateShopWithAccount(r.Context(), name, timezone, username, plan, createDefaultShifts)
+	shop, err := s.provision.CreateShopWithAccount(r.Context(), name, timezone, username, plan, createDefaultShifts)
 	if err != nil {
 		if errors.Is(err, store.ErrAlreadyExists) {
 			s.renderHomeError(w, r, sess, "username đã được sử dụng")
@@ -108,10 +107,9 @@ func (s *Server) handleCreateShopPOST(w http.ResponseWriter, r *http.Request) {
 	}
 	s.renderSuccess(w, successPageData{
 		Title:      "Quán đã tạo",
-		Username:   creds.Shop.DashboardUsername,
-		OwnerToken: creds.OwnerToken,
-		ShopID:     creds.Shop.ID.String(),
-		InviteCode: creds.Shop.InviteCode,
+		Username:   shop.DashboardUsername,
+		ShopID:     shop.ID.String(),
+		InviteCode: shop.InviteCode,
 		BackURL:    "/admin",
 	})
 }
@@ -135,7 +133,7 @@ func (s *Server) handleProvisionPOST(w http.ResponseWriter, r *http.Request) {
 		s.renderHomeError(w, r, sess, "gói dịch vụ không hợp lệ")
 		return
 	}
-	creds, err := s.shops.ProvisionDashboardAccount(r.Context(), shopID, username, plan)
+	shop, err := s.shops.ProvisionDashboardAccount(r.Context(), shopID, username, plan)
 	if err != nil {
 		if errors.Is(err, store.ErrNotFound) {
 			s.renderHomeError(w, r, sess, "không tìm thấy quán")
@@ -151,10 +149,9 @@ func (s *Server) handleProvisionPOST(w http.ResponseWriter, r *http.Request) {
 	}
 	s.renderSuccess(w, successPageData{
 		Title:      "Tài khoản đã cấp",
-		Username:   creds.Shop.DashboardUsername,
-		OwnerToken: creds.OwnerToken,
-		ShopID:     creds.Shop.ID.String(),
-		InviteCode: creds.Shop.InviteCode,
+		Username:   shop.DashboardUsername,
+		ShopID:     shop.ID.String(),
+		InviteCode: shop.InviteCode,
 		BackURL:    "/admin",
 	})
 }
@@ -183,39 +180,6 @@ func (s *Server) handleUpdatePlanPOST(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	http.Redirect(w, r, "/admin", http.StatusSeeOther)
-}
-
-func (s *Server) handleRotateTokenPOST(w http.ResponseWriter, r *http.Request) {
-	sess, ok := s.requireSession(w, r)
-	if !ok {
-		return
-	}
-	if !s.requireMutation(w, r, sess) {
-		return
-	}
-	if r.FormValue("confirm") != "yes" {
-		s.renderHomeError(w, r, sess, "xác nhận rotate token trước khi tiếp tục")
-		return
-	}
-	shopID := r.PathValue("id")
-	creds, err := s.shops.RotateDashboardToken(r.Context(), shopID)
-	if err != nil {
-		if errors.Is(err, store.ErrNotFound) {
-			s.renderHomeError(w, r, sess, "không tìm thấy quán")
-			return
-		}
-		s.log.Error("admin rotate token", "err", err)
-		s.renderHomeError(w, r, sess, "rotate token thất bại")
-		return
-	}
-	s.renderSuccess(w, successPageData{
-		Title:      "Token mới đã phát",
-		Username:   formatUsername(creds.Shop.DashboardUsername),
-		OwnerToken: creds.OwnerToken,
-		ShopID:     creds.Shop.ID.String(),
-		InviteCode: creds.Shop.InviteCode,
-		BackURL:    "/admin",
-	})
 }
 
 func (s *Server) renderHomeError(w http.ResponseWriter, r *http.Request, sess *Session, msg string) {

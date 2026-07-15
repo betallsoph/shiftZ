@@ -5,19 +5,11 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/google/uuid"
-
 	"github.com/betallsoph/shiftz/internal/store"
 )
 
 type loginPageData struct {
-	Error         string
-	SignupEnabled bool
-}
-
-type legacyLoginPageData struct {
-	Error         string
-	SignupEnabled bool
+	Error string
 }
 
 func (s *Server) handleLoginGET(w http.ResponseWriter, r *http.Request) {
@@ -25,7 +17,7 @@ func (s *Server) handleLoginGET(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
-	if err := s.tmpl.render(w, "login.html", loginPageData{SignupEnabled: s.signupEnabled}); err != nil {
+	if err := s.tmpl.render(w, "login.html", loginPageData{}); err != nil {
 		s.log.Error("render login", "err", err)
 		http.Error(w, "template error", http.StatusInternalServerError)
 	}
@@ -37,62 +29,18 @@ func (s *Server) handleLoginPOST(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	rawUsername := r.FormValue("dashboard_username")
-	rawToken := r.FormValue("owner_token")
-	if rawUsername == "" || rawToken == "" {
-		s.renderLoginError(w, "nhập username và mật khẩu được cấp")
+	if rawUsername == "" {
+		s.renderLoginError(w, "nhập tên đăng nhập")
 		return
 	}
-	shop, err := s.shopAuth.VerifyDashboardCredentials(r.Context(), rawUsername, rawToken)
+	shop, err := s.shopAuth.ByDashboardUsername(r.Context(), rawUsername)
 	if err != nil {
-		if errors.Is(err, store.ErrInvalidCredentials) {
-			s.renderLoginError(w, "username hoặc mật khẩu không đúng")
+		if errors.Is(err, store.ErrNotFound) {
+			s.renderLoginError(w, "tên đăng nhập không đúng")
 			return
 		}
-		s.log.Error("verify dashboard credentials", "err", err)
+		s.log.Error("find dashboard account", "err", err)
 		s.renderLoginError(w, "đăng nhập thất bại")
-		return
-	}
-	if err := s.setOwnerSession(w, shop); err != nil {
-		return
-	}
-	http.Redirect(w, r, "/", http.StatusSeeOther)
-}
-
-func (s *Server) handleLegacyLoginGET(w http.ResponseWriter, r *http.Request) {
-	if sess, err := s.sessions.FromRequest(r, time.Now()); err == nil && sess != nil {
-		http.Redirect(w, r, "/", http.StatusSeeOther)
-		return
-	}
-	if err := s.tmpl.render(w, "login_legacy.html", legacyLoginPageData{SignupEnabled: s.signupEnabled}); err != nil {
-		s.log.Error("render legacy login", "err", err)
-		http.Error(w, "template error", http.StatusInternalServerError)
-	}
-}
-
-func (s *Server) handleLegacyLoginPOST(w http.ResponseWriter, r *http.Request) {
-	if err := r.ParseForm(); err != nil {
-		s.renderLegacyLoginError(w, "dữ liệu form không hợp lệ")
-		return
-	}
-	rawShop := r.FormValue("shop_id")
-	rawToken := r.FormValue("owner_token")
-	if rawShop == "" || rawToken == "" {
-		s.renderLegacyLoginError(w, "nhập mã cửa hàng và token chủ quán")
-		return
-	}
-	shopID, err := uuid.Parse(rawShop)
-	if err != nil {
-		s.renderLegacyLoginError(w, "mã cửa hàng hoặc token không đúng")
-		return
-	}
-	shop, err := s.shopAuth.VerifyDashboardToken(r.Context(), shopID, rawToken)
-	if err != nil {
-		if errors.Is(err, store.ErrNotFound) || errors.Is(err, store.ErrInvalidCredentials) {
-			s.renderLegacyLoginError(w, "mã cửa hàng hoặc token không đúng")
-			return
-		}
-		s.log.Error("verify dashboard token", "err", err)
-		s.renderLegacyLoginError(w, "đăng nhập thất bại")
 		return
 	}
 	if err := s.setOwnerSession(w, shop); err != nil {
@@ -119,15 +67,8 @@ func (s *Server) setOwnerSession(w http.ResponseWriter, shop *store.Shop) error 
 }
 
 func (s *Server) renderLoginError(w http.ResponseWriter, msg string) {
-	if err := s.tmpl.render(w, "login.html", loginPageData{Error: msg, SignupEnabled: s.signupEnabled}); err != nil {
+	if err := s.tmpl.render(w, "login.html", loginPageData{Error: msg}); err != nil {
 		s.log.Error("render login error", "err", err)
-		http.Error(w, "template error", http.StatusInternalServerError)
-	}
-}
-
-func (s *Server) renderLegacyLoginError(w http.ResponseWriter, msg string) {
-	if err := s.tmpl.render(w, "login_legacy.html", legacyLoginPageData{Error: msg, SignupEnabled: s.signupEnabled}); err != nil {
-		s.log.Error("render legacy login error", "err", err)
 		http.Error(w, "template error", http.StatusInternalServerError)
 	}
 }

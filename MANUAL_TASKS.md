@@ -46,7 +46,6 @@ LLM_API_KEY='...'
 LLM_MODEL='gemini-3.5-flash'
 REMINDER_MODE=loop
 DEV_API_ENABLED=false
-OWNER_SIGNUP_ENABLED=false
 ADMIN_PORTAL_ENABLED=true
 ADMIN_USERNAME='...'
 ADMIN_PASSWORD='...'
@@ -70,7 +69,7 @@ MIGRATION_DATABASE_URL='Neon direct URL'
 ```
 
 Khong bat `DEV_API_ENABLED` tren production. Chi bat
-`OWNER_SIGNUP_ENABLED=true` trong luc tao shop dau tien, sau do tat lai.
+Tao shop va cap username trong admin portal `/admin`.
 
 VPS always-on chay reminder loop trong cung container. Khong can external
 scheduler hay `REMINDER_TRIGGER_SECRET`.
@@ -139,29 +138,17 @@ curl "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/getWebhookInfo"
 
 ## 6. Tao Shop Dau Tien
 
-Neu owner onboarding da duoc deploy:
-
-- [ ] Bat `OWNER_SIGNUP_ENABLED=true` neu signup duoc gate bang env.
-- [ ] Vao `/signup`.
-- [ ] Tao shop.
+- [ ] Dang nhap admin portal va tao shop/cap username.
 - [ ] Luu lai:
   - Shop ID
-  - Owner dashboard token
+  - Dashboard username
   - Invite code
-- [ ] Dang nhap `/login` bang Shop ID + owner token.
-
-Neu owner onboarding chua duoc deploy:
-
-- [ ] Chay seed tren moi truong local/staging de demo:
-
-```sh
-go run ./cmd/seed
-```
+- [ ] Dang nhap `/login` bang username da cap.
 
 - [ ] Hoac tao shop/token bang tool/admin SQL rieng.
 - [ ] Dam bao shop co `dashboard_token_hash`.
 - [ ] Dam bao shop co shift templates.
-- [ ] Luu owner token o password manager. Plaintext token chi nen xuat hien mot lan.
+- [ ] Luu username cua tung quan trong danh sach van hanh.
 
 ## 7. Smoke Test Beta
 
@@ -191,7 +178,7 @@ go run ./cmd/seed
 
 ## 9. Viec Chua Tu Dong Hoa
 
-- [ ] Reset owner dashboard token khi chu quan lam mat token.
+- [ ] Doi dashboard username khi chu quan can cap lai quyen truy cap.
 - [ ] Doi timezone/shop info tu dashboard.
 - [ ] Billing/free-tier enforcement.
 - [ ] Backup/restore drill.
@@ -217,6 +204,6 @@ go run ./cmd/seed
 - [ ] Khong dung `DEV_API_ENABLED=true` o production mac dinh.
 - [ ] Khong dung Neon pooled URL cho Atlas migration.
 - [ ] Khong point liveness probe vao `/readyz`.
-- [ ] Khong log owner dashboard token sau khi tao xong.
+- [ ] Khong log session cookie hoac session secret.
 - [ ] Rotating `SESSION_SECRET` se logout tat ca dashboard sessions.
 - [ ] Khi test production, dung shop test rieng, khong dung shop khach that.

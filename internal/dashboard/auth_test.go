@@ -66,42 +66,13 @@ func TestSessionExpiredCookieRejected(t *testing.T) {
 	}
 }
 
-func TestLegacyLoginSucceedsWithCorrectToken(t *testing.T) {
-	shopID := uuid.New()
-	token := "sz_owner_" + strings.Repeat("a", 48)
-	srv, mux := testDashboardWithAuth(t, shopID, token, &fakeShops{shop: &store.Shop{ID: shopID, Name: "Cafe", Timezone: "UTC"}})
-
-	form := url.Values{
-		"shop_id":     {shopID.String()},
-		"owner_token": {token},
-	}
-	req := httptest.NewRequest(http.MethodPost, "/login/legacy", strings.NewReader(form.Encode()))
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	rec := httptest.NewRecorder()
-	mux.ServeHTTP(rec, req)
-
-	if rec.Code != http.StatusSeeOther {
-		t.Fatalf("status = %d, want 303", rec.Code)
-	}
-	if loc := rec.Header().Get("Location"); loc != "/" {
-		t.Fatalf("location = %q", loc)
-	}
-	cookies := rec.Result().Cookies()
-	if len(cookies) == 0 || cookies[0].Name != sessionCookieName {
-		t.Fatalf("cookies = %+v", cookies)
-	}
-	_ = srv
-}
-
 func TestLoginSucceedsWithUsername(t *testing.T) {
 	shopID := uuid.New()
-	token := "sz_owner_" + strings.Repeat("d", 48)
 	shop := &store.Shop{ID: shopID, Name: "Cafe", Timezone: "UTC", DashboardUsername: "demo.cafe"}
-	_, mux := testDashboardWithAuth(t, shopID, token, &fakeShops{shop: shop})
+	_, mux := testDashboardWithAuth(t, shopID, "", &fakeShops{shop: shop})
 
 	form := url.Values{
 		"dashboard_username": {"demo.cafe"},
-		"owner_token":        {token},
 	}
 	req := httptest.NewRequest(http.MethodPost, "/login", strings.NewReader(form.Encode()))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
@@ -112,15 +83,13 @@ func TestLoginSucceedsWithUsername(t *testing.T) {
 	}
 }
 
-func TestLoginFailsWithWrongUsernameToken(t *testing.T) {
+func TestLoginFailsWithWrongUsername(t *testing.T) {
 	shopID := uuid.New()
-	token := "sz_owner_" + strings.Repeat("e", 48)
 	shop := &store.Shop{ID: shopID, Name: "Cafe", Timezone: "UTC", DashboardUsername: "demo.cafe"}
-	_, mux := testDashboardWithAuth(t, shopID, token, &fakeShops{shop: shop})
+	_, mux := testDashboardWithAuth(t, shopID, "", &fakeShops{shop: shop})
 
 	form := url.Values{
-		"dashboard_username": {"demo.cafe"},
-		"owner_token":        {"sz_owner_wrong"},
+		"dashboard_username": {"wrong.cafe"},
 	}
 	req := httptest.NewRequest(http.MethodPost, "/login", strings.NewReader(form.Encode()))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
@@ -129,8 +98,23 @@ func TestLoginFailsWithWrongUsernameToken(t *testing.T) {
 	if rec.Code != http.StatusOK {
 		t.Fatalf("status = %d", rec.Code)
 	}
-	if !strings.Contains(rec.Body.String(), "username hoặc mật khẩu không đúng") {
+	if !strings.Contains(rec.Body.String(), "tên đăng nhập không đúng") {
 		t.Fatalf("body = %q", rec.Body.String())
+	}
+}
+
+func TestLegacyLoginAndSignupRoutesRemoved(t *testing.T) {
+	shopID := uuid.New()
+	_, mux := testDashboardWithAuth(t, shopID, "", &fakeShops{shop: &store.Shop{ID: shopID, Name: "Cafe", Timezone: "UTC"}})
+	for _, path := range []string{"/login/legacy", "/signup"} {
+		for _, method := range []string{http.MethodGet, http.MethodPost} {
+			req := httptest.NewRequest(method, path, nil)
+			rec := httptest.NewRecorder()
+			mux.ServeHTTP(rec, req)
+			if rec.Code != http.StatusNotFound {
+				t.Fatalf("%s %s: status = %d, want 404", method, path, rec.Code)
+			}
+		}
 	}
 }
 
@@ -145,27 +129,6 @@ func TestAdminCookieDoesNotAccessOwnerDashboard(t *testing.T) {
 		t.Fatalf("status=%d loc=%q", rec.Code, rec.Header().Get("Location"))
 	}
 	_ = srv
-}
-
-func TestLoginFailsWithWrongToken(t *testing.T) {
-	shopID := uuid.New()
-	_, mux := testDashboardWithAuth(t, shopID, "sz_owner_correct", &fakeShops{shop: &store.Shop{ID: shopID, Name: "Cafe", Timezone: "UTC"}})
-
-	form := url.Values{
-		"shop_id":     {shopID.String()},
-		"owner_token": {"sz_owner_wrong"},
-	}
-	req := httptest.NewRequest(http.MethodPost, "/login/legacy", strings.NewReader(form.Encode()))
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	rec := httptest.NewRecorder()
-	mux.ServeHTTP(rec, req)
-
-	if rec.Code != http.StatusOK {
-		t.Fatalf("status = %d", rec.Code)
-	}
-	if !strings.Contains(rec.Body.String(), "mã cửa hàng hoặc token không đúng") {
-		t.Fatalf("body = %q", rec.Body.String())
-	}
 }
 
 func TestAuthenticatedDashboardUsesSessionShopID(t *testing.T) {
@@ -265,7 +228,7 @@ func testDashboardWithAuth(t *testing.T, shopID uuid.UUID, validToken string, sh
 	}
 	srv := &Server{
 		shops:         shops,
-		shopAuth:      &fakeShopAuth{shopID: shopID, token: validToken, shop: shops.shop},
+		shopAuth:      &fakeShopAuth{shop: shops.shop},
 		shopTelegram:  &fakeShopTelegram{},
 		shifts:        &fakeShifts{},
 		schedules:     &fakeSchedules{},
@@ -295,21 +258,12 @@ func addSessionCookie(t *testing.T, srv *Server, shopID uuid.UUID, req *http.Req
 }
 
 type fakeShopAuth struct {
-	shopID uuid.UUID
-	token  string
-	shop   *store.Shop
+	shop *store.Shop
 }
 
-func (f *fakeShopAuth) VerifyDashboardToken(ctx context.Context, shopID uuid.UUID, token string) (*store.Shop, error) {
-	if shopID != f.shopID || token != f.token {
-		return nil, store.ErrInvalidCredentials
-	}
-	return f.shop, nil
-}
-
-func (f *fakeShopAuth) VerifyDashboardCredentials(ctx context.Context, username, token string) (*store.Shop, error) {
-	if f.shop == nil || store.NormalizeDashboardUsername(username) != f.shop.DashboardUsername || token != f.token {
-		return nil, store.ErrInvalidCredentials
+func (f *fakeShopAuth) ByDashboardUsername(ctx context.Context, username string) (*store.Shop, error) {
+	if f.shop == nil || store.NormalizeDashboardUsername(username) != f.shop.DashboardUsername {
+		return nil, store.ErrNotFound
 	}
 	return f.shop, nil
 }

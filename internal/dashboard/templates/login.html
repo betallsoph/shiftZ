@@ -4,8 +4,8 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>shiftbot — Đăng nhập</title>
-    <link rel="stylesheet" href="/static/dashboard.css?v=20260716-3" />
-    <script src="/static/dashboard.js?v=20260716-3" defer></script>
+    <link rel="stylesheet" href="/static/dashboard.css?v=20260716-4" />
+    <script src="/static/dashboard.js?v=20260716-4" defer></script>
   </head>
   <body class="roomio-grid-bg auth-page">
     <header class="site-header auth-header">
@@ -32,27 +32,10 @@
               required
             />
           </label>
-          <label>
-            Mật khẩu
-            <input
-              class="input"
-              type="password"
-              name="owner_token"
-              placeholder="sz_owner_..."
-              autocomplete="current-password"
-              required
-            />
-          </label>
           <div class="control-actions">
             <button type="submit" class="btn btn-primary">Đăng nhập</button>
-            {{if .SignupEnabled}}
-            <a href="/signup" class="btn btn-ghost">Tạo quán mới</a>
-            {{end}}
           </div>
         </form>
-        <p class="auth-legacy">
-          <a class="auth-legacy-link" href="/login/legacy">Đăng nhập bằng mã cửa hàng (legacy)</a>
-        </p>
       </section>
     </main>
   </body>

@@ -64,21 +64,18 @@ func TestProvisionDashboardAccount(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	creds, err := repo.ProvisionDashboardAccount(ctx, shopRow.ID, "demo.cafe", "starter")
+	account, err := repo.ProvisionDashboardAccount(ctx, shopRow.ID, "demo.cafe", "starter")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if creds.OwnerToken == "" {
-		t.Fatal("expected owner token")
+	if account.DashboardUsername != "demo.cafe" {
+		t.Fatalf("username = %q", account.DashboardUsername)
 	}
-	if creds.Shop.DashboardUsername != "demo.cafe" {
-		t.Fatalf("username = %q", creds.Shop.DashboardUsername)
-	}
-	if creds.Shop.Plan != "starter" {
-		t.Fatalf("plan = %q", creds.Shop.Plan)
+	if account.Plan != "starter" {
+		t.Fatalf("plan = %q", account.Plan)
 	}
 
-	got, err := repo.VerifyDashboardCredentials(ctx, "demo.cafe", creds.OwnerToken)
+	got, err := repo.ByDashboardUsername(ctx, " Demo.Cafe ")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -108,29 +105,6 @@ func TestProvisionDuplicateUsername(t *testing.T) {
 	}
 }
 
-func TestVerifyDashboardCredentialsWrongToken(t *testing.T) {
-	ctx := context.Background()
-	client := newTestClient(t)
-	repo := &ShopRepo{client: client}
-
-	shopRow, err := client.Shop.Create().
-		SetName("Verify Cafe").
-		SetTimezone("UTC").
-		SetInviteCode("ver01").
-		SetTelegramGroupID(0).
-		Save(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	creds, err := repo.ProvisionDashboardAccount(ctx, shopRow.ID, "verify", "free")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if _, err := repo.VerifyDashboardCredentials(ctx, "verify", creds.OwnerToken+"x"); !errors.Is(err, ErrInvalidCredentials) {
-		t.Fatalf("got %v", err)
-	}
-}
-
 func TestUpdatePlan(t *testing.T) {
 	ctx := context.Background()
 	client := newTestClient(t)
@@ -145,7 +119,7 @@ func TestUpdatePlan(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	creds, err := repo.ProvisionDashboardAccount(ctx, shopRow.ID, "plan", "free")
+	account, err := repo.ProvisionDashboardAccount(ctx, shopRow.ID, "plan", "free")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -156,41 +130,9 @@ func TestUpdatePlan(t *testing.T) {
 	if updated.Plan != "pro" {
 		t.Fatalf("plan = %q", updated.Plan)
 	}
-	if _, err := repo.VerifyDashboardCredentials(ctx, "plan", creds.OwnerToken); err != nil {
-		t.Fatalf("token should still work: %v", err)
-	}
-}
-
-func TestRotateDashboardTokenInvalidatesOld(t *testing.T) {
-	ctx := context.Background()
-	client := newTestClient(t)
-	repo := &ShopRepo{client: client}
-
-	shopRow, err := client.Shop.Create().
-		SetName("Rotate Cafe").
-		SetTimezone("UTC").
-		SetInviteCode("rot01").
-		SetTelegramGroupID(0).
-		Save(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	first, err := repo.ProvisionDashboardAccount(ctx, shopRow.ID, "rotate", "free")
-	if err != nil {
-		t.Fatal(err)
-	}
-	second, err := repo.RotateDashboardToken(ctx, shopRow.ID)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if second.OwnerToken == first.OwnerToken {
-		t.Fatal("expected new token")
-	}
-	if _, err := repo.VerifyDashboardCredentials(ctx, "rotate", first.OwnerToken); !errors.Is(err, ErrInvalidCredentials) {
-		t.Fatalf("old token should fail: %v", err)
-	}
-	if _, err := repo.VerifyDashboardCredentials(ctx, "rotate", second.OwnerToken); err != nil {
-		t.Fatalf("new token should work: %v", err)
+	got, err := repo.ByDashboardUsername(ctx, "plan")
+	if err != nil || got.ID != account.ID {
+		t.Fatalf("dashboard account lookup: shop=%v err=%v", got, err)
 	}
 }
 

@@ -21,8 +21,8 @@ func NewProvisionService(st *store.Store) *ProvisionService {
 	return &ProvisionService{client: st.Client}
 }
 
-// CreateShopWithAccount creates a shop, provisions dashboard credentials, and optional default shifts atomically.
-func (p *ProvisionService) CreateShopWithAccount(ctx context.Context, name, timezone, username, plan string, createDefaultShifts bool) (*store.ProvisionedCredentials, error) {
+// CreateShopWithAccount creates a shop, provisions dashboard access, and optional default shifts atomically.
+func (p *ProvisionService) CreateShopWithAccount(ctx context.Context, name, timezone, username, plan string, createDefaultShifts bool) (*store.Shop, error) {
 	if _, err := time.LoadLocation(timezone); err != nil {
 		return nil, fmt.Errorf("admin: invalid timezone %q: %w", timezone, err)
 	}
@@ -42,7 +42,7 @@ func (p *ProvisionService) CreateShopWithAccount(ctx context.Context, name, time
 		rollback()
 		return nil, err
 	}
-	creds, err := shops.ProvisionDashboardAccount(ctx, shop.ID, username, plan)
+	shop, err = shops.ProvisionDashboardAccount(ctx, shop.ID, username, plan)
 	if err != nil {
 		rollback()
 		return nil, err
@@ -56,7 +56,7 @@ func (p *ProvisionService) CreateShopWithAccount(ctx context.Context, name, time
 	if err := tx.Commit(); err != nil {
 		return nil, fmt.Errorf("admin: commit tx: %w", err)
 	}
-	return creds, nil
+	return shop, nil
 }
 
 // ShopService adapts store.ShopRepo for admin handlers.
@@ -73,7 +73,7 @@ func (s *ShopService) ListAll(ctx context.Context) ([]*store.Shop, error) {
 	return s.shops.ListAll(ctx)
 }
 
-func (s *ShopService) ProvisionDashboardAccount(ctx context.Context, shopID, username, plan string) (*store.ProvisionedCredentials, error) {
+func (s *ShopService) ProvisionDashboardAccount(ctx context.Context, shopID, username, plan string) (*store.Shop, error) {
 	id, err := uuid.Parse(shopID)
 	if err != nil {
 		return nil, store.ErrNotFound
@@ -87,12 +87,4 @@ func (s *ShopService) UpdatePlan(ctx context.Context, shopID, plan string) (*sto
 		return nil, store.ErrNotFound
 	}
 	return s.shops.UpdatePlan(ctx, id, plan)
-}
-
-func (s *ShopService) RotateDashboardToken(ctx context.Context, shopID string) (*store.ProvisionedCredentials, error) {
-	id, err := uuid.Parse(shopID)
-	if err != nil {
-		return nil, store.ErrNotFound
-	}
-	return s.shops.RotateDashboardToken(ctx, id)
 }

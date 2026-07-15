@@ -18,8 +18,7 @@ type shopReader interface {
 }
 
 type shopAuthenticator interface {
-	VerifyDashboardToken(ctx context.Context, shopID uuid.UUID, token string) (*store.Shop, error)
-	VerifyDashboardCredentials(ctx context.Context, username, token string) (*store.Shop, error)
+	ByDashboardUsername(ctx context.Context, username string) (*store.Shop, error)
 }
 
 type scheduleRepo interface {
@@ -88,11 +87,7 @@ func New(st *store.Store, sessions *SessionManager, onboard shopOnboarder, signu
 func (s *Server) Register(mux *http.ServeMux) {
 	mux.HandleFunc("GET /login", s.handleLoginGET)
 	mux.HandleFunc("POST /login", s.handleLoginPOST)
-	mux.HandleFunc("GET /login/legacy", s.handleLegacyLoginGET)
-	mux.HandleFunc("POST /login/legacy", s.handleLegacyLoginPOST)
 	mux.HandleFunc("POST /logout", s.handleLogout)
-	mux.HandleFunc("GET /signup", s.handleSignupGET)
-	mux.HandleFunc("POST /signup", s.handleSignupPOST)
 	mux.HandleFunc("GET /{$}", s.handleIndex)
 	mux.HandleFunc("GET /dashboard/week", s.handleWeek)
 	mux.HandleFunc("POST /dashboard/generate", s.handleGenerate)

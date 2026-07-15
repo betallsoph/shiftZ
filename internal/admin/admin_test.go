@@ -167,8 +167,8 @@ func TestAdminCreateShopSuccess(t *testing.T) {
 	if rec.Code != http.StatusOK {
 		t.Fatalf("status = %d body = %s", rec.Code, rec.Body.String())
 	}
-	if !strings.Contains(rec.Body.String(), "sz_owner_") {
-		t.Fatalf("expected owner token in body")
+	if strings.Contains(rec.Body.String(), "sz_owner_") {
+		t.Fatalf("owner token must not be shown")
 	}
 	if !strings.Contains(rec.Body.String(), "new.cafe") {
 		t.Fatalf("expected username in body")
@@ -268,8 +268,11 @@ func TestAdminProvisionExistingShop(t *testing.T) {
 	addAdminCookie(t, srv, req)
 	rec := httptest.NewRecorder()
 	mux.ServeHTTP(rec, req)
-	if rec.Code != http.StatusOK || !strings.Contains(rec.Body.String(), "sz_owner_") {
+	if rec.Code != http.StatusOK || !strings.Contains(rec.Body.String(), "existing.shop") {
 		t.Fatalf("status=%d body=%q", rec.Code, rec.Body.String())
+	}
+	if strings.Contains(rec.Body.String(), "sz_owner_") {
+		t.Fatal("owner token must not be shown")
 	}
 }
 
@@ -280,7 +283,7 @@ func TestAdminUpdatePlan(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	creds, err := st.Shops.ProvisionDashboardAccount(ctx, shop.ID, "plan.shop", "free")
+	account, err := st.Shops.ProvisionDashboardAccount(ctx, shop.ID, "plan.shop", "free")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -293,7 +296,7 @@ func TestAdminUpdatePlan(t *testing.T) {
 	srv.Register(mux)
 	csrf := adminCSRF(t, srv)
 	form := url.Values{"csrf_token": {csrf}, "plan": {"starter"}}
-	req := httptest.NewRequest(http.MethodPost, "/admin/shops/"+creds.Shop.ID.String()+"/plan", strings.NewReader(form.Encode()))
+	req := httptest.NewRequest(http.MethodPost, "/admin/shops/"+account.ID.String()+"/plan", strings.NewReader(form.Encode()))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	addAdminCookie(t, srv, req)
 	rec := httptest.NewRecorder()
@@ -301,7 +304,7 @@ func TestAdminUpdatePlan(t *testing.T) {
 	if rec.Code != http.StatusSeeOther {
 		t.Fatalf("status=%d", rec.Code)
 	}
-	updated, err := st.Shops.ByID(ctx, creds.Shop.ID)
+	updated, err := st.Shops.ByID(ctx, account.ID)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -310,36 +313,13 @@ func TestAdminUpdatePlan(t *testing.T) {
 	}
 }
 
-func TestAdminRotateToken(t *testing.T) {
-	st := newAdminTestClient(t)
-	ctx := context.Background()
-	shop, err := st.Shops.Create(ctx, "Rotate", "UTC", 0)
-	if err != nil {
-		t.Fatal(err)
-	}
-	first, err := st.Shops.ProvisionDashboardAccount(ctx, shop.ID, "rotate.shop", "free")
-	if err != nil {
-		t.Fatal(err)
-	}
-	cfg := testAdminConfig(t, "adminuser", "pass")
-	srv, err := New(cfg, NewProvisionService(st), NewShopService(st), slog.New(slog.NewTextHandler(io.Discard, nil)))
-	if err != nil {
-		t.Fatal(err)
-	}
-	mux := http.NewServeMux()
-	srv.Register(mux)
-	csrf := adminCSRF(t, srv)
-	form := url.Values{"csrf_token": {csrf}, "confirm": {"yes"}}
-	req := httptest.NewRequest(http.MethodPost, "/admin/shops/"+shop.ID.String()+"/rotate-owner-token", strings.NewReader(form.Encode()))
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	addAdminCookie(t, srv, req)
+func TestAdminRotateTokenRouteRemoved(t *testing.T) {
+	_, mux := testAdminServer(t, "adminuser", "pass")
+	req := httptest.NewRequest(http.MethodPost, "/admin/shops/"+uuid.NewString()+"/rotate-owner-token", nil)
 	rec := httptest.NewRecorder()
 	mux.ServeHTTP(rec, req)
-	if rec.Code != http.StatusOK || !strings.Contains(rec.Body.String(), "sz_owner_") {
-		t.Fatalf("status=%d", rec.Code)
-	}
-	if strings.Contains(rec.Body.String(), first.OwnerToken) {
-		t.Fatal("old token should not appear")
+	if rec.Code != http.StatusNotFound {
+		t.Fatalf("status=%d, want 404", rec.Code)
 	}
 }
 
@@ -406,23 +386,20 @@ func adminCSRF(t *testing.T, srv *Server) string {
 
 type fakeProvisioner struct{}
 
-func (f *fakeProvisioner) CreateShopWithAccount(ctx context.Context, name, timezone, username, plan string, createDefaultShifts bool) (*store.ProvisionedCredentials, error) {
+func (f *fakeProvisioner) CreateShopWithAccount(ctx context.Context, name, timezone, username, plan string, createDefaultShifts bool) (*store.Shop, error) {
 	_ = ctx
 	_ = timezone
 	_ = createDefaultShifts
 	if username == "dup.user" {
 		return nil, store.ErrAlreadyExists
 	}
-	return &store.ProvisionedCredentials{
-		Shop: &store.Shop{
-			ID:                uuid.New(),
-			Name:              name,
-			Timezone:          "UTC",
-			InviteCode:        "invite01",
-			Plan:              plan,
-			DashboardUsername: username,
-		},
-		OwnerToken: "sz_owner_" + strings.Repeat("c", 48),
+	return &store.Shop{
+		ID:                uuid.New(),
+		Name:              name,
+		Timezone:          "UTC",
+		InviteCode:        "invite01",
+		Plan:              plan,
+		DashboardUsername: username,
 	}, nil
 }
 
@@ -437,15 +414,11 @@ func (f *fakeShopAdmin) ListAll(context.Context) ([]*store.Shop, error) {
 	}}, nil
 }
 
-func (f *fakeShopAdmin) ProvisionDashboardAccount(context.Context, string, string, string) (*store.ProvisionedCredentials, error) {
+func (f *fakeShopAdmin) ProvisionDashboardAccount(context.Context, string, string, string) (*store.Shop, error) {
 	return nil, store.ErrNotFound
 }
 
 func (f *fakeShopAdmin) UpdatePlan(context.Context, string, string) (*store.Shop, error) {
-	return nil, store.ErrNotFound
-}
-
-func (f *fakeShopAdmin) RotateDashboardToken(context.Context, string) (*store.ProvisionedCredentials, error) {
 	return nil, store.ErrNotFound
 }
 

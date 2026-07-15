@@ -14,13 +14,12 @@ import (
 
 // ShopProvisioner creates shops with dashboard accounts for the admin portal.
 type ShopProvisioner interface {
-	CreateShopWithAccount(ctx context.Context, name, timezone, username, plan string, createDefaultShifts bool) (*store.ProvisionedCredentials, error)
+	CreateShopWithAccount(ctx context.Context, name, timezone, username, plan string, createDefaultShifts bool) (*store.Shop, error)
 }
 type ShopAdmin interface {
 	ListAll(ctx context.Context) ([]*store.Shop, error)
-	ProvisionDashboardAccount(ctx context.Context, shopID string, username, plan string) (*store.ProvisionedCredentials, error)
+	ProvisionDashboardAccount(ctx context.Context, shopID string, username, plan string) (*store.Shop, error)
 	UpdatePlan(ctx context.Context, shopID, plan string) (*store.Shop, error)
-	RotateDashboardToken(ctx context.Context, shopID string) (*store.ProvisionedCredentials, error)
 }
 
 // Server renders the platform admin portal.
@@ -80,7 +79,6 @@ func (s *Server) Register(mux *http.ServeMux) {
 	mux.HandleFunc("POST /admin/shops", s.handleCreateShopPOST)
 	mux.HandleFunc("POST /admin/shops/{id}/provision", s.handleProvisionPOST)
 	mux.HandleFunc("POST /admin/shops/{id}/plan", s.handleUpdatePlanPOST)
-	mux.HandleFunc("POST /admin/shops/{id}/rotate-owner-token", s.handleRotateTokenPOST)
 }
 
 func (s *Server) now() time.Time { return time.Now().UTC() }
@@ -135,6 +133,6 @@ func formatUsername(username string) string {
 // noopProvisioner satisfies compile-time checks in tests.
 type noopProvisioner struct{}
 
-func (noopProvisioner) CreateShopWithAccount(context.Context, string, string, string, string, bool) (*store.ProvisionedCredentials, error) {
+func (noopProvisioner) CreateShopWithAccount(context.Context, string, string, string, string, bool) (*store.Shop, error) {
 	return nil, fmt.Errorf("admin: not implemented")
 }
