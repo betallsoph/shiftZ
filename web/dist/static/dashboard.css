@@ -160,9 +160,9 @@ body {
   max-width: calc(100vw - 64px);
 }
 
-.auth-container {
+.container.auth-container {
   width: 100%;
-  max-width: 340px;
+  max-width: 476px;
   margin: 0 auto;
   padding-top: 24px;
 }
@@ -944,7 +944,7 @@ body {
     width: 160px;
   }
 
-  .auth-container {
+  .container.auth-container {
     max-width: 320px;
     padding-top: 18px;
   }
