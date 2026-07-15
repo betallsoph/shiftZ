@@ -37,12 +37,6 @@ type ShopDirectory interface {
 	ByID(ctx context.Context, id uuid.UUID) (*store.Shop, error)
 }
 
-// TelegramGroupSetup verifies setup codes and connects Telegram groups.
-type TelegramGroupSetup interface {
-	VerifyTelegramSetupCode(ctx context.Context, code string, now time.Time) (*store.Shop, error)
-	SetTelegramGroup(ctx context.Context, shopID uuid.UUID, groupID int64) error
-}
-
 // EmployeeDirectory is the slice of the store the bot needs to identify and
 // enroll employees. Satisfied by *store.EmployeeRepo.
 type EmployeeDirectory interface {
@@ -66,7 +60,6 @@ type Bot struct {
 	api          Messenger
 	parser       AvailabilityParser
 	shops        ShopDirectory
-	groupSetup   TelegramGroupSetup
 	employees    EmployeeDirectory
 	availability AvailabilityStore
 	votes        VoteStore
@@ -79,7 +72,6 @@ func NewBot(
 	api Messenger,
 	parser AvailabilityParser,
 	shops ShopDirectory,
-	groupSetup TelegramGroupSetup,
 	employees EmployeeDirectory,
 	availability AvailabilityStore,
 	votes VoteStore,
@@ -93,7 +85,6 @@ func NewBot(
 		api:          api,
 		parser:       parser,
 		shops:        shops,
-		groupSetup:   groupSetup,
 		employees:    employees,
 		availability: availability,
 		votes:        votes,
@@ -121,17 +112,12 @@ func (b *Bot) handleMessage(ctx context.Context, m *Message) error {
 	text := strings.TrimSpace(m.Text)
 
 	if isGroupChat(m.Chat) {
-		if strings.HasPrefix(text, "/setup") {
-			return b.handleSetup(ctx, m, text)
-		}
 		return nil
 	}
 
 	switch {
 	case strings.HasPrefix(text, "/start"):
 		return b.handleStart(ctx, m, strings.TrimSpace(strings.TrimPrefix(text, "/start")))
-	case strings.HasPrefix(text, "/setup"):
-		return b.handleSetup(ctx, m, text)
 	case text != "":
 		return b.handleAvailabilityText(ctx, m, text)
 	default:
@@ -158,28 +144,6 @@ func (b *Bot) handleStart(ctx context.Context, m *Message, inviteCode string) er
 	}
 	return b.api.SendMessage(ctx, m.Chat.ID,
 		fmt.Sprintf("Welcome, %s! You're on the roster. Send me your availability for next week whenever you're ready — plain language is fine.", emp.DisplayName), nil)
-}
-
-func (b *Bot) handleSetup(ctx context.Context, m *Message, text string) error {
-	if m.Chat.Type != "group" && m.Chat.Type != "supergroup" {
-		return b.api.SendMessage(ctx, m.Chat.ID, "Lệnh này cần gửi trong group Telegram của quán.", nil)
-	}
-	fields := strings.Fields(text)
-	if len(fields) < 2 {
-		return b.api.SendMessage(ctx, m.Chat.ID, "Cách dùng: /setup tg_setup_...", nil)
-	}
-	code := fields[1]
-	shop, err := b.groupSetup.VerifyTelegramSetupCode(ctx, code, time.Now())
-	if errors.Is(err, store.ErrInvalidCredentials) || errors.Is(err, store.ErrExpiredSetupCode) {
-		return b.api.SendMessage(ctx, m.Chat.ID, "Mã setup không hợp lệ hoặc đã hết hạn. Tạo mã mới trong dashboard nhé.", nil)
-	}
-	if err != nil {
-		return fmt.Errorf("telegram: verify setup code: %w", err)
-	}
-	if err := b.groupSetup.SetTelegramGroup(ctx, shop.ID, m.Chat.ID); err != nil {
-		return fmt.Errorf("telegram: set telegram group: %w", err)
-	}
-	return b.api.SendMessage(ctx, m.Chat.ID, fmt.Sprintf("Đã kết nối group này với %s.", shop.Name), nil)
 }
 
 func (b *Bot) handleAvailabilityText(ctx context.Context, m *Message, text string) error {

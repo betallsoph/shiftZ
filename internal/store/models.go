@@ -14,9 +14,8 @@ type Shop struct {
 	Name                       string
 	Timezone                   string
 	InviteCode                 string
-	TelegramGroupID            int64
-	TelegramSetupCodeExpiresAt *time.Time
-	Plan                       string
+	TelegramGroupID int64
+	Plan            string
 	DashboardUsername          string
 	CreatedAt                  time.Time
 }
@@ -148,10 +147,6 @@ func shopFromEnt(m *ent.Shop) *Shop {
 		TelegramGroupID: m.TelegramGroupID,
 		Plan:            m.Plan,
 		CreatedAt:       m.CreatedAt,
-	}
-	if m.TelegramSetupCodeExpiresAt != nil {
-		t := *m.TelegramSetupCodeExpiresAt
-		s.TelegramSetupCodeExpiresAt = &t
 	}
 	if m.DashboardUsername != nil {
 		s.DashboardUsername = *m.DashboardUsername

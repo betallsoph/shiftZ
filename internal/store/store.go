@@ -32,9 +32,6 @@ var ErrNotFound = errors.New("store: not found")
 // ErrInvalidCredentials is returned when dashboard login credentials are wrong.
 var ErrInvalidCredentials = errors.New("store: invalid credentials")
 
-// ErrExpiredSetupCode is returned when a Telegram setup code has expired.
-var ErrExpiredSetupCode = errors.New("store: expired setup code")
-
 // ErrAlreadyExists is returned when schedules already exist for a shop week.
 var ErrAlreadyExists = errors.New("store: schedules already exist for shop week")
 

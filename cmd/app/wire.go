@@ -42,7 +42,7 @@ func wire(ctx context.Context, cfg *config.Config, st *store.Store, log *slog.Lo
 	llmSvc := llm.NewService(newProvider(cfg, log))
 	tg := telegram.NewClient(cfg.TelegramToken)
 	drafts := telegram.NewStoreAvailabilityDraftStore(st.AvailabilityDrafts)
-	bot := telegram.NewBot(tg, llmSvc, st.Shops, st.Shops, st.Employees, st.Availability, st.Votes, drafts, log)
+	bot := telegram.NewBot(tg, llmSvc, st.Shops, st.Employees, st.Availability, st.Votes, drafts, log)
 	mux.Handle("POST /telegram/webhook", telegram.WebhookHandler(bot, cfg.TelegramWebhookSecret, log))
 
 	sessions := dashboard.NewSessionManager(cfg.SessionSecret, cfg.CookieSecure)
