@@ -100,6 +100,44 @@ body {
   gap: 12px;
 }
 
+.auth-header {
+  max-width: 560px;
+  margin-top: 48px;
+  padding: 0 16px;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.auth-header .brand-heading {
+  justify-content: center;
+}
+
+.auth-header .brand-logo {
+  width: 420px;
+  max-width: calc(100vw - 64px);
+}
+
+.auth-container {
+  max-width: 560px;
+  padding-top: 28px;
+}
+
+.auth-panel {
+  padding: 0 16px 24px;
+}
+
+.auth-panel .alert {
+  margin-bottom: 16px;
+}
+
+.control-form.auth-form label {
+  font-size: 0.82rem;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
 .logout-form {
   margin: 0;
 }
@@ -849,6 +887,18 @@ body {
 
   .brand-logo {
     width: 146px;
+  }
+
+  .auth-header {
+    margin-top: 32px;
+  }
+
+  .auth-header .brand-logo {
+    width: 240px;
+  }
+
+  .auth-container {
+    padding-top: 20px;
   }
 
   .schedule-header {

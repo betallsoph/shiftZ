@@ -4,25 +4,24 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>shiftbot — Đăng nhập</title>
-    <link rel="stylesheet" href="/static/dashboard.css" />
+    <link rel="stylesheet" href="/static/dashboard.css?v=20260716-2" />
   </head>
-  <body class="roomio-grid-bg">
-    <header class="site-header">
+  <body class="roomio-grid-bg auth-page">
+    <header class="site-header auth-header">
       <h1 class="brand-heading">
         <a class="brand-link" href="/login" aria-label="ShiftBot">
-          <img class="brand-logo" src="/static/shiftbot-logo.png" alt="ShiftBot" />
+          <img class="brand-logo" src="/static/shiftbot-logo.png?v=20260716-2" alt="ShiftBot" />
         </a>
       </h1>
-      <p>Đăng nhập bảng xếp lịch chủ quán</p>
     </header>
-    <main class="container">
-      <section class="controls card">
+    <main class="container auth-container">
+      <section class="auth-panel">
         {{if .Error}}
         <div class="alert alert-error"><strong>Lỗi</strong> — {{.Error}}</div>
         {{end}}
-        <form method="post" action="/login" class="control-form">
+        <form method="post" action="/login" class="control-form auth-form">
           <label>
-            Dashboard username
+            Tên đăng nhập
             <input
               class="input"
               type="text"
@@ -33,7 +32,7 @@
             />
           </label>
           <label>
-            Mật khẩu được cấp
+            Mật khẩu
             <input
               class="input"
               type="password"
