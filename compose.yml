@@ -1,0 +1,57 @@
+name: shiftz-prod
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: shiftz:local
+    restart: unless-stopped
+    init: true
+    env_file:
+      - .env
+    environment:
+      APP_ADDR: :8088
+      REMINDER_MODE: ${SHIFTZ_REMINDER_MODE:-${REMINDER_MODE:-loop}}
+    ports:
+      - "127.0.0.1:${SHIFTZ_PORT:-8088}:8088"
+    read_only: true
+    tmpfs:
+      - /tmp:size=32m,mode=1777
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    cpus: ${SHIFTZ_CPUS:-0.70}
+    mem_limit: ${SHIFTZ_MEMORY:-768m}
+    pids_limit: 128
+    stop_grace_period: 15s
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8088/livez"]
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  migrate:
+    image: arigaio/atlas:1.2.2
+    restart: "no"
+    volumes:
+      - ./migrations:/migrations:ro
+    command:
+      - migrate
+      - apply
+      - --dir
+      - file:///migrations
+      - --revisions-schema
+      - public
+      - --url
+      - ${MIGRATION_DATABASE_URL:?MIGRATION_DATABASE_URL must be set in .env}

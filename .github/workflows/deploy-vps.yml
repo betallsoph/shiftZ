@@ -1,0 +1,60 @@
+name: Deploy VPS
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: shiftz-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy shiftZ
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: production
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          port: 22
+          command_timeout: 15m
+          script: |
+            set -euo pipefail
+            cd "${{ secrets.DEPLOY_PATH }}"
+
+            echo "==> Pull latest code"
+            git fetch origin main
+            git reset --hard origin/main
+
+            if [ ! -f .env ]; then
+              echo "Missing ${{ secrets.DEPLOY_PATH }}/.env"
+              exit 1
+            fi
+
+            echo "==> Build, migrate, and restart shiftZ on port 8088"
+            docker compose up -d --build --remove-orphans
+
+            echo "==> Wait for health checks"
+            healthy=false
+            for _ in $(seq 1 30); do
+              if curl -fsS http://127.0.0.1:8088/livez >/dev/null && \
+                 curl -fsS http://127.0.0.1:8088/readyz >/dev/null; then
+                healthy=true
+                break
+              fi
+              sleep 2
+            done
+
+            if [ "$healthy" != true ]; then
+              docker compose logs --tail=100 app migrate
+              exit 1
+            fi
+
+            docker compose ps
+            docker image prune -f
