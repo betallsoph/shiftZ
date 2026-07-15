@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>shiftbot — Đăng nhập</title>
-    <link rel="stylesheet" href="/static/dashboard.css?v=20260716-5" />
+    <link rel="stylesheet" href="/static/dashboard.css?v=20260716-6" />
     <script src="/static/dashboard.js?v=20260716-4" defer></script>
   </head>
   <body class="roomio-grid-bg auth-page">
@@ -17,9 +17,6 @@
     </header>
     <main class="container auth-container">
       <section class="auth-panel">
-        {{if .Error}}
-        <div class="alert alert-error"><strong>Lỗi</strong> — {{.Error}}</div>
-        {{end}}
         <form method="post" action="/login" class="control-form auth-form">
           <label>
             Tên đăng nhập
@@ -32,6 +29,9 @@
               required
             />
           </label>
+          {{if .Error}}
+          <p class="auth-error" role="alert">{{.Error}}</p>
+          {{end}}
           <div class="control-actions">
             <button type="submit" class="btn btn-primary">Đăng nhập</button>
           </div>

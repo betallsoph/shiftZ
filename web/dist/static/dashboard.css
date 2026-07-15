@@ -171,14 +171,17 @@ body {
   padding: 0 8px 24px;
 }
 
-.auth-panel .alert {
-  margin-bottom: 16px;
-}
-
 .control-form.auth-form label {
   font-size: 0.82rem;
   text-transform: none;
   letter-spacing: 0;
+}
+
+.auth-error {
+  margin: -4px 0 0;
+  color: #dc2626;
+  font-size: 0.82rem;
+  font-weight: 700;
 }
 
 .auth-form .control-actions {
