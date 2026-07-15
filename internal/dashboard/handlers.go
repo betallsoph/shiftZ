@@ -26,11 +26,12 @@ func (s *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := s.tmpl.render(w, "page.html", PageData{
-		Today:     time.Now().Format(dateLayout),
-		ShopName:  shop.Name,
-		Telegram:  buildTelegramSetupView(shop, "", time.Time{}, time.Now()),
-		Shifts:    s.loadShiftsPanelView(r.Context(), sess.ShopID),
-		Employees: s.loadEmployeesPanelView(r.Context(), sess.ShopID),
+		Today:      time.Now().Format(dateLayout),
+		ShopName:   shop.Name,
+		InviteCode: shop.InviteCode,
+		Telegram:   buildTelegramSetupView(shop, "", time.Time{}, time.Now()),
+		Shifts:     s.loadShiftsPanelView(r.Context(), sess.ShopID),
+		Employees:  s.loadEmployeesPanelView(r.Context(), sess.ShopID),
 	}); err != nil {
 		s.log.Error("render page", "err", err)
 		http.Error(w, "template error", http.StatusInternalServerError)

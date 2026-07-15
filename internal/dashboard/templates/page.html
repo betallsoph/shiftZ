@@ -4,34 +4,55 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>shiftbot</title>
-    <link rel="stylesheet" href="/static/dashboard.css?v=20260716-3" />
+    <link rel="stylesheet" href="/static/dashboard.css?v=20260716-7" />
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
-    <script src="/static/dashboard.js?v=20260716-3" defer></script>
+    <script src="/static/dashboard.js?v=20260716-4" defer></script>
   </head>
-  <body class="roomio-grid-bg">
-    <header class="site-header">
-      <div class="header-row">
-        <div>
-          <h1 class="brand-heading">
-            <a class="brand-link" href="/" aria-label="ShiftBot">
-              <img class="brand-logo" src="/static/shiftbot-logo.png?v=20260716-2" alt="ShiftBot" />
-            </a>
-          </h1>
-          <p>Bảng xếp lịch cho chủ quán{{if .ShopName}} — {{.ShopName}}{{end}}</p>
+  <body class="roomio-grid-bg dashboard-page">
+    <header class="dashboard-topbar">
+      <div class="dashboard-topbar-inner">
+        <a class="brand-link" href="/" aria-label="ShiftBot">
+          <img class="dashboard-logo" src="/static/shiftbot-logo.png?v=20260716-2" alt="ShiftBot" />
+        </a>
+        <div class="dashboard-account">
+          <span class="dashboard-shop-name">{{.ShopName}}</span>
+          <form method="post" action="/logout" class="logout-form">
+            <button type="submit" class="text-button">Đăng xuất</button>
+          </form>
         </div>
-        <form method="post" action="/logout" class="logout-form">
-          <button type="submit" class="btn btn-ghost btn-sm">Đăng xuất</button>
-        </form>
       </div>
     </header>
-    <main class="container">
-      {{template "telegram_setup.html" .Telegram}}
-      {{template "shifts_panel.html" .Shifts}}
-      {{template "employees_panel.html" .Employees}}
-      <section class="controls card">
-        <form id="week-form" class="control-form">
-          <label>
-            Tuần bắt đầu
+
+    <main class="dashboard-container">
+      <section class="dashboard-intro">
+        <div>
+          <p class="dashboard-eyebrow">Không gian quản lý</p>
+          <h1>Lịch làm việc</h1>
+          <p class="dashboard-subtitle">{{.ShopName}}</p>
+        </div>
+        {{if .InviteCode}}<div class="invite-code">
+          <span>Mã mời nhân viên</span>
+          <code>{{.InviteCode}}</code>
+        </div>{{end}}
+      </section>
+
+      <nav class="dashboard-tabs" aria-label="Điều hướng dashboard">
+        <a href="#schedule-section">Lịch tuần</a>
+        <a href="#employees-panel">Nhân viên</a>
+        <a href="#shifts-panel">Ca làm việc</a>
+        <a href="#telegram-setup">Telegram</a>
+      </nav>
+
+      <section id="schedule-section" class="dashboard-tool schedule-workspace">
+        <div class="panel-heading">
+          <div>
+            <p class="panel-kicker">Lịch tuần</p>
+            <h2>Xếp lịch</h2>
+          </div>
+        </div>
+        <form id="week-form" class="week-toolbar">
+          <label class="week-date-field">
+            <span>Tuần bắt đầu</span>
             <input class="input" type="date" name="week_start" value="{{.Today}}" />
           </label>
           <div class="control-actions">
@@ -57,10 +78,17 @@
             </button>
           </div>
         </form>
+        <section id="week-panel" class="week-panel">
+          {{template "empty.html" .}}
+        </section>
       </section>
-      <section id="week-panel" class="week-panel">
-        {{template "empty.html" .}}
-      </section>
+
+      {{template "employees_panel.html" .Employees}}
+
+      <div class="dashboard-settings-grid">
+        {{template "shifts_panel.html" .Shifts}}
+        {{template "telegram_setup.html" .Telegram}}
+      </div>
     </main>
   </body>
 </html>

@@ -1,7 +1,13 @@
-<section id="employees-panel" class="employees-panel card">
-  <h2 class="employees-heading">Nhân viên</h2>
+<section id="employees-panel" class="employees-panel dashboard-tool">
+  <div class="panel-heading">
+    <div>
+      <p class="panel-kicker">Đội ngũ</p>
+      <h2>Nhân viên</h2>
+    </div>
+  </div>
+
   {{if .Error}}
-  <div class="alert alert-error"><strong>Lỗi</strong> — {{.Error}}</div>
+  <p class="panel-error" role="alert">{{.Error}}</p>
   {{end}}
 
   {{if .Employees}}
@@ -9,20 +15,23 @@
     {{range .Employees}}
     <li class="employee-row{{if not .IsActive}} is-inactive{{end}}">
       <div class="employee-summary">
-        <div class="employee-meta">
-          <span class="employee-name">{{.DisplayName}}</span>
-          <span class="employee-role">{{.RoleLabel}}</span>
-          {{if .TelegramLinked}}
-          <span class="badge badge-telegram">đã liên kết</span>
-          {{end}}
-          <span class="employee-hours">{{.MaxHoursLabel}} giờ/tuần</span>
-          <span class="badge badge-employee-{{if .IsActive}}active{{else}}inactive{{end}}">{{.StatusLabel}}</span>
+        <div class="employee-avatar" aria-hidden="true">NV</div>
+        <div class="employee-primary">
+          <div class="employee-title-line">
+            <span class="employee-name">{{.DisplayName}}</span>
+            <span class="status-dot status-dot-{{if .IsActive}}active{{else}}muted{{end}}">{{.StatusLabel}}</span>
+          </div>
+          <div class="employee-meta">
+            <span>{{.RoleLabel}}</span>
+            <span>{{.MaxHoursLabel}} giờ/tuần</span>
+            {{if .TelegramLinked}}<span>Telegram đã liên kết</span>{{end}}
+          </div>
         </div>
         <div class="employee-actions">
           {{if .IsActive}}
           <button
             type="button"
-            class="btn btn-ghost btn-sm"
+            class="text-button text-button-danger"
             hx-post="/dashboard/employees/{{.ID}}/deactivate"
             hx-target="#employees-panel"
             hx-swap="outerHTML"
@@ -32,7 +41,7 @@
           {{else}}
           <button
             type="button"
-            class="btn btn-primary btn-sm"
+            class="text-button"
             hx-post="/dashboard/employees/{{.ID}}/activate"
             hx-target="#employees-panel"
             hx-swap="outerHTML"
@@ -42,37 +51,44 @@
           {{end}}
         </div>
       </div>
-      <form
-        class="employee-form control-form"
-        hx-post="/dashboard/employees/{{.ID}}"
-        hx-target="#employees-panel"
-        hx-swap="outerHTML"
-      >
-        {{if .FieldError}}
-        <div class="alert alert-error employee-field-error"><strong>Lỗi</strong> — {{.FieldError}}</div>
-        {{end}}
-        <div class="employee-form-row">
-          <label>
-            Tên hiển thị
-            <input class="input" type="text" name="display_name" value="{{.Form.DisplayName}}" required />
-          </label>
-          <label>
-            Vai trò
-            <input class="input" type="text" name="role" value="{{.Form.Role}}" placeholder="ví dụ: barista" />
-          </label>
-          <label>
-            Giờ/tuần
-            <input class="input" type="number" name="max_hours_per_week" min="0.1" max="168" step="0.5" value="{{.Form.MaxHoursPerWeek}}" required />
-          </label>
-        </div>
-        <div class="control-actions">
-          <button type="submit" class="btn btn-primary btn-sm">Lưu</button>
-        </div>
-      </form>
+
+      <details class="inline-editor employee-editor" {{if .FieldError}}open{{end}}>
+        <summary class="text-action">Chỉnh sửa thông tin</summary>
+        <form
+          class="employee-form control-form editor-form"
+          hx-post="/dashboard/employees/{{.ID}}"
+          hx-target="#employees-panel"
+          hx-swap="outerHTML"
+        >
+          {{if .FieldError}}
+          <p class="panel-error" role="alert">{{.FieldError}}</p>
+          {{end}}
+          <div class="employee-form-row">
+            <label>
+              Tên hiển thị
+              <input class="input" type="text" name="display_name" value="{{.Form.DisplayName}}" required />
+            </label>
+            <label>
+              Vai trò
+              <input class="input" type="text" name="role" value="{{.Form.Role}}" placeholder="Barista" />
+            </label>
+            <label>
+              Giờ mỗi tuần
+              <input class="input" type="number" name="max_hours_per_week" min="0.1" max="168" step="0.5" value="{{.Form.MaxHoursPerWeek}}" required />
+            </label>
+          </div>
+          <div class="control-actions">
+            <button type="submit" class="btn btn-primary btn-sm">Lưu thay đổi</button>
+          </div>
+        </form>
+      </details>
     </li>
     {{end}}
   </ul>
   {{else}}
-  <p class="meta">Chưa có nhân viên. Họ tham gia bằng <code>/start &lt;mã-mời&gt;</code> trong chat riêng với bot.</p>
+  <div class="compact-empty-state">
+    <p>Chưa có nhân viên.</p>
+    <span>Gửi mã mời phía trên để nhân viên tham gia qua Telegram.</span>
+  </div>
   {{end}}
 </section>

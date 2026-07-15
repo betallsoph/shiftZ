@@ -1,37 +1,39 @@
-<section id="telegram-setup" class="telegram-setup card">
-  <h2 class="telegram-setup-heading">Telegram group</h2>
+<section id="telegram-setup" class="telegram-setup dashboard-tool">
+  <div class="panel-heading panel-heading-compact">
+    <div>
+      <p class="panel-kicker">Kết nối</p>
+      <h2>Telegram</h2>
+    </div>
+    <span class="status-dot status-dot-{{if .Connected}}active{{else}}muted{{end}}">
+      {{if .Connected}}Đã kết nối{{else}}Chưa kết nối{{end}}
+    </span>
+  </div>
+
   {{if .Connected}}
-  <p class="telegram-status"><span class="badge badge-availability-submitted">Đã kết nối</span></p>
-  <p class="meta">Group chat ID: <code>{{.TelegramGroupID}}</code></p>
+  <p class="panel-meta">Group chat ID <code>{{.TelegramGroupID}}</code></p>
   {{else}}
-  <p class="telegram-status"><span class="badge badge-availability-missing">Chưa kết nối</span></p>
-  {{if .SetupCode}}
-  <dl class="credential-list">
-    <div class="credential-row">
-      <dt>Mã setup</dt>
-      <dd><code>{{.SetupCode}}</code></dd>
+    {{if .SetupCode}}
+    <div class="setup-code-block">
+      <span>Mã setup</span>
+      <code>{{.SetupCode}}</code>
+      {{if .SetupExpiresAt}}<small>Hết hạn {{.SetupExpiresAt}}</small>{{end}}
     </div>
-    {{if .SetupExpiresAt}}
-    <div class="credential-row">
-      <dt>Hết hạn</dt>
-      <dd>{{.SetupExpiresAt}}</dd>
-    </div>
+    <ol class="setup-steps">
+      <li>Thêm bot vào group Telegram của quán.</li>
+      <li>Gửi <code>/setup {{.SetupCode}}</code> trong group.</li>
+    </ol>
+    {{else if .HasPendingSetup}}
+    <p class="panel-meta">Đang có một mã setup còn hiệu lực.</p>
+    {{else}}
+    <p class="panel-meta">Kết nối group để bot có thể làm việc cùng quán.</p>
     {{end}}
-  </dl>
-  <ol class="setup-steps">
-    <li>Thêm bot vào group Telegram của quán.</li>
-    <li>Trong group, gửi: <code>/setup {{.SetupCode}}</code></li>
-  </ol>
-  {{else if .HasPendingSetup}}
-  <p class="meta">Đã có mã setup đang hiệu lực. Tạo mã mới nếu cần (mã cũ sẽ bị thay).</p>
-  {{end}}
-  <form
-    hx-post="/dashboard/telegram/setup-code"
-    hx-target="#telegram-setup"
-    hx-swap="outerHTML"
-    class="inline-form"
-  >
-    <button type="submit" class="btn btn-ghost btn-sm">Tạo mã setup mới</button>
-  </form>
+    <form
+      hx-post="/dashboard/telegram/setup-code"
+      hx-target="#telegram-setup"
+      hx-swap="outerHTML"
+      class="panel-footer-action"
+    >
+      <button type="submit" class="btn btn-ghost btn-sm">{{if .SetupCode}}Tạo mã khác{{else}}Tạo mã setup{{end}}</button>
+    </form>
   {{end}}
 </section>
