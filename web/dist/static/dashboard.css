@@ -1072,7 +1072,9 @@ body {
 
 .dashboard-shop-title {
   margin: 0;
+  font-family: var(--font-sans);
   font-size: 2rem;
+  font-weight: 700;
   line-height: 1.15;
   letter-spacing: 0;
 }
@@ -1168,10 +1170,11 @@ body {
 .dashboard-section-title {
   margin: 0 0 12px;
   color: #2563eb;
+  font-family: var(--font-sans);
   font-size: 1.75rem;
   font-weight: 700;
   line-height: 1.15;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
 }
 
 .dashboard-section-header .dashboard-section-title {
