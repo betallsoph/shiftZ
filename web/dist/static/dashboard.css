@@ -1,4 +1,4 @@
-/* Roomio Soft Neobrutalism — plain CSS port for shiftZ dashboard */
+/* Roomio Soft Neobrutalism — plain CSS port for the ShiftBot dashboard */
 
 :root {
   --shadow-primary: 4px 4px 0 -1px #000;
@@ -49,11 +49,41 @@ body {
   box-shadow: var(--shadow-primary);
 }
 
-.site-header h1 {
+.brand-heading {
   margin: 0;
-  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.brand-link {
+  display: inline-flex;
+  align-items: center;
+  color: inherit;
+  text-decoration: none;
+}
+
+.brand-link:focus-visible {
+  outline: 2px solid #000;
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+.brand-logo {
+  display: block;
+  width: 168px;
+  max-width: 100%;
+  height: auto;
+  mix-blend-mode: multiply;
+}
+
+.brand-context {
+  padding-left: 10px;
+  border-left: 2px solid #000;
+  font-size: 0.75rem;
   font-weight: 900;
-  letter-spacing: -0.02em;
+  text-transform: uppercase;
 }
 
 .site-header p {
@@ -815,6 +845,10 @@ body {
 @media (max-width: 600px) {
   .site-header {
     margin-top: 12px;
+  }
+
+  .brand-logo {
+    width: 146px;
   }
 
   .schedule-header {
