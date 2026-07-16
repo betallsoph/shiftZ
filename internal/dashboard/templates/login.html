@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>shiftbot — Đăng nhập</title>
-    <link rel="stylesheet" href="/static/dashboard.css?v=20260716-22" />
+    <link rel="stylesheet" href="/static/dashboard.css?v=20260716-23" />
     <script src="/static/dashboard.js?v=20260716-8" defer></script>
   </head>
   <body class="roomio-grid-bg auth-page">
@@ -26,10 +26,8 @@
           </div>
           <input type="hidden" name="login_step" value="password" />
           <div class="auth-password-step">
-            <p class="auth-password-step-title">
-              {{if .SetPassword}}Đặt mật khẩu{{else}}Nhập mật khẩu{{end}}
-            </p>
             {{if .SetPassword}}
+            <p class="auth-password-step-title">Đặt mật khẩu</p>
             <p class="auth-password-step-hint">
               Lần đầu đăng nhập. Hãy tạo mật khẩu cho tài khoản.
             </p>
@@ -45,19 +43,38 @@
               />
             </label>
             {{end}}
+            {{if not .SetPassword}}
+            <div class="auth-password-label-row">
+              <span class="auth-field-label">Mật khẩu</span>
+              <form method="post" action="/login" class="auth-forgot-form auth-forgot-form--inline">
+                <input type="hidden" name="dashboard_username" value="{{.Username}}" />
+                <input type="hidden" name="login_step" value="forgot_password" />
+                <button type="submit" class="auth-forgot-link">Quên mật khẩu?</button>
+              </form>
+            </div>
+            <label class="auth-password-field">
+              <input
+                class="input"
+                type="password"
+                name="dashboard_password"
+                autocomplete="current-password"
+                minlength="6"
+                required
+                autofocus
+              />
+            </label>
+            {{else}}
             <label>
               Mật khẩu
               <input
                 class="input"
                 type="password"
                 name="dashboard_password"
-                autocomplete="{{if .SetPassword}}new-password{{else}}current-password{{end}}"
+                autocomplete="new-password"
                 minlength="6"
                 required
-                {{if not .SetPassword}}autofocus{{end}}
               />
             </label>
-            {{if .SetPassword}}
             <label>
               Xác nhận mật khẩu
               <input
@@ -114,14 +131,6 @@
           </div>
           {{end}}
         </form>
-
-        {{if and .ShowPasswordModal (not .SetPassword)}}
-        <form method="post" action="/login" class="auth-forgot-form">
-          <input type="hidden" name="dashboard_username" value="{{.Username}}" />
-          <input type="hidden" name="login_step" value="forgot_password" />
-          <button type="submit" class="auth-forgot-link">Quên mật khẩu?</button>
-        </form>
-        {{end}}
       </section>
     </main>
   </body>

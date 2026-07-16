@@ -221,6 +221,27 @@ body {
   text-align: center;
 }
 
+.auth-forgot-form--inline {
+  margin: 0;
+  text-align: right;
+}
+
+.auth-password-label-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.auth-field-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.auth-password-field {
+  margin-top: 0;
+}
+
 .auth-forgot-link {
   background: none;
   border: none;
@@ -230,11 +251,12 @@ body {
   font-weight: 600;
   color: #6b7280;
   cursor: pointer;
-  text-decoration: underline;
+  text-decoration: none;
 }
 
 .auth-forgot-link:hover {
   color: #111827;
+  text-decoration: none;
 }
 
 .auth-reset-panel {
