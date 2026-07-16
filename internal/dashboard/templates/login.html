@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>shiftbot — Đăng nhập</title>
-    <link rel="stylesheet" href="/static/dashboard.css?v=20260716-18" />
+    <link rel="stylesheet" href="/static/dashboard.css?v=20260716-19" />
     <script src="/static/dashboard.js?v=20260716-6" defer></script>
   </head>
   <body class="roomio-grid-bg auth-page">
@@ -18,25 +18,12 @@
     <main class="container auth-container">
       <section class="auth-panel">
         <form method="post" action="/login" class="control-form auth-form">
-          <label>
-            Tên đăng nhập
-            {{if .ShowPasswordModal}}
-            <span class="auth-username-value">{{.Username}}</span>
-            <input type="hidden" name="dashboard_username" value="{{.Username}}" />
-            {{else}}
-            <input
-              class="input"
-              type="text"
-              name="dashboard_username"
-              placeholder="demo.cafe"
-              autocomplete="username"
-              value="{{.Username}}"
-              required
-            />
-            {{end}}
-          </label>
-
           {{if .ShowPasswordModal}}
+          <div class="auth-username-locked">
+            <p class="auth-username-locked-value">{{.Username}}</p>
+            <input type="hidden" name="dashboard_username" value="{{.Username}}" />
+            <hr class="auth-username-divider" />
+          </div>
           <input type="hidden" name="login_step" value="password" />
           <div class="auth-password-step">
             <p class="auth-password-step-title">
@@ -107,6 +94,18 @@
             </div>
           </div>
           {{else}}
+          <label>
+            Tên đăng nhập
+            <input
+              class="input"
+              type="text"
+              name="dashboard_username"
+              placeholder="demo.cafe"
+              autocomplete="username"
+              value="{{.Username}}"
+              required
+            />
+          </label>
           {{if .Error}}
           <p class="auth-error" role="alert">{{.Error}}</p>
           {{end}}

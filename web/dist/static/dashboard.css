@@ -262,33 +262,45 @@ body {
   justify-content: center;
 }
 
-.auth-username-value {
-  display: block;
-  padding: 10px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 10px;
-  background: #f9fafb;
+.auth-username-locked {
+  text-align: center;
+}
+
+.auth-username-locked-value {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 800;
   color: #111827;
-  font-size: 0.95rem;
-  font-weight: 700;
   line-height: 1.35;
+}
+
+.auth-username-divider {
+  width: 72px;
+  margin: 14px auto 4px;
+  border: 0;
+  border-top: 1px solid #e5e7eb;
 }
 
 .auth-password-step {
   display: grid;
   gap: 12px;
-  margin-top: 4px;
-  animation: auth-password-step-in 220ms ease-out;
+  margin-top: 12px;
+  transform-origin: top center;
+  animation: auth-spring-bounce 520ms cubic-bezier(0.22, 1.28, 0.36, 1) both;
 }
 
-@keyframes auth-password-step-in {
-  from {
+@keyframes auth-spring-bounce {
+  0% {
     opacity: 0;
-    transform: translateY(8px);
+    transform: scale(0.95);
   }
-  to {
+  70% {
     opacity: 1;
-    transform: translateY(0);
+    transform: scale(1.012);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
   }
 }
 
