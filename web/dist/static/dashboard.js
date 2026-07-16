@@ -126,8 +126,9 @@
     'pointerover',
     (event) => {
       if (!(event.target instanceof Element)) return;
-      const action = event.target.closest('.modal-action');
-      if (!action || action.matches(':disabled')) return;
+      const action = event.target.closest('.toolbar-action, .modal-action, .btn');
+      if (!action || action.matches(':disabled, [aria-disabled="true"]')) return;
+      if (event.relatedTarget instanceof Node && action.contains(event.relatedTarget)) return;
       const bounds = action.getBoundingClientRect();
       action.style.setProperty('--hover-x', `${event.clientX - bounds.left}px`);
       action.style.setProperty('--hover-y', `${event.clientY - bounds.top}px`);

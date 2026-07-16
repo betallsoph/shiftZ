@@ -639,16 +639,8 @@ body {
   background: var(--blue-300);
 }
 
-.btn-primary:hover {
-  background: var(--blue-400);
-}
-
 .btn-ghost {
   background: var(--blue-50);
-}
-
-.btn-ghost:hover {
-  background: var(--blue-100);
 }
 
 .btn-sm {
@@ -708,7 +700,7 @@ body {
   }
 }
 
-.modal-action {
+:is(.toolbar-action, .modal-action, .btn) {
   --hover-x: 50%;
   --hover-y: 50%;
   position: relative;
@@ -716,7 +708,7 @@ body {
   overflow: hidden;
 }
 
-.modal-action::before {
+:is(.toolbar-action, .modal-action, .btn)::before {
   position: absolute;
   z-index: 0;
   inset: 0;
@@ -726,18 +718,38 @@ body {
   transition: clip-path 320ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.modal-action:not(:disabled):hover::before {
+:is(.toolbar-action, .modal-action, .btn):not(:disabled):hover::before {
   clip-path: circle(160% at var(--hover-x) var(--hover-y));
 }
 
-.modal-action-label {
+:is(.toolbar-action-label, .modal-action-label, .btn-label) {
   position: relative;
   z-index: 1;
+  display: inline-block;
+  transform-origin: center;
   transition: color 150ms ease;
 }
 
-.modal-action:not(:disabled):hover .modal-action-label {
+:is(.toolbar-action, .modal-action, .btn):not(:disabled):hover
+  :is(.toolbar-action-label, .modal-action-label, .btn-label) {
   color: #2563eb;
+  font-weight: 900;
+  animation: action-label-pop 220ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.modal-action > svg {
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes action-label-pop {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  52% {
+    transform: scale(1.08);
+  }
 }
 
 .week-panel-inner {

@@ -4,8 +4,8 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>shiftbot — Đăng nhập</title>
-    <link rel="stylesheet" href="/static/dashboard.css?v=20260716-23" />
-    <script src="/static/dashboard.js?v=20260716-8" defer></script>
+    <link rel="stylesheet" href="/static/dashboard.css?v=20260716-24" />
+    <script src="/static/dashboard.js?v=20260716-9" defer></script>
   </head>
   <body class="roomio-grid-bg auth-page">
     <header class="site-header auth-header">
@@ -105,7 +105,7 @@
             {{end}}
             <div class="control-actions auth-step-actions auth-step-actions--stacked">
               <button type="submit" class="btn btn-primary">
-                {{if .SetPassword}}Lưu và đăng nhập{{else}}Đăng nhập{{end}}
+                <span class="btn-label">{{if .SetPassword}}Lưu và đăng nhập{{else}}Đăng nhập{{end}}</span>
               </button>
               <a href="/login" class="auth-edit-username-link">Sửa username</a>
             </div>
@@ -127,7 +127,9 @@
           <p class="auth-error" role="alert">{{.Error}}</p>
           {{end}}
           <div class="control-actions">
-            <button type="submit" class="btn btn-primary">Tiếp tục</button>
+            <button type="submit" class="btn btn-primary">
+              <span class="btn-label">Tiếp tục</span>
+            </button>
           </div>
           {{end}}
         </form>
