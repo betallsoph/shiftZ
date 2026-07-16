@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	dashboardPasswordMinLen     = 8
+	dashboardPasswordMinLen     = 6
 	dashboardPasswordHintMaxLen = 200
 	dashboardPasswordResetTTL   = time.Hour
 	dashboardPasswordResetPrefix = "sz_pwreset_"

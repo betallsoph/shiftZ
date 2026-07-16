@@ -52,7 +52,7 @@
                 type="password"
                 name="dashboard_password"
                 autocomplete="{{if .SetPassword}}new-password{{else}}current-password{{end}}"
-                minlength="8"
+                minlength="6"
                 required
                 {{if not .SetPassword}}autofocus{{end}}
               />
@@ -65,7 +65,7 @@
                 type="password"
                 name="dashboard_password_confirm"
                 autocomplete="new-password"
-                minlength="8"
+                minlength="6"
                 required
               />
             </label>

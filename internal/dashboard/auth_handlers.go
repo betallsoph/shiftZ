@@ -141,7 +141,7 @@ func (s *Server) handlePasswordResetPOST(w http.ResponseWriter, r *http.Request)
 	shop, err := s.shopAuth.ResetDashboardPasswordWithToken(r.Context(), token, password)
 	if err != nil {
 		if errors.Is(err, store.ErrValidation) {
-			s.renderPasswordResetPage(w, passwordResetPageData{Token: token, Error: "mật khẩu phải có ít nhất 8 ký tự"})
+			s.renderPasswordResetPage(w, passwordResetPageData{Token: token, Error: "mật khẩu phải có ít nhất 6 ký tự"})
 			return
 		}
 		if errors.Is(err, store.ErrInvalidCredentials) {
@@ -206,7 +206,7 @@ func (s *Server) completePasswordLogin(w http.ResponseWriter, r *http.Request, s
 				case strings.Contains(err.Error(), "email"):
 					msg = "email không hợp lệ"
 				case strings.Contains(err.Error(), "password"):
-					msg = "mật khẩu phải có ít nhất 8 ký tự"
+					msg = "mật khẩu phải có ít nhất 6 ký tự"
 				case strings.Contains(err.Error(), "hint"):
 					msg = "gợi ý quá dài"
 				}
