@@ -105,6 +105,76 @@ func (_c *ShopCreate) SetNillableDashboardUsername(v *string) *ShopCreate {
 	return _c
 }
 
+// SetDashboardPasswordHash sets the "dashboard_password_hash" field.
+func (_c *ShopCreate) SetDashboardPasswordHash(v string) *ShopCreate {
+	_c.mutation.SetDashboardPasswordHash(v)
+	return _c
+}
+
+// SetNillableDashboardPasswordHash sets the "dashboard_password_hash" field if the given value is not nil.
+func (_c *ShopCreate) SetNillableDashboardPasswordHash(v *string) *ShopCreate {
+	if v != nil {
+		_c.SetDashboardPasswordHash(*v)
+	}
+	return _c
+}
+
+// SetDashboardEmail sets the "dashboard_email" field.
+func (_c *ShopCreate) SetDashboardEmail(v string) *ShopCreate {
+	_c.mutation.SetDashboardEmail(v)
+	return _c
+}
+
+// SetNillableDashboardEmail sets the "dashboard_email" field if the given value is not nil.
+func (_c *ShopCreate) SetNillableDashboardEmail(v *string) *ShopCreate {
+	if v != nil {
+		_c.SetDashboardEmail(*v)
+	}
+	return _c
+}
+
+// SetDashboardPasswordHint sets the "dashboard_password_hint" field.
+func (_c *ShopCreate) SetDashboardPasswordHint(v string) *ShopCreate {
+	_c.mutation.SetDashboardPasswordHint(v)
+	return _c
+}
+
+// SetNillableDashboardPasswordHint sets the "dashboard_password_hint" field if the given value is not nil.
+func (_c *ShopCreate) SetNillableDashboardPasswordHint(v *string) *ShopCreate {
+	if v != nil {
+		_c.SetDashboardPasswordHint(*v)
+	}
+	return _c
+}
+
+// SetDashboardPasswordResetHash sets the "dashboard_password_reset_hash" field.
+func (_c *ShopCreate) SetDashboardPasswordResetHash(v string) *ShopCreate {
+	_c.mutation.SetDashboardPasswordResetHash(v)
+	return _c
+}
+
+// SetNillableDashboardPasswordResetHash sets the "dashboard_password_reset_hash" field if the given value is not nil.
+func (_c *ShopCreate) SetNillableDashboardPasswordResetHash(v *string) *ShopCreate {
+	if v != nil {
+		_c.SetDashboardPasswordResetHash(*v)
+	}
+	return _c
+}
+
+// SetDashboardPasswordResetExpiresAt sets the "dashboard_password_reset_expires_at" field.
+func (_c *ShopCreate) SetDashboardPasswordResetExpiresAt(v time.Time) *ShopCreate {
+	_c.mutation.SetDashboardPasswordResetExpiresAt(v)
+	return _c
+}
+
+// SetNillableDashboardPasswordResetExpiresAt sets the "dashboard_password_reset_expires_at" field if the given value is not nil.
+func (_c *ShopCreate) SetNillableDashboardPasswordResetExpiresAt(v *time.Time) *ShopCreate {
+	if v != nil {
+		_c.SetDashboardPasswordResetExpiresAt(*v)
+	}
+	return _c
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (_c *ShopCreate) SetCreatedAt(v time.Time) *ShopCreate {
 	_c.mutation.SetCreatedAt(v)
@@ -374,6 +444,26 @@ func (_c *ShopCreate) createSpec() (*Shop, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.DashboardUsername(); ok {
 		_spec.SetField(shop.FieldDashboardUsername, field.TypeString, value)
 		_node.DashboardUsername = &value
+	}
+	if value, ok := _c.mutation.DashboardPasswordHash(); ok {
+		_spec.SetField(shop.FieldDashboardPasswordHash, field.TypeString, value)
+		_node.DashboardPasswordHash = &value
+	}
+	if value, ok := _c.mutation.DashboardEmail(); ok {
+		_spec.SetField(shop.FieldDashboardEmail, field.TypeString, value)
+		_node.DashboardEmail = &value
+	}
+	if value, ok := _c.mutation.DashboardPasswordHint(); ok {
+		_spec.SetField(shop.FieldDashboardPasswordHint, field.TypeString, value)
+		_node.DashboardPasswordHint = &value
+	}
+	if value, ok := _c.mutation.DashboardPasswordResetHash(); ok {
+		_spec.SetField(shop.FieldDashboardPasswordResetHash, field.TypeString, value)
+		_node.DashboardPasswordResetHash = &value
+	}
+	if value, ok := _c.mutation.DashboardPasswordResetExpiresAt(); ok {
+		_spec.SetField(shop.FieldDashboardPasswordResetExpiresAt, field.TypeTime, value)
+		_node.DashboardPasswordResetExpiresAt = &value
 	}
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(shop.FieldCreatedAt, field.TypeTime, value)
@@ -645,6 +735,96 @@ func (u *ShopUpsert) ClearDashboardUsername() *ShopUpsert {
 	return u
 }
 
+// SetDashboardPasswordHash sets the "dashboard_password_hash" field.
+func (u *ShopUpsert) SetDashboardPasswordHash(v string) *ShopUpsert {
+	u.Set(shop.FieldDashboardPasswordHash, v)
+	return u
+}
+
+// UpdateDashboardPasswordHash sets the "dashboard_password_hash" field to the value that was provided on create.
+func (u *ShopUpsert) UpdateDashboardPasswordHash() *ShopUpsert {
+	u.SetExcluded(shop.FieldDashboardPasswordHash)
+	return u
+}
+
+// ClearDashboardPasswordHash clears the value of the "dashboard_password_hash" field.
+func (u *ShopUpsert) ClearDashboardPasswordHash() *ShopUpsert {
+	u.SetNull(shop.FieldDashboardPasswordHash)
+	return u
+}
+
+// SetDashboardEmail sets the "dashboard_email" field.
+func (u *ShopUpsert) SetDashboardEmail(v string) *ShopUpsert {
+	u.Set(shop.FieldDashboardEmail, v)
+	return u
+}
+
+// UpdateDashboardEmail sets the "dashboard_email" field to the value that was provided on create.
+func (u *ShopUpsert) UpdateDashboardEmail() *ShopUpsert {
+	u.SetExcluded(shop.FieldDashboardEmail)
+	return u
+}
+
+// ClearDashboardEmail clears the value of the "dashboard_email" field.
+func (u *ShopUpsert) ClearDashboardEmail() *ShopUpsert {
+	u.SetNull(shop.FieldDashboardEmail)
+	return u
+}
+
+// SetDashboardPasswordHint sets the "dashboard_password_hint" field.
+func (u *ShopUpsert) SetDashboardPasswordHint(v string) *ShopUpsert {
+	u.Set(shop.FieldDashboardPasswordHint, v)
+	return u
+}
+
+// UpdateDashboardPasswordHint sets the "dashboard_password_hint" field to the value that was provided on create.
+func (u *ShopUpsert) UpdateDashboardPasswordHint() *ShopUpsert {
+	u.SetExcluded(shop.FieldDashboardPasswordHint)
+	return u
+}
+
+// ClearDashboardPasswordHint clears the value of the "dashboard_password_hint" field.
+func (u *ShopUpsert) ClearDashboardPasswordHint() *ShopUpsert {
+	u.SetNull(shop.FieldDashboardPasswordHint)
+	return u
+}
+
+// SetDashboardPasswordResetHash sets the "dashboard_password_reset_hash" field.
+func (u *ShopUpsert) SetDashboardPasswordResetHash(v string) *ShopUpsert {
+	u.Set(shop.FieldDashboardPasswordResetHash, v)
+	return u
+}
+
+// UpdateDashboardPasswordResetHash sets the "dashboard_password_reset_hash" field to the value that was provided on create.
+func (u *ShopUpsert) UpdateDashboardPasswordResetHash() *ShopUpsert {
+	u.SetExcluded(shop.FieldDashboardPasswordResetHash)
+	return u
+}
+
+// ClearDashboardPasswordResetHash clears the value of the "dashboard_password_reset_hash" field.
+func (u *ShopUpsert) ClearDashboardPasswordResetHash() *ShopUpsert {
+	u.SetNull(shop.FieldDashboardPasswordResetHash)
+	return u
+}
+
+// SetDashboardPasswordResetExpiresAt sets the "dashboard_password_reset_expires_at" field.
+func (u *ShopUpsert) SetDashboardPasswordResetExpiresAt(v time.Time) *ShopUpsert {
+	u.Set(shop.FieldDashboardPasswordResetExpiresAt, v)
+	return u
+}
+
+// UpdateDashboardPasswordResetExpiresAt sets the "dashboard_password_reset_expires_at" field to the value that was provided on create.
+func (u *ShopUpsert) UpdateDashboardPasswordResetExpiresAt() *ShopUpsert {
+	u.SetExcluded(shop.FieldDashboardPasswordResetExpiresAt)
+	return u
+}
+
+// ClearDashboardPasswordResetExpiresAt clears the value of the "dashboard_password_reset_expires_at" field.
+func (u *ShopUpsert) ClearDashboardPasswordResetExpiresAt() *ShopUpsert {
+	u.SetNull(shop.FieldDashboardPasswordResetExpiresAt)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -812,6 +992,111 @@ func (u *ShopUpsertOne) UpdateDashboardUsername() *ShopUpsertOne {
 func (u *ShopUpsertOne) ClearDashboardUsername() *ShopUpsertOne {
 	return u.Update(func(s *ShopUpsert) {
 		s.ClearDashboardUsername()
+	})
+}
+
+// SetDashboardPasswordHash sets the "dashboard_password_hash" field.
+func (u *ShopUpsertOne) SetDashboardPasswordHash(v string) *ShopUpsertOne {
+	return u.Update(func(s *ShopUpsert) {
+		s.SetDashboardPasswordHash(v)
+	})
+}
+
+// UpdateDashboardPasswordHash sets the "dashboard_password_hash" field to the value that was provided on create.
+func (u *ShopUpsertOne) UpdateDashboardPasswordHash() *ShopUpsertOne {
+	return u.Update(func(s *ShopUpsert) {
+		s.UpdateDashboardPasswordHash()
+	})
+}
+
+// ClearDashboardPasswordHash clears the value of the "dashboard_password_hash" field.
+func (u *ShopUpsertOne) ClearDashboardPasswordHash() *ShopUpsertOne {
+	return u.Update(func(s *ShopUpsert) {
+		s.ClearDashboardPasswordHash()
+	})
+}
+
+// SetDashboardEmail sets the "dashboard_email" field.
+func (u *ShopUpsertOne) SetDashboardEmail(v string) *ShopUpsertOne {
+	return u.Update(func(s *ShopUpsert) {
+		s.SetDashboardEmail(v)
+	})
+}
+
+// UpdateDashboardEmail sets the "dashboard_email" field to the value that was provided on create.
+func (u *ShopUpsertOne) UpdateDashboardEmail() *ShopUpsertOne {
+	return u.Update(func(s *ShopUpsert) {
+		s.UpdateDashboardEmail()
+	})
+}
+
+// ClearDashboardEmail clears the value of the "dashboard_email" field.
+func (u *ShopUpsertOne) ClearDashboardEmail() *ShopUpsertOne {
+	return u.Update(func(s *ShopUpsert) {
+		s.ClearDashboardEmail()
+	})
+}
+
+// SetDashboardPasswordHint sets the "dashboard_password_hint" field.
+func (u *ShopUpsertOne) SetDashboardPasswordHint(v string) *ShopUpsertOne {
+	return u.Update(func(s *ShopUpsert) {
+		s.SetDashboardPasswordHint(v)
+	})
+}
+
+// UpdateDashboardPasswordHint sets the "dashboard_password_hint" field to the value that was provided on create.
+func (u *ShopUpsertOne) UpdateDashboardPasswordHint() *ShopUpsertOne {
+	return u.Update(func(s *ShopUpsert) {
+		s.UpdateDashboardPasswordHint()
+	})
+}
+
+// ClearDashboardPasswordHint clears the value of the "dashboard_password_hint" field.
+func (u *ShopUpsertOne) ClearDashboardPasswordHint() *ShopUpsertOne {
+	return u.Update(func(s *ShopUpsert) {
+		s.ClearDashboardPasswordHint()
+	})
+}
+
+// SetDashboardPasswordResetHash sets the "dashboard_password_reset_hash" field.
+func (u *ShopUpsertOne) SetDashboardPasswordResetHash(v string) *ShopUpsertOne {
+	return u.Update(func(s *ShopUpsert) {
+		s.SetDashboardPasswordResetHash(v)
+	})
+}
+
+// UpdateDashboardPasswordResetHash sets the "dashboard_password_reset_hash" field to the value that was provided on create.
+func (u *ShopUpsertOne) UpdateDashboardPasswordResetHash() *ShopUpsertOne {
+	return u.Update(func(s *ShopUpsert) {
+		s.UpdateDashboardPasswordResetHash()
+	})
+}
+
+// ClearDashboardPasswordResetHash clears the value of the "dashboard_password_reset_hash" field.
+func (u *ShopUpsertOne) ClearDashboardPasswordResetHash() *ShopUpsertOne {
+	return u.Update(func(s *ShopUpsert) {
+		s.ClearDashboardPasswordResetHash()
+	})
+}
+
+// SetDashboardPasswordResetExpiresAt sets the "dashboard_password_reset_expires_at" field.
+func (u *ShopUpsertOne) SetDashboardPasswordResetExpiresAt(v time.Time) *ShopUpsertOne {
+	return u.Update(func(s *ShopUpsert) {
+		s.SetDashboardPasswordResetExpiresAt(v)
+	})
+}
+
+// UpdateDashboardPasswordResetExpiresAt sets the "dashboard_password_reset_expires_at" field to the value that was provided on create.
+func (u *ShopUpsertOne) UpdateDashboardPasswordResetExpiresAt() *ShopUpsertOne {
+	return u.Update(func(s *ShopUpsert) {
+		s.UpdateDashboardPasswordResetExpiresAt()
+	})
+}
+
+// ClearDashboardPasswordResetExpiresAt clears the value of the "dashboard_password_reset_expires_at" field.
+func (u *ShopUpsertOne) ClearDashboardPasswordResetExpiresAt() *ShopUpsertOne {
+	return u.Update(func(s *ShopUpsert) {
+		s.ClearDashboardPasswordResetExpiresAt()
 	})
 }
 
@@ -1149,6 +1434,111 @@ func (u *ShopUpsertBulk) UpdateDashboardUsername() *ShopUpsertBulk {
 func (u *ShopUpsertBulk) ClearDashboardUsername() *ShopUpsertBulk {
 	return u.Update(func(s *ShopUpsert) {
 		s.ClearDashboardUsername()
+	})
+}
+
+// SetDashboardPasswordHash sets the "dashboard_password_hash" field.
+func (u *ShopUpsertBulk) SetDashboardPasswordHash(v string) *ShopUpsertBulk {
+	return u.Update(func(s *ShopUpsert) {
+		s.SetDashboardPasswordHash(v)
+	})
+}
+
+// UpdateDashboardPasswordHash sets the "dashboard_password_hash" field to the value that was provided on create.
+func (u *ShopUpsertBulk) UpdateDashboardPasswordHash() *ShopUpsertBulk {
+	return u.Update(func(s *ShopUpsert) {
+		s.UpdateDashboardPasswordHash()
+	})
+}
+
+// ClearDashboardPasswordHash clears the value of the "dashboard_password_hash" field.
+func (u *ShopUpsertBulk) ClearDashboardPasswordHash() *ShopUpsertBulk {
+	return u.Update(func(s *ShopUpsert) {
+		s.ClearDashboardPasswordHash()
+	})
+}
+
+// SetDashboardEmail sets the "dashboard_email" field.
+func (u *ShopUpsertBulk) SetDashboardEmail(v string) *ShopUpsertBulk {
+	return u.Update(func(s *ShopUpsert) {
+		s.SetDashboardEmail(v)
+	})
+}
+
+// UpdateDashboardEmail sets the "dashboard_email" field to the value that was provided on create.
+func (u *ShopUpsertBulk) UpdateDashboardEmail() *ShopUpsertBulk {
+	return u.Update(func(s *ShopUpsert) {
+		s.UpdateDashboardEmail()
+	})
+}
+
+// ClearDashboardEmail clears the value of the "dashboard_email" field.
+func (u *ShopUpsertBulk) ClearDashboardEmail() *ShopUpsertBulk {
+	return u.Update(func(s *ShopUpsert) {
+		s.ClearDashboardEmail()
+	})
+}
+
+// SetDashboardPasswordHint sets the "dashboard_password_hint" field.
+func (u *ShopUpsertBulk) SetDashboardPasswordHint(v string) *ShopUpsertBulk {
+	return u.Update(func(s *ShopUpsert) {
+		s.SetDashboardPasswordHint(v)
+	})
+}
+
+// UpdateDashboardPasswordHint sets the "dashboard_password_hint" field to the value that was provided on create.
+func (u *ShopUpsertBulk) UpdateDashboardPasswordHint() *ShopUpsertBulk {
+	return u.Update(func(s *ShopUpsert) {
+		s.UpdateDashboardPasswordHint()
+	})
+}
+
+// ClearDashboardPasswordHint clears the value of the "dashboard_password_hint" field.
+func (u *ShopUpsertBulk) ClearDashboardPasswordHint() *ShopUpsertBulk {
+	return u.Update(func(s *ShopUpsert) {
+		s.ClearDashboardPasswordHint()
+	})
+}
+
+// SetDashboardPasswordResetHash sets the "dashboard_password_reset_hash" field.
+func (u *ShopUpsertBulk) SetDashboardPasswordResetHash(v string) *ShopUpsertBulk {
+	return u.Update(func(s *ShopUpsert) {
+		s.SetDashboardPasswordResetHash(v)
+	})
+}
+
+// UpdateDashboardPasswordResetHash sets the "dashboard_password_reset_hash" field to the value that was provided on create.
+func (u *ShopUpsertBulk) UpdateDashboardPasswordResetHash() *ShopUpsertBulk {
+	return u.Update(func(s *ShopUpsert) {
+		s.UpdateDashboardPasswordResetHash()
+	})
+}
+
+// ClearDashboardPasswordResetHash clears the value of the "dashboard_password_reset_hash" field.
+func (u *ShopUpsertBulk) ClearDashboardPasswordResetHash() *ShopUpsertBulk {
+	return u.Update(func(s *ShopUpsert) {
+		s.ClearDashboardPasswordResetHash()
+	})
+}
+
+// SetDashboardPasswordResetExpiresAt sets the "dashboard_password_reset_expires_at" field.
+func (u *ShopUpsertBulk) SetDashboardPasswordResetExpiresAt(v time.Time) *ShopUpsertBulk {
+	return u.Update(func(s *ShopUpsert) {
+		s.SetDashboardPasswordResetExpiresAt(v)
+	})
+}
+
+// UpdateDashboardPasswordResetExpiresAt sets the "dashboard_password_reset_expires_at" field to the value that was provided on create.
+func (u *ShopUpsertBulk) UpdateDashboardPasswordResetExpiresAt() *ShopUpsertBulk {
+	return u.Update(func(s *ShopUpsert) {
+		s.UpdateDashboardPasswordResetExpiresAt()
+	})
+}
+
+// ClearDashboardPasswordResetExpiresAt clears the value of the "dashboard_password_reset_expires_at" field.
+func (u *ShopUpsertBulk) ClearDashboardPasswordResetExpiresAt() *ShopUpsertBulk {
+	return u.Update(func(s *ShopUpsert) {
+		s.ClearDashboardPasswordResetExpiresAt()
 	})
 }
 

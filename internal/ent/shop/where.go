@@ -91,6 +91,31 @@ func DashboardUsername(v string) predicate.Shop {
 	return predicate.Shop(sql.FieldEQ(FieldDashboardUsername, v))
 }
 
+// DashboardPasswordHash applies equality check predicate on the "dashboard_password_hash" field. It's identical to DashboardPasswordHashEQ.
+func DashboardPasswordHash(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldEQ(FieldDashboardPasswordHash, v))
+}
+
+// DashboardEmail applies equality check predicate on the "dashboard_email" field. It's identical to DashboardEmailEQ.
+func DashboardEmail(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldEQ(FieldDashboardEmail, v))
+}
+
+// DashboardPasswordHint applies equality check predicate on the "dashboard_password_hint" field. It's identical to DashboardPasswordHintEQ.
+func DashboardPasswordHint(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldEQ(FieldDashboardPasswordHint, v))
+}
+
+// DashboardPasswordResetHash applies equality check predicate on the "dashboard_password_reset_hash" field. It's identical to DashboardPasswordResetHashEQ.
+func DashboardPasswordResetHash(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldEQ(FieldDashboardPasswordResetHash, v))
+}
+
+// DashboardPasswordResetExpiresAt applies equality check predicate on the "dashboard_password_reset_expires_at" field. It's identical to DashboardPasswordResetExpiresAtEQ.
+func DashboardPasswordResetExpiresAt(v time.Time) predicate.Shop {
+	return predicate.Shop(sql.FieldEQ(FieldDashboardPasswordResetExpiresAt, v))
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.Shop {
 	return predicate.Shop(sql.FieldEQ(FieldCreatedAt, v))
@@ -544,6 +569,356 @@ func DashboardUsernameEqualFold(v string) predicate.Shop {
 // DashboardUsernameContainsFold applies the ContainsFold predicate on the "dashboard_username" field.
 func DashboardUsernameContainsFold(v string) predicate.Shop {
 	return predicate.Shop(sql.FieldContainsFold(FieldDashboardUsername, v))
+}
+
+// DashboardPasswordHashEQ applies the EQ predicate on the "dashboard_password_hash" field.
+func DashboardPasswordHashEQ(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldEQ(FieldDashboardPasswordHash, v))
+}
+
+// DashboardPasswordHashNEQ applies the NEQ predicate on the "dashboard_password_hash" field.
+func DashboardPasswordHashNEQ(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldNEQ(FieldDashboardPasswordHash, v))
+}
+
+// DashboardPasswordHashIn applies the In predicate on the "dashboard_password_hash" field.
+func DashboardPasswordHashIn(vs ...string) predicate.Shop {
+	return predicate.Shop(sql.FieldIn(FieldDashboardPasswordHash, vs...))
+}
+
+// DashboardPasswordHashNotIn applies the NotIn predicate on the "dashboard_password_hash" field.
+func DashboardPasswordHashNotIn(vs ...string) predicate.Shop {
+	return predicate.Shop(sql.FieldNotIn(FieldDashboardPasswordHash, vs...))
+}
+
+// DashboardPasswordHashGT applies the GT predicate on the "dashboard_password_hash" field.
+func DashboardPasswordHashGT(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldGT(FieldDashboardPasswordHash, v))
+}
+
+// DashboardPasswordHashGTE applies the GTE predicate on the "dashboard_password_hash" field.
+func DashboardPasswordHashGTE(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldGTE(FieldDashboardPasswordHash, v))
+}
+
+// DashboardPasswordHashLT applies the LT predicate on the "dashboard_password_hash" field.
+func DashboardPasswordHashLT(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldLT(FieldDashboardPasswordHash, v))
+}
+
+// DashboardPasswordHashLTE applies the LTE predicate on the "dashboard_password_hash" field.
+func DashboardPasswordHashLTE(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldLTE(FieldDashboardPasswordHash, v))
+}
+
+// DashboardPasswordHashContains applies the Contains predicate on the "dashboard_password_hash" field.
+func DashboardPasswordHashContains(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldContains(FieldDashboardPasswordHash, v))
+}
+
+// DashboardPasswordHashHasPrefix applies the HasPrefix predicate on the "dashboard_password_hash" field.
+func DashboardPasswordHashHasPrefix(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldHasPrefix(FieldDashboardPasswordHash, v))
+}
+
+// DashboardPasswordHashHasSuffix applies the HasSuffix predicate on the "dashboard_password_hash" field.
+func DashboardPasswordHashHasSuffix(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldHasSuffix(FieldDashboardPasswordHash, v))
+}
+
+// DashboardPasswordHashIsNil applies the IsNil predicate on the "dashboard_password_hash" field.
+func DashboardPasswordHashIsNil() predicate.Shop {
+	return predicate.Shop(sql.FieldIsNull(FieldDashboardPasswordHash))
+}
+
+// DashboardPasswordHashNotNil applies the NotNil predicate on the "dashboard_password_hash" field.
+func DashboardPasswordHashNotNil() predicate.Shop {
+	return predicate.Shop(sql.FieldNotNull(FieldDashboardPasswordHash))
+}
+
+// DashboardPasswordHashEqualFold applies the EqualFold predicate on the "dashboard_password_hash" field.
+func DashboardPasswordHashEqualFold(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldEqualFold(FieldDashboardPasswordHash, v))
+}
+
+// DashboardPasswordHashContainsFold applies the ContainsFold predicate on the "dashboard_password_hash" field.
+func DashboardPasswordHashContainsFold(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldContainsFold(FieldDashboardPasswordHash, v))
+}
+
+// DashboardEmailEQ applies the EQ predicate on the "dashboard_email" field.
+func DashboardEmailEQ(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldEQ(FieldDashboardEmail, v))
+}
+
+// DashboardEmailNEQ applies the NEQ predicate on the "dashboard_email" field.
+func DashboardEmailNEQ(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldNEQ(FieldDashboardEmail, v))
+}
+
+// DashboardEmailIn applies the In predicate on the "dashboard_email" field.
+func DashboardEmailIn(vs ...string) predicate.Shop {
+	return predicate.Shop(sql.FieldIn(FieldDashboardEmail, vs...))
+}
+
+// DashboardEmailNotIn applies the NotIn predicate on the "dashboard_email" field.
+func DashboardEmailNotIn(vs ...string) predicate.Shop {
+	return predicate.Shop(sql.FieldNotIn(FieldDashboardEmail, vs...))
+}
+
+// DashboardEmailGT applies the GT predicate on the "dashboard_email" field.
+func DashboardEmailGT(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldGT(FieldDashboardEmail, v))
+}
+
+// DashboardEmailGTE applies the GTE predicate on the "dashboard_email" field.
+func DashboardEmailGTE(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldGTE(FieldDashboardEmail, v))
+}
+
+// DashboardEmailLT applies the LT predicate on the "dashboard_email" field.
+func DashboardEmailLT(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldLT(FieldDashboardEmail, v))
+}
+
+// DashboardEmailLTE applies the LTE predicate on the "dashboard_email" field.
+func DashboardEmailLTE(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldLTE(FieldDashboardEmail, v))
+}
+
+// DashboardEmailContains applies the Contains predicate on the "dashboard_email" field.
+func DashboardEmailContains(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldContains(FieldDashboardEmail, v))
+}
+
+// DashboardEmailHasPrefix applies the HasPrefix predicate on the "dashboard_email" field.
+func DashboardEmailHasPrefix(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldHasPrefix(FieldDashboardEmail, v))
+}
+
+// DashboardEmailHasSuffix applies the HasSuffix predicate on the "dashboard_email" field.
+func DashboardEmailHasSuffix(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldHasSuffix(FieldDashboardEmail, v))
+}
+
+// DashboardEmailIsNil applies the IsNil predicate on the "dashboard_email" field.
+func DashboardEmailIsNil() predicate.Shop {
+	return predicate.Shop(sql.FieldIsNull(FieldDashboardEmail))
+}
+
+// DashboardEmailNotNil applies the NotNil predicate on the "dashboard_email" field.
+func DashboardEmailNotNil() predicate.Shop {
+	return predicate.Shop(sql.FieldNotNull(FieldDashboardEmail))
+}
+
+// DashboardEmailEqualFold applies the EqualFold predicate on the "dashboard_email" field.
+func DashboardEmailEqualFold(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldEqualFold(FieldDashboardEmail, v))
+}
+
+// DashboardEmailContainsFold applies the ContainsFold predicate on the "dashboard_email" field.
+func DashboardEmailContainsFold(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldContainsFold(FieldDashboardEmail, v))
+}
+
+// DashboardPasswordHintEQ applies the EQ predicate on the "dashboard_password_hint" field.
+func DashboardPasswordHintEQ(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldEQ(FieldDashboardPasswordHint, v))
+}
+
+// DashboardPasswordHintNEQ applies the NEQ predicate on the "dashboard_password_hint" field.
+func DashboardPasswordHintNEQ(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldNEQ(FieldDashboardPasswordHint, v))
+}
+
+// DashboardPasswordHintIn applies the In predicate on the "dashboard_password_hint" field.
+func DashboardPasswordHintIn(vs ...string) predicate.Shop {
+	return predicate.Shop(sql.FieldIn(FieldDashboardPasswordHint, vs...))
+}
+
+// DashboardPasswordHintNotIn applies the NotIn predicate on the "dashboard_password_hint" field.
+func DashboardPasswordHintNotIn(vs ...string) predicate.Shop {
+	return predicate.Shop(sql.FieldNotIn(FieldDashboardPasswordHint, vs...))
+}
+
+// DashboardPasswordHintGT applies the GT predicate on the "dashboard_password_hint" field.
+func DashboardPasswordHintGT(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldGT(FieldDashboardPasswordHint, v))
+}
+
+// DashboardPasswordHintGTE applies the GTE predicate on the "dashboard_password_hint" field.
+func DashboardPasswordHintGTE(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldGTE(FieldDashboardPasswordHint, v))
+}
+
+// DashboardPasswordHintLT applies the LT predicate on the "dashboard_password_hint" field.
+func DashboardPasswordHintLT(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldLT(FieldDashboardPasswordHint, v))
+}
+
+// DashboardPasswordHintLTE applies the LTE predicate on the "dashboard_password_hint" field.
+func DashboardPasswordHintLTE(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldLTE(FieldDashboardPasswordHint, v))
+}
+
+// DashboardPasswordHintContains applies the Contains predicate on the "dashboard_password_hint" field.
+func DashboardPasswordHintContains(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldContains(FieldDashboardPasswordHint, v))
+}
+
+// DashboardPasswordHintHasPrefix applies the HasPrefix predicate on the "dashboard_password_hint" field.
+func DashboardPasswordHintHasPrefix(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldHasPrefix(FieldDashboardPasswordHint, v))
+}
+
+// DashboardPasswordHintHasSuffix applies the HasSuffix predicate on the "dashboard_password_hint" field.
+func DashboardPasswordHintHasSuffix(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldHasSuffix(FieldDashboardPasswordHint, v))
+}
+
+// DashboardPasswordHintIsNil applies the IsNil predicate on the "dashboard_password_hint" field.
+func DashboardPasswordHintIsNil() predicate.Shop {
+	return predicate.Shop(sql.FieldIsNull(FieldDashboardPasswordHint))
+}
+
+// DashboardPasswordHintNotNil applies the NotNil predicate on the "dashboard_password_hint" field.
+func DashboardPasswordHintNotNil() predicate.Shop {
+	return predicate.Shop(sql.FieldNotNull(FieldDashboardPasswordHint))
+}
+
+// DashboardPasswordHintEqualFold applies the EqualFold predicate on the "dashboard_password_hint" field.
+func DashboardPasswordHintEqualFold(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldEqualFold(FieldDashboardPasswordHint, v))
+}
+
+// DashboardPasswordHintContainsFold applies the ContainsFold predicate on the "dashboard_password_hint" field.
+func DashboardPasswordHintContainsFold(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldContainsFold(FieldDashboardPasswordHint, v))
+}
+
+// DashboardPasswordResetHashEQ applies the EQ predicate on the "dashboard_password_reset_hash" field.
+func DashboardPasswordResetHashEQ(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldEQ(FieldDashboardPasswordResetHash, v))
+}
+
+// DashboardPasswordResetHashNEQ applies the NEQ predicate on the "dashboard_password_reset_hash" field.
+func DashboardPasswordResetHashNEQ(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldNEQ(FieldDashboardPasswordResetHash, v))
+}
+
+// DashboardPasswordResetHashIn applies the In predicate on the "dashboard_password_reset_hash" field.
+func DashboardPasswordResetHashIn(vs ...string) predicate.Shop {
+	return predicate.Shop(sql.FieldIn(FieldDashboardPasswordResetHash, vs...))
+}
+
+// DashboardPasswordResetHashNotIn applies the NotIn predicate on the "dashboard_password_reset_hash" field.
+func DashboardPasswordResetHashNotIn(vs ...string) predicate.Shop {
+	return predicate.Shop(sql.FieldNotIn(FieldDashboardPasswordResetHash, vs...))
+}
+
+// DashboardPasswordResetHashGT applies the GT predicate on the "dashboard_password_reset_hash" field.
+func DashboardPasswordResetHashGT(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldGT(FieldDashboardPasswordResetHash, v))
+}
+
+// DashboardPasswordResetHashGTE applies the GTE predicate on the "dashboard_password_reset_hash" field.
+func DashboardPasswordResetHashGTE(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldGTE(FieldDashboardPasswordResetHash, v))
+}
+
+// DashboardPasswordResetHashLT applies the LT predicate on the "dashboard_password_reset_hash" field.
+func DashboardPasswordResetHashLT(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldLT(FieldDashboardPasswordResetHash, v))
+}
+
+// DashboardPasswordResetHashLTE applies the LTE predicate on the "dashboard_password_reset_hash" field.
+func DashboardPasswordResetHashLTE(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldLTE(FieldDashboardPasswordResetHash, v))
+}
+
+// DashboardPasswordResetHashContains applies the Contains predicate on the "dashboard_password_reset_hash" field.
+func DashboardPasswordResetHashContains(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldContains(FieldDashboardPasswordResetHash, v))
+}
+
+// DashboardPasswordResetHashHasPrefix applies the HasPrefix predicate on the "dashboard_password_reset_hash" field.
+func DashboardPasswordResetHashHasPrefix(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldHasPrefix(FieldDashboardPasswordResetHash, v))
+}
+
+// DashboardPasswordResetHashHasSuffix applies the HasSuffix predicate on the "dashboard_password_reset_hash" field.
+func DashboardPasswordResetHashHasSuffix(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldHasSuffix(FieldDashboardPasswordResetHash, v))
+}
+
+// DashboardPasswordResetHashIsNil applies the IsNil predicate on the "dashboard_password_reset_hash" field.
+func DashboardPasswordResetHashIsNil() predicate.Shop {
+	return predicate.Shop(sql.FieldIsNull(FieldDashboardPasswordResetHash))
+}
+
+// DashboardPasswordResetHashNotNil applies the NotNil predicate on the "dashboard_password_reset_hash" field.
+func DashboardPasswordResetHashNotNil() predicate.Shop {
+	return predicate.Shop(sql.FieldNotNull(FieldDashboardPasswordResetHash))
+}
+
+// DashboardPasswordResetHashEqualFold applies the EqualFold predicate on the "dashboard_password_reset_hash" field.
+func DashboardPasswordResetHashEqualFold(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldEqualFold(FieldDashboardPasswordResetHash, v))
+}
+
+// DashboardPasswordResetHashContainsFold applies the ContainsFold predicate on the "dashboard_password_reset_hash" field.
+func DashboardPasswordResetHashContainsFold(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldContainsFold(FieldDashboardPasswordResetHash, v))
+}
+
+// DashboardPasswordResetExpiresAtEQ applies the EQ predicate on the "dashboard_password_reset_expires_at" field.
+func DashboardPasswordResetExpiresAtEQ(v time.Time) predicate.Shop {
+	return predicate.Shop(sql.FieldEQ(FieldDashboardPasswordResetExpiresAt, v))
+}
+
+// DashboardPasswordResetExpiresAtNEQ applies the NEQ predicate on the "dashboard_password_reset_expires_at" field.
+func DashboardPasswordResetExpiresAtNEQ(v time.Time) predicate.Shop {
+	return predicate.Shop(sql.FieldNEQ(FieldDashboardPasswordResetExpiresAt, v))
+}
+
+// DashboardPasswordResetExpiresAtIn applies the In predicate on the "dashboard_password_reset_expires_at" field.
+func DashboardPasswordResetExpiresAtIn(vs ...time.Time) predicate.Shop {
+	return predicate.Shop(sql.FieldIn(FieldDashboardPasswordResetExpiresAt, vs...))
+}
+
+// DashboardPasswordResetExpiresAtNotIn applies the NotIn predicate on the "dashboard_password_reset_expires_at" field.
+func DashboardPasswordResetExpiresAtNotIn(vs ...time.Time) predicate.Shop {
+	return predicate.Shop(sql.FieldNotIn(FieldDashboardPasswordResetExpiresAt, vs...))
+}
+
+// DashboardPasswordResetExpiresAtGT applies the GT predicate on the "dashboard_password_reset_expires_at" field.
+func DashboardPasswordResetExpiresAtGT(v time.Time) predicate.Shop {
+	return predicate.Shop(sql.FieldGT(FieldDashboardPasswordResetExpiresAt, v))
+}
+
+// DashboardPasswordResetExpiresAtGTE applies the GTE predicate on the "dashboard_password_reset_expires_at" field.
+func DashboardPasswordResetExpiresAtGTE(v time.Time) predicate.Shop {
+	return predicate.Shop(sql.FieldGTE(FieldDashboardPasswordResetExpiresAt, v))
+}
+
+// DashboardPasswordResetExpiresAtLT applies the LT predicate on the "dashboard_password_reset_expires_at" field.
+func DashboardPasswordResetExpiresAtLT(v time.Time) predicate.Shop {
+	return predicate.Shop(sql.FieldLT(FieldDashboardPasswordResetExpiresAt, v))
+}
+
+// DashboardPasswordResetExpiresAtLTE applies the LTE predicate on the "dashboard_password_reset_expires_at" field.
+func DashboardPasswordResetExpiresAtLTE(v time.Time) predicate.Shop {
+	return predicate.Shop(sql.FieldLTE(FieldDashboardPasswordResetExpiresAt, v))
+}
+
+// DashboardPasswordResetExpiresAtIsNil applies the IsNil predicate on the "dashboard_password_reset_expires_at" field.
+func DashboardPasswordResetExpiresAtIsNil() predicate.Shop {
+	return predicate.Shop(sql.FieldIsNull(FieldDashboardPasswordResetExpiresAt))
+}
+
+// DashboardPasswordResetExpiresAtNotNil applies the NotNil predicate on the "dashboard_password_reset_expires_at" field.
+func DashboardPasswordResetExpiresAtNotNil() predicate.Shop {
+	return predicate.Shop(sql.FieldNotNull(FieldDashboardPasswordResetExpiresAt))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.

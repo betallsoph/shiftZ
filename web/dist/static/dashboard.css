@@ -209,8 +209,98 @@ body {
   font-weight: 700;
 }
 
+.auth-info {
+  margin: -4px 0 0;
+  color: #4b5563;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.auth-forgot-form {
+  margin: 10px 0 0;
+  text-align: center;
+}
+
+.auth-forgot-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #6b7280;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.auth-forgot-link:hover {
+  color: #111827;
+}
+
+.auth-reset-panel {
+  width: min(100%, 420px);
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.auth-reset-back {
+  margin: 12px 0 0;
+  text-align: center;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.auth-reset-back a {
+  color: #6b7280;
+}
+
+.auth-reset-back a:hover {
+  color: #111827;
+}
+
 .auth-form .control-actions {
   justify-content: center;
+}
+
+.auth-page--modal-open .auth-container {
+  pointer-events: none;
+}
+
+.auth-modal-backdrop {
+  position: fixed;
+  z-index: 20;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(2px);
+}
+
+.auth-password-modal {
+  position: fixed;
+  z-index: 30;
+  top: 50%;
+  left: 50%;
+  width: min(100% - 32px, 420px);
+  padding: 20px;
+  transform: translate(-50%, -50%);
+}
+
+.auth-password-title {
+  margin: 0 0 8px;
+  font-size: 1.1rem;
+  font-weight: 900;
+}
+
+.auth-password-subtitle {
+  margin: 0 0 16px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.auth-password-form label {
+  font-size: 0.82rem;
+  text-transform: none;
+  letter-spacing: 0;
 }
 
 .logout-form {
@@ -1020,6 +1110,57 @@ body {
   display: flex;
   align-items: center;
   gap: 18px;
+}
+
+.incident-report {
+  position: relative;
+}
+
+.incident-report > summary {
+  list-style: none;
+  cursor: pointer;
+}
+
+.incident-report > summary::-webkit-details-marker {
+  display: none;
+}
+
+.incident-report-form {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  z-index: 30;
+  width: min(320px, calc(100vw - 32px));
+  padding: 14px;
+  border: 2px solid #18181b;
+  background: #fff;
+  box-shadow: var(--shadow-primary);
+}
+
+.incident-report-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.incident-report-field span {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.incident-report-field textarea {
+  resize: vertical;
+  min-height: 72px;
+}
+
+#incident-report-status {
+  margin-top: 8px;
+}
+
+#incident-report-status .alert {
+  margin: 0;
+  font-size: 13px;
 }
 
 .dashboard-shop-name {

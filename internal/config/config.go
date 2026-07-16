@@ -42,6 +42,8 @@ type Config struct {
 	// TelegramWebhookSecret must match the secret_token passed to
 	// setWebhook; empty disables the check (local development only).
 	TelegramWebhookSecret string
+	// TelegramChatID is the destination chat for owner incident reports.
+	TelegramChatID int64
 
 	// LLMProvider selects the model backend (e.g. "anthropic"); empty means
 	// LLM features are disabled.
@@ -84,6 +86,19 @@ type Config struct {
 	AdminPassword string
 	// AdminSessionSecret signs admin session cookies (separate from owner sessions).
 	AdminSessionSecret string
+
+	// SMTPHost is the outbound mail server for owner password recovery.
+	SMTPHost string
+	// SMTPPort is the outbound mail server port (default 587).
+	SMTPPort int
+	// SMTPUser authenticates to the mail server when set.
+	SMTPUser string
+	// SMTPPassword is the SMTP auth password when SMTPUser is set.
+	SMTPPassword string
+	// SMTPFrom is the sender address for outbound mail.
+	SMTPFrom string
+	// DashboardBaseURL is the public dashboard origin used in password reset links.
+	DashboardBaseURL string
 }
 
 // Load reads all settings from the environment, applying defaults for
@@ -99,6 +114,7 @@ func Load() *Config {
 		TelegramToken:         os.Getenv("TELEGRAM_BOT_TOKEN"),
 		TelegramBotUsername:   os.Getenv("TELEGRAM_BOT_USERNAME"),
 		TelegramWebhookSecret: os.Getenv("TELEGRAM_WEBHOOK_SECRET"),
+		TelegramChatID:        envInt64Or("TELEGRAM_CHAT_ID", 0),
 		LLMProvider:           os.Getenv("LLM_PROVIDER"),
 		LLMAPIKey:             os.Getenv("LLM_API_KEY"),
 		LLMModel:              os.Getenv("LLM_MODEL"),
@@ -119,6 +135,12 @@ func Load() *Config {
 		AdminUsername:         os.Getenv("ADMIN_USERNAME"),
 		AdminPassword:         os.Getenv("ADMIN_PASSWORD"),
 		AdminSessionSecret:    os.Getenv("ADMIN_SESSION_SECRET"),
+		SMTPHost:              os.Getenv("SMTP_HOST"),
+		SMTPPort:              envIntOr("SMTP_PORT", 587),
+		SMTPUser:              os.Getenv("SMTP_USER"),
+		SMTPPassword:          os.Getenv("SMTP_PASSWORD"),
+		SMTPFrom:              os.Getenv("SMTP_FROM"),
+		DashboardBaseURL:      strings.TrimRight(os.Getenv("DASHBOARD_BASE_URL"), "/"),
 	}
 }
 
@@ -232,6 +254,11 @@ func (c *Config) RequireAdminPortal() error {
 	return nil
 }
 
+// SMTPConfigured reports whether outbound SMTP is configured.
+func (c *Config) SMTPConfigured() bool {
+	return strings.TrimSpace(c.SMTPHost) != "" && strings.TrimSpace(c.SMTPFrom) != ""
+}
+
 func envOr(key, fallback string) string {
 	if v := os.Getenv(key); v != "" {
 		return v
@@ -257,6 +284,18 @@ func envIntOr(key string, fallback int) int {
 		return fallback
 	}
 	n, err := strconv.Atoi(v)
+	if err != nil {
+		return fallback
+	}
+	return n
+}
+
+func envInt64Or(key string, fallback int64) int64 {
+	v := os.Getenv(key)
+	if v == "" {
+		return fallback
+	}
+	n, err := strconv.ParseInt(v, 10, 64)
 	if err != nil {
 		return fallback
 	}

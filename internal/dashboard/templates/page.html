@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>shiftbot</title>
-    <link rel="stylesheet" href="/static/dashboard.css?v=20260716-16" />
+    <link rel="stylesheet" href="/static/dashboard.css?v=20260716-17" />
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
     <script src="/static/dashboard.js?v=20260716-7" defer></script>
   </head>
@@ -15,6 +15,32 @@
           <img class="dashboard-logo" src="/static/shiftbot-logo.png?v=20260716-2" alt="ShiftBot" />
         </a>
         <div class="dashboard-account">
+          {{if .IncidentReportEnabled}}
+          <details class="incident-report">
+            <summary class="text-button">Báo cáo sự cố</summary>
+            <form
+              class="incident-report-form"
+              hx-post="/dashboard/incident-report"
+              hx-target="#incident-report-status"
+              hx-swap="innerHTML"
+            >
+              <label class="incident-report-field">
+                <span>Mô tả (tuỳ chọn)</span>
+                <textarea
+                  class="input"
+                  name="description"
+                  rows="3"
+                  maxlength="2000"
+                  placeholder="Ví dụ: không tải được lịch tuần, bot không phản hồi..."
+                ></textarea>
+              </label>
+              <div class="control-actions">
+                <button type="submit" class="btn btn-ghost btn-sm">Gửi báo cáo</button>
+              </div>
+            </form>
+            <div id="incident-report-status"></div>
+          </details>
+          {{end}}
           <form method="post" action="/logout" class="logout-form">
             <button type="submit" class="text-button">Đăng xuất</button>
           </form>

@@ -49,6 +49,13 @@ func TestLoadTelegramBotUsername(t *testing.T) {
 	}
 }
 
+func TestLoadTelegramChatID(t *testing.T) {
+	t.Setenv("TELEGRAM_CHAT_ID", "-1001234567890")
+	if got := Load().TelegramChatID; got != -1001234567890 {
+		t.Fatalf("TelegramChatID = %d", got)
+	}
+}
+
 func TestResolveAppAddrPrefersAPPAddr(t *testing.T) {
 	t.Setenv("APP_ADDR", ":9000")
 	t.Setenv("PORT", "10000")
@@ -302,5 +309,25 @@ func TestRequireProductionHTTPModeMissingTriggerSecret(t *testing.T) {
 	}
 	if err := cfg.RequireProduction(); err == nil {
 		t.Fatal("want error for missing REMINDER_TRIGGER_SECRET")
+	}
+}
+
+func TestSMTPConfigured(t *testing.T) {
+	t.Setenv("SMTP_HOST", "")
+	t.Setenv("SMTP_FROM", "")
+	if Load().SMTPConfigured() {
+		t.Fatal("want false when unset")
+	}
+	t.Setenv("SMTP_HOST", "smtp.example.com")
+	t.Setenv("SMTP_FROM", "noreply@example.com")
+	if !Load().SMTPConfigured() {
+		t.Fatal("want true when host and from set")
+	}
+}
+
+func TestLoadDashboardBaseURL(t *testing.T) {
+	t.Setenv("DASHBOARD_BASE_URL", "https://shiftz.example/")
+	if got := Load().DashboardBaseURL; got != "https://shiftz.example" {
+		t.Fatalf("DashboardBaseURL = %q", got)
 	}
 }

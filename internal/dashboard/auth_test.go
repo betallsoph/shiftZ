@@ -78,8 +78,130 @@ func TestLoginSucceedsWithUsername(t *testing.T) {
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	rec := httptest.NewRecorder()
 	mux.ServeHTTP(rec, req)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d", rec.Code)
+	}
+	if !strings.Contains(rec.Body.String(), "Đặt mật khẩu") {
+		t.Fatalf("expected set-password modal, body = %q", rec.Body.String())
+	}
+}
+
+func TestLoginSetsPasswordAndSucceeds(t *testing.T) {
+	shopID := uuid.New()
+	shop := &store.Shop{ID: shopID, Name: "Cafe", Timezone: "UTC", DashboardUsername: "demo.cafe"}
+	_, mux := testDashboardWithAuth(t, shopID, "", &fakeShops{shop: shop})
+
+	form := url.Values{
+		"dashboard_username":          {"demo.cafe"},
+		"login_step":                  {"password"},
+		"dashboard_email":             {"owner@example.com"},
+		"dashboard_password":        {"secret123"},
+		"dashboard_password_confirm": {"secret123"},
+	}
+	req := httptest.NewRequest(http.MethodPost, "/login", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	rec := httptest.NewRecorder()
+	mux.ServeHTTP(rec, req)
 	if rec.Code != http.StatusSeeOther {
 		t.Fatalf("status = %d", rec.Code)
+	}
+}
+
+func TestLoginRequiresEmailOnFirstSetup(t *testing.T) {
+	shopID := uuid.New()
+	shop := &store.Shop{ID: shopID, Name: "Cafe", Timezone: "UTC", DashboardUsername: "demo.cafe"}
+	_, mux := testDashboardWithAuth(t, shopID, "", &fakeShops{shop: shop})
+
+	form := url.Values{
+		"dashboard_username":          {"demo.cafe"},
+		"login_step":                  {"password"},
+		"dashboard_password":          {"secret123"},
+		"dashboard_password_confirm":  {"secret123"},
+	}
+	req := httptest.NewRequest(http.MethodPost, "/login", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	rec := httptest.NewRecorder()
+	mux.ServeHTTP(rec, req)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d", rec.Code)
+	}
+	if !strings.Contains(rec.Body.String(), "nhập email") {
+		t.Fatalf("body = %q", rec.Body.String())
+	}
+}
+
+func TestForgotPasswordShowsConfirmation(t *testing.T) {
+	shopID := uuid.New()
+	shop := &store.Shop{ID: shopID, Name: "Cafe", Timezone: "UTC", DashboardUsername: "demo.cafe"}
+	auth := &fakeShopAuth{shop: shop, hasPassword: true, password: "secret123", email: "owner@example.com"}
+	srv, mux := testDashboardWithShopAuth(t, shopID, auth, &fakeShops{shop: shop})
+	srv.SetPasswordResetMail(&fakeMailSender{}, "https://shiftz.test")
+
+	form := url.Values{
+		"dashboard_username": {"demo.cafe"},
+		"login_step":           {"forgot_password"},
+	}
+	req := httptest.NewRequest(http.MethodPost, "/login", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	rec := httptest.NewRecorder()
+	mux.ServeHTTP(rec, req)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d", rec.Code)
+	}
+	if !strings.Contains(rec.Body.String(), "Quên mật khẩu?") {
+		t.Fatalf("expected forgot link, body = %q", rec.Body.String())
+	}
+	if !strings.Contains(rec.Body.String(), "đã gửi link đặt lại mật khẩu") {
+		t.Fatalf("body = %q", rec.Body.String())
+	}
+	if auth.resetIssued != 1 {
+		t.Fatalf("resetIssued = %d", auth.resetIssued)
+	}
+}
+
+func TestPasswordResetPageSetsNewPassword(t *testing.T) {
+	shopID := uuid.New()
+	shop := &store.Shop{ID: shopID, Name: "Cafe", Timezone: "UTC", DashboardUsername: "demo.cafe"}
+	auth := &fakeShopAuth{shop: shop, hasPassword: true, password: "oldpass1", email: "owner@example.com", resetToken: "sz_pwreset_test"}
+	_, mux := testDashboardWithShopAuth(t, shopID, auth, &fakeShops{shop: shop})
+
+	form := url.Values{
+		"token":                        {"sz_pwreset_test"},
+		"dashboard_password":           {"newpass1"},
+		"dashboard_password_confirm":   {"newpass1"},
+	}
+	req := httptest.NewRequest(http.MethodPost, "/login/reset", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	rec := httptest.NewRecorder()
+	mux.ServeHTTP(rec, req)
+	if rec.Code != http.StatusSeeOther {
+		t.Fatalf("status = %d", rec.Code)
+	}
+	if auth.password != "newpass1" {
+		t.Fatalf("password = %q", auth.password)
+	}
+}
+
+func TestLoginFailsWithWrongPassword(t *testing.T) {
+	shopID := uuid.New()
+	shop := &store.Shop{ID: shopID, Name: "Cafe", Timezone: "UTC", DashboardUsername: "demo.cafe"}
+	auth := &fakeShopAuth{shop: shop, hasPassword: true}
+	_, mux := testDashboardWithAuthWithShopAuth(t, shopID, auth)
+
+	form := url.Values{
+		"dashboard_username": {"demo.cafe"},
+		"login_step":           {"password"},
+		"dashboard_password":   {"wrongpass"},
+	}
+	req := httptest.NewRequest(http.MethodPost, "/login", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	rec := httptest.NewRecorder()
+	mux.ServeHTTP(rec, req)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d", rec.Code)
+	}
+	if !strings.Contains(rec.Body.String(), "mật khẩu không đúng") {
+		t.Fatalf("body = %q", rec.Body.String())
 	}
 }
 
@@ -217,6 +339,17 @@ func TestHandleWeekMissingWeekStart(t *testing.T) {
 
 func testDashboardWithAuth(t *testing.T, shopID uuid.UUID, validToken string, shops *fakeShops) (*Server, *http.ServeMux) {
 	t.Helper()
+	auth := &fakeShopAuth{shop: shops.shop}
+	return testDashboardWithShopAuth(t, shopID, auth, shops)
+}
+
+func testDashboardWithAuthWithShopAuth(t *testing.T, shopID uuid.UUID, auth *fakeShopAuth) (*Server, *http.ServeMux) {
+	t.Helper()
+	return testDashboardWithShopAuth(t, shopID, auth, &fakeShops{shop: auth.shop})
+}
+
+func testDashboardWithShopAuth(t *testing.T, shopID uuid.UUID, auth *fakeShopAuth, shops *fakeShops) (*Server, *http.ServeMux) {
+	t.Helper()
 	var secret [32]byte
 	if _, err := rand.Read(secret[:]); err != nil {
 		t.Fatal(err)
@@ -228,7 +361,7 @@ func testDashboardWithAuth(t *testing.T, shopID uuid.UUID, validToken string, sh
 	}
 	srv := &Server{
 		shops:         shops,
-		shopAuth:      &fakeShopAuth{shop: shops.shop},
+		shopAuth:      auth,
 		shifts:        &fakeShifts{},
 		schedules:     &fakeSchedules{},
 		employees:     &fakeEmployees{},
@@ -257,7 +390,22 @@ func addSessionCookie(t *testing.T, srv *Server, shopID uuid.UUID, req *http.Req
 }
 
 type fakeShopAuth struct {
-	shop *store.Shop
+	shop         *store.Shop
+	hasPassword  bool
+	password     string
+	email        string
+	hint         string
+	resetToken   string
+	resetIssued  int
+}
+
+type fakeMailSender struct {
+	sent int
+}
+
+func (f *fakeMailSender) Send(ctx context.Context, to, subject, body string) error {
+	f.sent++
+	return nil
 }
 
 func (f *fakeShopAuth) ByDashboardUsername(ctx context.Context, username string) (*store.Shop, error) {
@@ -265,4 +413,77 @@ func (f *fakeShopAuth) ByDashboardUsername(ctx context.Context, username string)
 		return nil, store.ErrNotFound
 	}
 	return f.shop, nil
+}
+
+func (f *fakeShopAuth) HasDashboardPassword(ctx context.Context, shopID uuid.UUID) (bool, error) {
+	if f.shop == nil || f.shop.ID != shopID {
+		return false, store.ErrNotFound
+	}
+	return f.hasPassword, nil
+}
+
+func (f *fakeShopAuth) SetDashboardCredentials(ctx context.Context, shopID uuid.UUID, password, email, hint string) error {
+	if f.shop == nil || f.shop.ID != shopID {
+		return store.ErrNotFound
+	}
+	if f.hasPassword {
+		return store.ErrAlreadyExists
+	}
+	if err := store.ValidateDashboardPassword(password); err != nil {
+		return err
+	}
+	if err := store.ValidateDashboardEmail(email); err != nil {
+		return err
+	}
+	if err := store.ValidateDashboardPasswordHint(hint); err != nil {
+		return err
+	}
+	f.hasPassword = true
+	f.password = password
+	f.email = store.NormalizeDashboardEmail(email)
+	f.hint = strings.TrimSpace(hint)
+	return nil
+}
+
+func (f *fakeShopAuth) DashboardEmail(ctx context.Context, shopID uuid.UUID) (string, error) {
+	if f.shop == nil || f.shop.ID != shopID {
+		return "", store.ErrNotFound
+	}
+	return f.email, nil
+}
+
+func (f *fakeShopAuth) IssueDashboardPasswordReset(ctx context.Context, shopID uuid.UUID) (string, error) {
+	if f.shop == nil || f.shop.ID != shopID {
+		return "", store.ErrNotFound
+	}
+	if f.email == "" {
+		return "", store.ErrNotFound
+	}
+	f.resetIssued++
+	if f.resetToken == "" {
+		f.resetToken = "sz_pwreset_test"
+	}
+	return f.resetToken, nil
+}
+
+func (f *fakeShopAuth) ResetDashboardPasswordWithToken(ctx context.Context, token, password string) (*store.Shop, error) {
+	if token != f.resetToken {
+		return nil, store.ErrInvalidCredentials
+	}
+	if err := store.ValidateDashboardPassword(password); err != nil {
+		return nil, err
+	}
+	f.password = password
+	f.hasPassword = true
+	return f.shop, nil
+}
+
+func (f *fakeShopAuth) VerifyDashboardPassword(ctx context.Context, shopID uuid.UUID, password string) error {
+	if f.shop == nil || f.shop.ID != shopID {
+		return store.ErrNotFound
+	}
+	if !f.hasPassword || f.password != password {
+		return store.ErrInvalidCredentials
+	}
+	return nil
 }

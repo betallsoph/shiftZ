@@ -267,3 +267,27 @@ type noopShopAuth struct{}
 func (noopShopAuth) ByDashboardUsername(ctx context.Context, username string) (*store.Shop, error) {
 	return nil, store.ErrNotFound
 }
+
+func (noopShopAuth) HasDashboardPassword(ctx context.Context, shopID uuid.UUID) (bool, error) {
+	return false, store.ErrNotFound
+}
+
+func (noopShopAuth) SetDashboardCredentials(ctx context.Context, shopID uuid.UUID, password, email, hint string) error {
+	return store.ErrNotFound
+}
+
+func (noopShopAuth) VerifyDashboardPassword(ctx context.Context, shopID uuid.UUID, password string) error {
+	return store.ErrNotFound
+}
+
+func (noopShopAuth) DashboardEmail(ctx context.Context, shopID uuid.UUID) (string, error) {
+	return "", store.ErrNotFound
+}
+
+func (noopShopAuth) IssueDashboardPasswordReset(ctx context.Context, shopID uuid.UUID) (string, error) {
+	return "", store.ErrNotFound
+}
+
+func (noopShopAuth) ResetDashboardPasswordWithToken(ctx context.Context, token, password string) (*store.Shop, error) {
+	return nil, store.ErrNotFound
+}

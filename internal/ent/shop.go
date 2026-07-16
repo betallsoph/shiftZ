@@ -32,6 +32,16 @@ type Shop struct {
 	DashboardTokenHash *string `json:"dashboard_token_hash,omitempty"`
 	// DashboardUsername holds the value of the "dashboard_username" field.
 	DashboardUsername *string `json:"dashboard_username,omitempty"`
+	// DashboardPasswordHash holds the value of the "dashboard_password_hash" field.
+	DashboardPasswordHash *string `json:"dashboard_password_hash,omitempty"`
+	// DashboardEmail holds the value of the "dashboard_email" field.
+	DashboardEmail *string `json:"dashboard_email,omitempty"`
+	// DashboardPasswordHint holds the value of the "dashboard_password_hint" field.
+	DashboardPasswordHint *string `json:"dashboard_password_hint,omitempty"`
+	// DashboardPasswordResetHash holds the value of the "dashboard_password_reset_hash" field.
+	DashboardPasswordResetHash *string `json:"dashboard_password_reset_hash,omitempty"`
+	// DashboardPasswordResetExpiresAt holds the value of the "dashboard_password_reset_expires_at" field.
+	DashboardPasswordResetExpiresAt *time.Time `json:"dashboard_password_reset_expires_at,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -131,9 +141,9 @@ func (*Shop) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case shop.FieldTelegramGroupID:
 			values[i] = new(sql.NullInt64)
-		case shop.FieldName, shop.FieldTimezone, shop.FieldInviteCode, shop.FieldPlan, shop.FieldDashboardTokenHash, shop.FieldDashboardUsername:
+		case shop.FieldName, shop.FieldTimezone, shop.FieldInviteCode, shop.FieldPlan, shop.FieldDashboardTokenHash, shop.FieldDashboardUsername, shop.FieldDashboardPasswordHash, shop.FieldDashboardEmail, shop.FieldDashboardPasswordHint, shop.FieldDashboardPasswordResetHash:
 			values[i] = new(sql.NullString)
-		case shop.FieldCreatedAt:
+		case shop.FieldDashboardPasswordResetExpiresAt, shop.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
 		case shop.FieldID:
 			values[i] = new(uuid.UUID)
@@ -201,6 +211,41 @@ func (_m *Shop) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.DashboardUsername = new(string)
 				*_m.DashboardUsername = value.String
+			}
+		case shop.FieldDashboardPasswordHash:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field dashboard_password_hash", values[i])
+			} else if value.Valid {
+				_m.DashboardPasswordHash = new(string)
+				*_m.DashboardPasswordHash = value.String
+			}
+		case shop.FieldDashboardEmail:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field dashboard_email", values[i])
+			} else if value.Valid {
+				_m.DashboardEmail = new(string)
+				*_m.DashboardEmail = value.String
+			}
+		case shop.FieldDashboardPasswordHint:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field dashboard_password_hint", values[i])
+			} else if value.Valid {
+				_m.DashboardPasswordHint = new(string)
+				*_m.DashboardPasswordHint = value.String
+			}
+		case shop.FieldDashboardPasswordResetHash:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field dashboard_password_reset_hash", values[i])
+			} else if value.Valid {
+				_m.DashboardPasswordResetHash = new(string)
+				*_m.DashboardPasswordResetHash = value.String
+			}
+		case shop.FieldDashboardPasswordResetExpiresAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field dashboard_password_reset_expires_at", values[i])
+			} else if value.Valid {
+				_m.DashboardPasswordResetExpiresAt = new(time.Time)
+				*_m.DashboardPasswordResetExpiresAt = value.Time
 			}
 		case shop.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -302,6 +347,31 @@ func (_m *Shop) String() string {
 	if v := _m.DashboardUsername; v != nil {
 		builder.WriteString("dashboard_username=")
 		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.DashboardPasswordHash; v != nil {
+		builder.WriteString("dashboard_password_hash=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.DashboardEmail; v != nil {
+		builder.WriteString("dashboard_email=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.DashboardPasswordHint; v != nil {
+		builder.WriteString("dashboard_password_hint=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.DashboardPasswordResetHash; v != nil {
+		builder.WriteString("dashboard_password_reset_hash=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.DashboardPasswordResetExpiresAt; v != nil {
+		builder.WriteString("dashboard_password_reset_expires_at=")
+		builder.WriteString(v.Format(time.ANSIC))
 	}
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")

@@ -40,6 +40,17 @@
 
   initInteractiveAuthGrid();
 
+  function initAuthPasswordModal() {
+    const modal = document.querySelector('.auth-password-modal');
+    if (!modal) return;
+    const passwordInput = modal.querySelector('input[name="dashboard_password"]');
+    if (passwordInput instanceof HTMLInputElement) {
+      passwordInput.focus();
+    }
+  }
+
+  initAuthPasswordModal();
+
   function findTapTarget(target) {
     if (!(target instanceof Element)) return null;
     const interactive = target.closest('button, a[href], [role="button"]');

@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -149,6 +150,106 @@ func (_u *ShopUpdate) SetNillableDashboardUsername(v *string) *ShopUpdate {
 // ClearDashboardUsername clears the value of the "dashboard_username" field.
 func (_u *ShopUpdate) ClearDashboardUsername() *ShopUpdate {
 	_u.mutation.ClearDashboardUsername()
+	return _u
+}
+
+// SetDashboardPasswordHash sets the "dashboard_password_hash" field.
+func (_u *ShopUpdate) SetDashboardPasswordHash(v string) *ShopUpdate {
+	_u.mutation.SetDashboardPasswordHash(v)
+	return _u
+}
+
+// SetNillableDashboardPasswordHash sets the "dashboard_password_hash" field if the given value is not nil.
+func (_u *ShopUpdate) SetNillableDashboardPasswordHash(v *string) *ShopUpdate {
+	if v != nil {
+		_u.SetDashboardPasswordHash(*v)
+	}
+	return _u
+}
+
+// ClearDashboardPasswordHash clears the value of the "dashboard_password_hash" field.
+func (_u *ShopUpdate) ClearDashboardPasswordHash() *ShopUpdate {
+	_u.mutation.ClearDashboardPasswordHash()
+	return _u
+}
+
+// SetDashboardEmail sets the "dashboard_email" field.
+func (_u *ShopUpdate) SetDashboardEmail(v string) *ShopUpdate {
+	_u.mutation.SetDashboardEmail(v)
+	return _u
+}
+
+// SetNillableDashboardEmail sets the "dashboard_email" field if the given value is not nil.
+func (_u *ShopUpdate) SetNillableDashboardEmail(v *string) *ShopUpdate {
+	if v != nil {
+		_u.SetDashboardEmail(*v)
+	}
+	return _u
+}
+
+// ClearDashboardEmail clears the value of the "dashboard_email" field.
+func (_u *ShopUpdate) ClearDashboardEmail() *ShopUpdate {
+	_u.mutation.ClearDashboardEmail()
+	return _u
+}
+
+// SetDashboardPasswordHint sets the "dashboard_password_hint" field.
+func (_u *ShopUpdate) SetDashboardPasswordHint(v string) *ShopUpdate {
+	_u.mutation.SetDashboardPasswordHint(v)
+	return _u
+}
+
+// SetNillableDashboardPasswordHint sets the "dashboard_password_hint" field if the given value is not nil.
+func (_u *ShopUpdate) SetNillableDashboardPasswordHint(v *string) *ShopUpdate {
+	if v != nil {
+		_u.SetDashboardPasswordHint(*v)
+	}
+	return _u
+}
+
+// ClearDashboardPasswordHint clears the value of the "dashboard_password_hint" field.
+func (_u *ShopUpdate) ClearDashboardPasswordHint() *ShopUpdate {
+	_u.mutation.ClearDashboardPasswordHint()
+	return _u
+}
+
+// SetDashboardPasswordResetHash sets the "dashboard_password_reset_hash" field.
+func (_u *ShopUpdate) SetDashboardPasswordResetHash(v string) *ShopUpdate {
+	_u.mutation.SetDashboardPasswordResetHash(v)
+	return _u
+}
+
+// SetNillableDashboardPasswordResetHash sets the "dashboard_password_reset_hash" field if the given value is not nil.
+func (_u *ShopUpdate) SetNillableDashboardPasswordResetHash(v *string) *ShopUpdate {
+	if v != nil {
+		_u.SetDashboardPasswordResetHash(*v)
+	}
+	return _u
+}
+
+// ClearDashboardPasswordResetHash clears the value of the "dashboard_password_reset_hash" field.
+func (_u *ShopUpdate) ClearDashboardPasswordResetHash() *ShopUpdate {
+	_u.mutation.ClearDashboardPasswordResetHash()
+	return _u
+}
+
+// SetDashboardPasswordResetExpiresAt sets the "dashboard_password_reset_expires_at" field.
+func (_u *ShopUpdate) SetDashboardPasswordResetExpiresAt(v time.Time) *ShopUpdate {
+	_u.mutation.SetDashboardPasswordResetExpiresAt(v)
+	return _u
+}
+
+// SetNillableDashboardPasswordResetExpiresAt sets the "dashboard_password_reset_expires_at" field if the given value is not nil.
+func (_u *ShopUpdate) SetNillableDashboardPasswordResetExpiresAt(v *time.Time) *ShopUpdate {
+	if v != nil {
+		_u.SetDashboardPasswordResetExpiresAt(*v)
+	}
+	return _u
+}
+
+// ClearDashboardPasswordResetExpiresAt clears the value of the "dashboard_password_reset_expires_at" field.
+func (_u *ShopUpdate) ClearDashboardPasswordResetExpiresAt() *ShopUpdate {
+	_u.mutation.ClearDashboardPasswordResetExpiresAt()
 	return _u
 }
 
@@ -474,6 +575,36 @@ func (_u *ShopUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.DashboardUsernameCleared() {
 		_spec.ClearField(shop.FieldDashboardUsername, field.TypeString)
+	}
+	if value, ok := _u.mutation.DashboardPasswordHash(); ok {
+		_spec.SetField(shop.FieldDashboardPasswordHash, field.TypeString, value)
+	}
+	if _u.mutation.DashboardPasswordHashCleared() {
+		_spec.ClearField(shop.FieldDashboardPasswordHash, field.TypeString)
+	}
+	if value, ok := _u.mutation.DashboardEmail(); ok {
+		_spec.SetField(shop.FieldDashboardEmail, field.TypeString, value)
+	}
+	if _u.mutation.DashboardEmailCleared() {
+		_spec.ClearField(shop.FieldDashboardEmail, field.TypeString)
+	}
+	if value, ok := _u.mutation.DashboardPasswordHint(); ok {
+		_spec.SetField(shop.FieldDashboardPasswordHint, field.TypeString, value)
+	}
+	if _u.mutation.DashboardPasswordHintCleared() {
+		_spec.ClearField(shop.FieldDashboardPasswordHint, field.TypeString)
+	}
+	if value, ok := _u.mutation.DashboardPasswordResetHash(); ok {
+		_spec.SetField(shop.FieldDashboardPasswordResetHash, field.TypeString, value)
+	}
+	if _u.mutation.DashboardPasswordResetHashCleared() {
+		_spec.ClearField(shop.FieldDashboardPasswordResetHash, field.TypeString)
+	}
+	if value, ok := _u.mutation.DashboardPasswordResetExpiresAt(); ok {
+		_spec.SetField(shop.FieldDashboardPasswordResetExpiresAt, field.TypeTime, value)
+	}
+	if _u.mutation.DashboardPasswordResetExpiresAtCleared() {
+		_spec.ClearField(shop.FieldDashboardPasswordResetExpiresAt, field.TypeTime)
 	}
 	if _u.mutation.EmployeesCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -927,6 +1058,106 @@ func (_u *ShopUpdateOne) ClearDashboardUsername() *ShopUpdateOne {
 	return _u
 }
 
+// SetDashboardPasswordHash sets the "dashboard_password_hash" field.
+func (_u *ShopUpdateOne) SetDashboardPasswordHash(v string) *ShopUpdateOne {
+	_u.mutation.SetDashboardPasswordHash(v)
+	return _u
+}
+
+// SetNillableDashboardPasswordHash sets the "dashboard_password_hash" field if the given value is not nil.
+func (_u *ShopUpdateOne) SetNillableDashboardPasswordHash(v *string) *ShopUpdateOne {
+	if v != nil {
+		_u.SetDashboardPasswordHash(*v)
+	}
+	return _u
+}
+
+// ClearDashboardPasswordHash clears the value of the "dashboard_password_hash" field.
+func (_u *ShopUpdateOne) ClearDashboardPasswordHash() *ShopUpdateOne {
+	_u.mutation.ClearDashboardPasswordHash()
+	return _u
+}
+
+// SetDashboardEmail sets the "dashboard_email" field.
+func (_u *ShopUpdateOne) SetDashboardEmail(v string) *ShopUpdateOne {
+	_u.mutation.SetDashboardEmail(v)
+	return _u
+}
+
+// SetNillableDashboardEmail sets the "dashboard_email" field if the given value is not nil.
+func (_u *ShopUpdateOne) SetNillableDashboardEmail(v *string) *ShopUpdateOne {
+	if v != nil {
+		_u.SetDashboardEmail(*v)
+	}
+	return _u
+}
+
+// ClearDashboardEmail clears the value of the "dashboard_email" field.
+func (_u *ShopUpdateOne) ClearDashboardEmail() *ShopUpdateOne {
+	_u.mutation.ClearDashboardEmail()
+	return _u
+}
+
+// SetDashboardPasswordHint sets the "dashboard_password_hint" field.
+func (_u *ShopUpdateOne) SetDashboardPasswordHint(v string) *ShopUpdateOne {
+	_u.mutation.SetDashboardPasswordHint(v)
+	return _u
+}
+
+// SetNillableDashboardPasswordHint sets the "dashboard_password_hint" field if the given value is not nil.
+func (_u *ShopUpdateOne) SetNillableDashboardPasswordHint(v *string) *ShopUpdateOne {
+	if v != nil {
+		_u.SetDashboardPasswordHint(*v)
+	}
+	return _u
+}
+
+// ClearDashboardPasswordHint clears the value of the "dashboard_password_hint" field.
+func (_u *ShopUpdateOne) ClearDashboardPasswordHint() *ShopUpdateOne {
+	_u.mutation.ClearDashboardPasswordHint()
+	return _u
+}
+
+// SetDashboardPasswordResetHash sets the "dashboard_password_reset_hash" field.
+func (_u *ShopUpdateOne) SetDashboardPasswordResetHash(v string) *ShopUpdateOne {
+	_u.mutation.SetDashboardPasswordResetHash(v)
+	return _u
+}
+
+// SetNillableDashboardPasswordResetHash sets the "dashboard_password_reset_hash" field if the given value is not nil.
+func (_u *ShopUpdateOne) SetNillableDashboardPasswordResetHash(v *string) *ShopUpdateOne {
+	if v != nil {
+		_u.SetDashboardPasswordResetHash(*v)
+	}
+	return _u
+}
+
+// ClearDashboardPasswordResetHash clears the value of the "dashboard_password_reset_hash" field.
+func (_u *ShopUpdateOne) ClearDashboardPasswordResetHash() *ShopUpdateOne {
+	_u.mutation.ClearDashboardPasswordResetHash()
+	return _u
+}
+
+// SetDashboardPasswordResetExpiresAt sets the "dashboard_password_reset_expires_at" field.
+func (_u *ShopUpdateOne) SetDashboardPasswordResetExpiresAt(v time.Time) *ShopUpdateOne {
+	_u.mutation.SetDashboardPasswordResetExpiresAt(v)
+	return _u
+}
+
+// SetNillableDashboardPasswordResetExpiresAt sets the "dashboard_password_reset_expires_at" field if the given value is not nil.
+func (_u *ShopUpdateOne) SetNillableDashboardPasswordResetExpiresAt(v *time.Time) *ShopUpdateOne {
+	if v != nil {
+		_u.SetDashboardPasswordResetExpiresAt(*v)
+	}
+	return _u
+}
+
+// ClearDashboardPasswordResetExpiresAt clears the value of the "dashboard_password_reset_expires_at" field.
+func (_u *ShopUpdateOne) ClearDashboardPasswordResetExpiresAt() *ShopUpdateOne {
+	_u.mutation.ClearDashboardPasswordResetExpiresAt()
+	return _u
+}
+
 // AddEmployeeIDs adds the "employees" edge to the Employee entity by IDs.
 func (_u *ShopUpdateOne) AddEmployeeIDs(ids ...uuid.UUID) *ShopUpdateOne {
 	_u.mutation.AddEmployeeIDs(ids...)
@@ -1279,6 +1510,36 @@ func (_u *ShopUpdateOne) sqlSave(ctx context.Context) (_node *Shop, err error) {
 	}
 	if _u.mutation.DashboardUsernameCleared() {
 		_spec.ClearField(shop.FieldDashboardUsername, field.TypeString)
+	}
+	if value, ok := _u.mutation.DashboardPasswordHash(); ok {
+		_spec.SetField(shop.FieldDashboardPasswordHash, field.TypeString, value)
+	}
+	if _u.mutation.DashboardPasswordHashCleared() {
+		_spec.ClearField(shop.FieldDashboardPasswordHash, field.TypeString)
+	}
+	if value, ok := _u.mutation.DashboardEmail(); ok {
+		_spec.SetField(shop.FieldDashboardEmail, field.TypeString, value)
+	}
+	if _u.mutation.DashboardEmailCleared() {
+		_spec.ClearField(shop.FieldDashboardEmail, field.TypeString)
+	}
+	if value, ok := _u.mutation.DashboardPasswordHint(); ok {
+		_spec.SetField(shop.FieldDashboardPasswordHint, field.TypeString, value)
+	}
+	if _u.mutation.DashboardPasswordHintCleared() {
+		_spec.ClearField(shop.FieldDashboardPasswordHint, field.TypeString)
+	}
+	if value, ok := _u.mutation.DashboardPasswordResetHash(); ok {
+		_spec.SetField(shop.FieldDashboardPasswordResetHash, field.TypeString, value)
+	}
+	if _u.mutation.DashboardPasswordResetHashCleared() {
+		_spec.ClearField(shop.FieldDashboardPasswordResetHash, field.TypeString)
+	}
+	if value, ok := _u.mutation.DashboardPasswordResetExpiresAt(); ok {
+		_spec.SetField(shop.FieldDashboardPasswordResetExpiresAt, field.TypeTime, value)
+	}
+	if _u.mutation.DashboardPasswordResetExpiresAtCleared() {
+		_spec.ClearField(shop.FieldDashboardPasswordResetExpiresAt, field.TypeTime)
 	}
 	if _u.mutation.EmployeesCleared() {
 		edge := &sqlgraph.EdgeSpec{

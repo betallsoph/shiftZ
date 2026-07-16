@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"log/slog"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -19,6 +20,16 @@ type shopReader interface {
 
 type shopAuthenticator interface {
 	ByDashboardUsername(ctx context.Context, username string) (*store.Shop, error)
+	HasDashboardPassword(ctx context.Context, shopID uuid.UUID) (bool, error)
+	SetDashboardCredentials(ctx context.Context, shopID uuid.UUID, password, email, hint string) error
+	VerifyDashboardPassword(ctx context.Context, shopID uuid.UUID, password string) error
+	DashboardEmail(ctx context.Context, shopID uuid.UUID) (string, error)
+	IssueDashboardPasswordReset(ctx context.Context, shopID uuid.UUID) (string, error)
+	ResetDashboardPasswordWithToken(ctx context.Context, token, password string) (*store.Shop, error)
+}
+
+type mailSender interface {
+	Send(ctx context.Context, to, subject, body string) error
 }
 
 type scheduleRepo interface {
@@ -51,6 +62,10 @@ type Server struct {
 	onboarding    shopOnboarder
 	signupEnabled bool
 	botUsername   string
+	incidentMessenger incidentMessenger
+	incidentChatID    int64
+	mail              mailSender
+	dashboardBaseURL  string
 	sessions      *SessionManager
 	log           *slog.Logger
 	tmpl          *templateSet
@@ -59,6 +74,12 @@ type Server struct {
 // SetTelegramBotUsername configures the public bot username used for employee invites.
 func (s *Server) SetTelegramBotUsername(username string) {
 	s.botUsername = normalizeTelegramUsername(username)
+}
+
+// SetPasswordResetMail configures outbound email for owner password recovery.
+func (s *Server) SetPasswordResetMail(sender mailSender, baseURL string) {
+	s.mail = sender
+	s.dashboardBaseURL = strings.TrimSpace(baseURL)
 }
 
 // New wires the dashboard on top of the store and planner.
@@ -91,6 +112,8 @@ func New(st *store.Store, sessions *SessionManager, onboard shopOnboarder, signu
 func (s *Server) Register(mux *http.ServeMux) {
 	mux.HandleFunc("GET /login", s.handleLoginGET)
 	mux.HandleFunc("POST /login", s.handleLoginPOST)
+	mux.HandleFunc("GET /login/reset", s.handlePasswordResetGET)
+	mux.HandleFunc("POST /login/reset", s.handlePasswordResetPOST)
 	mux.HandleFunc("POST /logout", s.handleLogout)
 	mux.HandleFunc("GET /{$}", s.handleIndex)
 	mux.HandleFunc("GET /dashboard/week", s.handleWeek)
@@ -102,6 +125,7 @@ func (s *Server) Register(mux *http.ServeMux) {
 	mux.HandleFunc("POST /dashboard/employees/{id}", s.handleUpdateEmployee)
 	mux.HandleFunc("POST /dashboard/employees/{id}/activate", s.handleActivateEmployee)
 	mux.HandleFunc("POST /dashboard/employees/{id}/deactivate", s.handleDeactivateEmployee)
+	mux.HandleFunc("POST /dashboard/incident-report", s.handleIncidentReport)
 }
 
 type templateSet struct {

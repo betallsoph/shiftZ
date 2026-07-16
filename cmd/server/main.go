@@ -19,8 +19,10 @@ import (
 	"github.com/betallsoph/shiftz/internal/config"
 	"github.com/betallsoph/shiftz/internal/dashboard"
 	"github.com/betallsoph/shiftz/internal/health"
+	"github.com/betallsoph/shiftz/internal/mail"
 	"github.com/betallsoph/shiftz/internal/onboarding"
 	"github.com/betallsoph/shiftz/internal/store"
+	"github.com/betallsoph/shiftz/internal/telegram"
 	"github.com/betallsoph/shiftz/web"
 )
 
@@ -74,6 +76,15 @@ func run(log *slog.Logger) error {
 		return err
 	}
 	dash.SetTelegramBotUsername(cfg.TelegramBotUsername)
+	configureDashboardPasswordReset(dash, cfg, log)
+	if cfg.TelegramToken != "" && cfg.TelegramChatID != 0 {
+		tg := telegram.NewClient(cfg.TelegramToken)
+		dash.SetIncidentReporter(telegramIncidentMessenger{
+			send: func(ctx context.Context, chatID int64, text string) error {
+				return tg.SendMessage(ctx, chatID, text, nil)
+			},
+		}, cfg.TelegramChatID)
+	}
 	if cfg.OwnerSignupEnabled {
 		log.Info("owner signup enabled")
 	}
@@ -111,4 +122,18 @@ func run(log *slog.Logger) error {
 		return err
 	}
 	return nil
+}
+
+func configureDashboardPasswordReset(dash *dashboard.Server, cfg *config.Config, log *slog.Logger) {
+	if cfg.SMTPConfigured() {
+		dash.SetPasswordResetMail(mail.NewSMTP(mail.SMTPConfig{
+			Host:     cfg.SMTPHost,
+			Port:     cfg.SMTPPort,
+			Username: cfg.SMTPUser,
+			Password: cfg.SMTPPassword,
+			From:     cfg.SMTPFrom,
+		}), cfg.DashboardBaseURL)
+		return
+	}
+	log.Info("owner password recovery email disabled (SMTP not configured)")
 }

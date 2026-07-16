@@ -4,10 +4,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>shiftbot — Đăng nhập</title>
-    <link rel="stylesheet" href="/static/dashboard.css?v=20260716-12" />
-    <script src="/static/dashboard.js?v=20260716-4" defer></script>
+    <link rel="stylesheet" href="/static/dashboard.css?v=20260716-14" />
+    <script src="/static/dashboard.js?v=20260716-5" defer></script>
   </head>
-  <body class="roomio-grid-bg auth-page">
+  <body class="roomio-grid-bg auth-page{{if .ShowPasswordModal}} auth-page--modal-open{{end}}">
     <header class="site-header auth-header">
       <h1 class="brand-heading">
         <a class="brand-link" href="/login" aria-label="ShiftBot">
@@ -26,17 +26,110 @@
               name="dashboard_username"
               placeholder="demo.cafe"
               autocomplete="username"
+              value="{{.Username}}"
+              {{if .ShowPasswordModal}}readonly{{end}}
               required
             />
           </label>
-          {{if .Error}}
+          {{if and .Error (not .ShowPasswordModal)}}
           <p class="auth-error" role="alert">{{.Error}}</p>
           {{end}}
           <div class="control-actions">
-            <button type="submit" class="btn btn-primary">Đăng nhập</button>
+            <button type="submit" class="btn btn-primary" {{if .ShowPasswordModal}}disabled{{end}}>Đăng nhập</button>
           </div>
         </form>
       </section>
     </main>
+
+    {{if .ShowPasswordModal}}
+    <div class="auth-modal-backdrop" aria-hidden="true"></div>
+    <section
+      class="auth-password-modal card"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="auth-password-title"
+    >
+      <h2 id="auth-password-title" class="auth-password-title">
+        {{if .SetPassword}}Đặt mật khẩu{{else}}Nhập mật khẩu{{end}}
+      </h2>
+      <p class="auth-password-subtitle">
+        {{if .SetPassword}}
+        Lần đầu đăng nhập với <strong>{{.Username}}</strong>. Hãy tạo mật khẩu cho tài khoản.
+        {{else}}
+        Nhập mật khẩu cho <strong>{{.Username}}</strong>.
+        {{end}}
+      </p>
+      <form method="post" action="/login" class="control-form auth-password-form">
+        <input type="hidden" name="dashboard_username" value="{{.Username}}" />
+        <input type="hidden" name="login_step" value="password" />
+        {{if .SetPassword}}
+        <label>
+          Email
+          <input
+            class="input"
+            type="email"
+            name="dashboard_email"
+            autocomplete="email"
+            required
+            autofocus
+          />
+        </label>
+        {{end}}
+        <label>
+          Mật khẩu
+          <input
+            class="input"
+            type="password"
+            name="dashboard_password"
+            autocomplete="{{if .SetPassword}}new-password{{else}}current-password{{end}}"
+            minlength="8"
+            required
+            {{if not .SetPassword}}autofocus{{end}}
+          />
+        </label>
+        {{if .SetPassword}}
+        <label>
+          Xác nhận mật khẩu
+          <input
+            class="input"
+            type="password"
+            name="dashboard_password_confirm"
+            autocomplete="new-password"
+            minlength="8"
+            required
+          />
+        </label>
+        <label>
+          Gợi ý (tùy chọn)
+          <input
+            class="input"
+            type="text"
+            name="dashboard_password_hint"
+            autocomplete="off"
+            maxlength="200"
+          />
+        </label>
+        {{end}}
+        {{if .Error}}
+        <p class="auth-error" role="alert">{{.Error}}</p>
+        {{end}}
+        {{if .Info}}
+        <p class="auth-info" role="status">{{.Info}}</p>
+        {{end}}
+        <div class="control-actions">
+          <button type="submit" class="btn btn-primary modal-action">
+            <span class="modal-action-label">{{if .SetPassword}}Lưu và đăng nhập{{else}}Đăng nhập{{end}}</span>
+          </button>
+        </div>
+      </form>
+      {{if not .SetPassword}}
+      <form method="post" action="/login" class="auth-forgot-form">
+        <input type="hidden" name="dashboard_username" value="{{.Username}}" />
+        <input type="hidden" name="login_step" value="forgot_password" />
+        <button type="submit" class="auth-forgot-link">Quên mật khẩu?</button>
+      </form>
+      {{end}}
+    </section>
+    {{end}}
   </body>
 </html>

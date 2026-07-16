@@ -28,10 +28,11 @@ func (s *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
 	employeeInviteURL, employeeInviteShareURL := employeeInviteLinks(s.botUsername, shop.InviteCode)
 	telegram := buildTelegramSetupView(shop)
 	if err := s.tmpl.render(w, "page.html", PageData{
-		Today:     time.Now().Format(dateLayout),
-		ShopName:  shop.Name,
-		Shifts:    s.loadShiftsPanelView(r.Context(), sess.ShopID),
-		Employees: s.loadEmployeesPanelView(r.Context(), shop, telegram, employeeInviteURL, employeeInviteShareURL),
+		Today:                 time.Now().Format(dateLayout),
+		ShopName:              shop.Name,
+		Shifts:                s.loadShiftsPanelView(r.Context(), sess.ShopID),
+		Employees:             s.loadEmployeesPanelView(r.Context(), shop, telegram, employeeInviteURL, employeeInviteShareURL),
+		IncidentReportEnabled: s.incidentReportEnabled(),
 	}); err != nil {
 		s.log.Error("render page", "err", err)
 		http.Error(w, "template error", http.StatusInternalServerError)

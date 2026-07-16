@@ -12,6 +12,7 @@ import (
 	"github.com/betallsoph/shiftz/internal/dashboard"
 	"github.com/betallsoph/shiftz/internal/health"
 	"github.com/betallsoph/shiftz/internal/llm"
+	"github.com/betallsoph/shiftz/internal/mail"
 	"github.com/betallsoph/shiftz/internal/onboarding"
 	"github.com/betallsoph/shiftz/internal/reminder"
 	"github.com/betallsoph/shiftz/internal/store"
@@ -52,6 +53,24 @@ func wire(ctx context.Context, cfg *config.Config, st *store.Store, log *slog.Lo
 		return nil, err
 	}
 	dash.SetTelegramBotUsername(cfg.TelegramBotUsername)
+	if cfg.SMTPConfigured() {
+		dash.SetPasswordResetMail(mail.NewSMTP(mail.SMTPConfig{
+			Host:     cfg.SMTPHost,
+			Port:     cfg.SMTPPort,
+			Username: cfg.SMTPUser,
+			Password: cfg.SMTPPassword,
+			From:     cfg.SMTPFrom,
+		}), cfg.DashboardBaseURL)
+	} else {
+		log.Info("owner password recovery email disabled (SMTP not configured)")
+	}
+	if cfg.TelegramToken != "" && cfg.TelegramChatID != 0 {
+		dash.SetIncidentReporter(telegramIncidentMessenger{
+			send: func(ctx context.Context, chatID int64, text string) error {
+				return tg.SendMessage(ctx, chatID, text, nil)
+			},
+		}, cfg.TelegramChatID)
+	}
 	if cfg.OwnerSignupEnabled {
 		log.Info("owner signup enabled")
 	}

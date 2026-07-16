@@ -7867,43 +7867,48 @@ func (m *ShiftMutation) ResetEdge(name string) error {
 // ShopMutation represents an operation that mutates the Shop nodes in the graph.
 type ShopMutation struct {
 	config
-	op                         Op
-	typ                        string
-	id                         *uuid.UUID
-	name                       *string
-	timezone                   *string
-	invite_code                *string
-	telegram_group_id          *int64
-	addtelegram_group_id       *int64
-	plan                       *string
-	dashboard_token_hash       *string
-	dashboard_username         *string
-	created_at                 *time.Time
-	clearedFields              map[string]struct{}
-	employees                  map[uuid.UUID]struct{}
-	removedemployees           map[uuid.UUID]struct{}
-	clearedemployees           bool
-	shifts                     map[uuid.UUID]struct{}
-	removedshifts              map[uuid.UUID]struct{}
-	clearedshifts              bool
-	schedules                  map[uuid.UUID]struct{}
-	removedschedules           map[uuid.UUID]struct{}
-	clearedschedules           bool
-	rules                      map[uuid.UUID]struct{}
-	removedrules               map[uuid.UUID]struct{}
-	clearedrules               bool
-	availabilities             map[uuid.UUID]struct{}
-	removedavailabilities      map[uuid.UUID]struct{}
-	clearedavailabilities      bool
-	availability_drafts        map[uuid.UUID]struct{}
-	removedavailability_drafts map[uuid.UUID]struct{}
-	clearedavailability_drafts bool
-	reminder_deliveries        map[uuid.UUID]struct{}
-	removedreminder_deliveries map[uuid.UUID]struct{}
-	clearedreminder_deliveries bool
-	done                       bool
-	oldValue                   func(context.Context) (*Shop, error)
-	predicates                 []predicate.Shop
+	op                                  Op
+	typ                                 string
+	id                                  *uuid.UUID
+	name                                *string
+	timezone                            *string
+	invite_code                         *string
+	telegram_group_id                   *int64
+	addtelegram_group_id                *int64
+	plan                                *string
+	dashboard_token_hash                *string
+	dashboard_username                  *string
+	dashboard_password_hash             *string
+	dashboard_email                     *string
+	dashboard_password_hint             *string
+	dashboard_password_reset_hash       *string
+	dashboard_password_reset_expires_at *time.Time
+	created_at                          *time.Time
+	clearedFields                       map[string]struct{}
+	employees                           map[uuid.UUID]struct{}
+	removedemployees                    map[uuid.UUID]struct{}
+	clearedemployees                    bool
+	shifts                              map[uuid.UUID]struct{}
+	removedshifts                       map[uuid.UUID]struct{}
+	clearedshifts                       bool
+	schedules                           map[uuid.UUID]struct{}
+	removedschedules                    map[uuid.UUID]struct{}
+	clearedschedules                    bool
+	rules                               map[uuid.UUID]struct{}
+	removedrules                        map[uuid.UUID]struct{}
+	clearedrules                        bool
+	availabilities                      map[uuid.UUID]struct{}
+	removedavailabilities               map[uuid.UUID]struct{}
+	clearedavailabilities               bool
+	availability_drafts                 map[uuid.UUID]struct{}
+	removedavailability_drafts          map[uuid.UUID]struct{}
+	clearedavailability_drafts          bool
+	reminder_deliveries                 map[uuid.UUID]struct{}
+	removedreminder_deliveries          map[uuid.UUID]struct{}
+	clearedreminder_deliveries          bool
+	done                                bool
+	oldValue                            func(context.Context) (*Shop, error)
+	predicates                          []predicate.Shop
 }
 
 var _ ent.Mutation = (*ShopMutation)(nil)
@@ -8306,6 +8311,251 @@ func (m *ShopMutation) DashboardUsernameCleared() bool {
 func (m *ShopMutation) ResetDashboardUsername() {
 	m.dashboard_username = nil
 	delete(m.clearedFields, shop.FieldDashboardUsername)
+}
+
+// SetDashboardPasswordHash sets the "dashboard_password_hash" field.
+func (m *ShopMutation) SetDashboardPasswordHash(s string) {
+	m.dashboard_password_hash = &s
+}
+
+// DashboardPasswordHash returns the value of the "dashboard_password_hash" field in the mutation.
+func (m *ShopMutation) DashboardPasswordHash() (r string, exists bool) {
+	v := m.dashboard_password_hash
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDashboardPasswordHash returns the old "dashboard_password_hash" field's value of the Shop entity.
+// If the Shop object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ShopMutation) OldDashboardPasswordHash(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDashboardPasswordHash is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDashboardPasswordHash requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDashboardPasswordHash: %w", err)
+	}
+	return oldValue.DashboardPasswordHash, nil
+}
+
+// ClearDashboardPasswordHash clears the value of the "dashboard_password_hash" field.
+func (m *ShopMutation) ClearDashboardPasswordHash() {
+	m.dashboard_password_hash = nil
+	m.clearedFields[shop.FieldDashboardPasswordHash] = struct{}{}
+}
+
+// DashboardPasswordHashCleared returns if the "dashboard_password_hash" field was cleared in this mutation.
+func (m *ShopMutation) DashboardPasswordHashCleared() bool {
+	_, ok := m.clearedFields[shop.FieldDashboardPasswordHash]
+	return ok
+}
+
+// ResetDashboardPasswordHash resets all changes to the "dashboard_password_hash" field.
+func (m *ShopMutation) ResetDashboardPasswordHash() {
+	m.dashboard_password_hash = nil
+	delete(m.clearedFields, shop.FieldDashboardPasswordHash)
+}
+
+// SetDashboardEmail sets the "dashboard_email" field.
+func (m *ShopMutation) SetDashboardEmail(s string) {
+	m.dashboard_email = &s
+}
+
+// DashboardEmail returns the value of the "dashboard_email" field in the mutation.
+func (m *ShopMutation) DashboardEmail() (r string, exists bool) {
+	v := m.dashboard_email
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDashboardEmail returns the old "dashboard_email" field's value of the Shop entity.
+// If the Shop object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ShopMutation) OldDashboardEmail(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDashboardEmail is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDashboardEmail requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDashboardEmail: %w", err)
+	}
+	return oldValue.DashboardEmail, nil
+}
+
+// ClearDashboardEmail clears the value of the "dashboard_email" field.
+func (m *ShopMutation) ClearDashboardEmail() {
+	m.dashboard_email = nil
+	m.clearedFields[shop.FieldDashboardEmail] = struct{}{}
+}
+
+// DashboardEmailCleared returns if the "dashboard_email" field was cleared in this mutation.
+func (m *ShopMutation) DashboardEmailCleared() bool {
+	_, ok := m.clearedFields[shop.FieldDashboardEmail]
+	return ok
+}
+
+// ResetDashboardEmail resets all changes to the "dashboard_email" field.
+func (m *ShopMutation) ResetDashboardEmail() {
+	m.dashboard_email = nil
+	delete(m.clearedFields, shop.FieldDashboardEmail)
+}
+
+// SetDashboardPasswordHint sets the "dashboard_password_hint" field.
+func (m *ShopMutation) SetDashboardPasswordHint(s string) {
+	m.dashboard_password_hint = &s
+}
+
+// DashboardPasswordHint returns the value of the "dashboard_password_hint" field in the mutation.
+func (m *ShopMutation) DashboardPasswordHint() (r string, exists bool) {
+	v := m.dashboard_password_hint
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDashboardPasswordHint returns the old "dashboard_password_hint" field's value of the Shop entity.
+// If the Shop object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ShopMutation) OldDashboardPasswordHint(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDashboardPasswordHint is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDashboardPasswordHint requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDashboardPasswordHint: %w", err)
+	}
+	return oldValue.DashboardPasswordHint, nil
+}
+
+// ClearDashboardPasswordHint clears the value of the "dashboard_password_hint" field.
+func (m *ShopMutation) ClearDashboardPasswordHint() {
+	m.dashboard_password_hint = nil
+	m.clearedFields[shop.FieldDashboardPasswordHint] = struct{}{}
+}
+
+// DashboardPasswordHintCleared returns if the "dashboard_password_hint" field was cleared in this mutation.
+func (m *ShopMutation) DashboardPasswordHintCleared() bool {
+	_, ok := m.clearedFields[shop.FieldDashboardPasswordHint]
+	return ok
+}
+
+// ResetDashboardPasswordHint resets all changes to the "dashboard_password_hint" field.
+func (m *ShopMutation) ResetDashboardPasswordHint() {
+	m.dashboard_password_hint = nil
+	delete(m.clearedFields, shop.FieldDashboardPasswordHint)
+}
+
+// SetDashboardPasswordResetHash sets the "dashboard_password_reset_hash" field.
+func (m *ShopMutation) SetDashboardPasswordResetHash(s string) {
+	m.dashboard_password_reset_hash = &s
+}
+
+// DashboardPasswordResetHash returns the value of the "dashboard_password_reset_hash" field in the mutation.
+func (m *ShopMutation) DashboardPasswordResetHash() (r string, exists bool) {
+	v := m.dashboard_password_reset_hash
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDashboardPasswordResetHash returns the old "dashboard_password_reset_hash" field's value of the Shop entity.
+// If the Shop object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ShopMutation) OldDashboardPasswordResetHash(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDashboardPasswordResetHash is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDashboardPasswordResetHash requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDashboardPasswordResetHash: %w", err)
+	}
+	return oldValue.DashboardPasswordResetHash, nil
+}
+
+// ClearDashboardPasswordResetHash clears the value of the "dashboard_password_reset_hash" field.
+func (m *ShopMutation) ClearDashboardPasswordResetHash() {
+	m.dashboard_password_reset_hash = nil
+	m.clearedFields[shop.FieldDashboardPasswordResetHash] = struct{}{}
+}
+
+// DashboardPasswordResetHashCleared returns if the "dashboard_password_reset_hash" field was cleared in this mutation.
+func (m *ShopMutation) DashboardPasswordResetHashCleared() bool {
+	_, ok := m.clearedFields[shop.FieldDashboardPasswordResetHash]
+	return ok
+}
+
+// ResetDashboardPasswordResetHash resets all changes to the "dashboard_password_reset_hash" field.
+func (m *ShopMutation) ResetDashboardPasswordResetHash() {
+	m.dashboard_password_reset_hash = nil
+	delete(m.clearedFields, shop.FieldDashboardPasswordResetHash)
+}
+
+// SetDashboardPasswordResetExpiresAt sets the "dashboard_password_reset_expires_at" field.
+func (m *ShopMutation) SetDashboardPasswordResetExpiresAt(t time.Time) {
+	m.dashboard_password_reset_expires_at = &t
+}
+
+// DashboardPasswordResetExpiresAt returns the value of the "dashboard_password_reset_expires_at" field in the mutation.
+func (m *ShopMutation) DashboardPasswordResetExpiresAt() (r time.Time, exists bool) {
+	v := m.dashboard_password_reset_expires_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDashboardPasswordResetExpiresAt returns the old "dashboard_password_reset_expires_at" field's value of the Shop entity.
+// If the Shop object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ShopMutation) OldDashboardPasswordResetExpiresAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDashboardPasswordResetExpiresAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDashboardPasswordResetExpiresAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDashboardPasswordResetExpiresAt: %w", err)
+	}
+	return oldValue.DashboardPasswordResetExpiresAt, nil
+}
+
+// ClearDashboardPasswordResetExpiresAt clears the value of the "dashboard_password_reset_expires_at" field.
+func (m *ShopMutation) ClearDashboardPasswordResetExpiresAt() {
+	m.dashboard_password_reset_expires_at = nil
+	m.clearedFields[shop.FieldDashboardPasswordResetExpiresAt] = struct{}{}
+}
+
+// DashboardPasswordResetExpiresAtCleared returns if the "dashboard_password_reset_expires_at" field was cleared in this mutation.
+func (m *ShopMutation) DashboardPasswordResetExpiresAtCleared() bool {
+	_, ok := m.clearedFields[shop.FieldDashboardPasswordResetExpiresAt]
+	return ok
+}
+
+// ResetDashboardPasswordResetExpiresAt resets all changes to the "dashboard_password_reset_expires_at" field.
+func (m *ShopMutation) ResetDashboardPasswordResetExpiresAt() {
+	m.dashboard_password_reset_expires_at = nil
+	delete(m.clearedFields, shop.FieldDashboardPasswordResetExpiresAt)
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -8756,7 +9006,7 @@ func (m *ShopMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ShopMutation) Fields() []string {
-	fields := make([]string, 0, 8)
+	fields := make([]string, 0, 13)
 	if m.name != nil {
 		fields = append(fields, shop.FieldName)
 	}
@@ -8777,6 +9027,21 @@ func (m *ShopMutation) Fields() []string {
 	}
 	if m.dashboard_username != nil {
 		fields = append(fields, shop.FieldDashboardUsername)
+	}
+	if m.dashboard_password_hash != nil {
+		fields = append(fields, shop.FieldDashboardPasswordHash)
+	}
+	if m.dashboard_email != nil {
+		fields = append(fields, shop.FieldDashboardEmail)
+	}
+	if m.dashboard_password_hint != nil {
+		fields = append(fields, shop.FieldDashboardPasswordHint)
+	}
+	if m.dashboard_password_reset_hash != nil {
+		fields = append(fields, shop.FieldDashboardPasswordResetHash)
+	}
+	if m.dashboard_password_reset_expires_at != nil {
+		fields = append(fields, shop.FieldDashboardPasswordResetExpiresAt)
 	}
 	if m.created_at != nil {
 		fields = append(fields, shop.FieldCreatedAt)
@@ -8803,6 +9068,16 @@ func (m *ShopMutation) Field(name string) (ent.Value, bool) {
 		return m.DashboardTokenHash()
 	case shop.FieldDashboardUsername:
 		return m.DashboardUsername()
+	case shop.FieldDashboardPasswordHash:
+		return m.DashboardPasswordHash()
+	case shop.FieldDashboardEmail:
+		return m.DashboardEmail()
+	case shop.FieldDashboardPasswordHint:
+		return m.DashboardPasswordHint()
+	case shop.FieldDashboardPasswordResetHash:
+		return m.DashboardPasswordResetHash()
+	case shop.FieldDashboardPasswordResetExpiresAt:
+		return m.DashboardPasswordResetExpiresAt()
 	case shop.FieldCreatedAt:
 		return m.CreatedAt()
 	}
@@ -8828,6 +9103,16 @@ func (m *ShopMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldDashboardTokenHash(ctx)
 	case shop.FieldDashboardUsername:
 		return m.OldDashboardUsername(ctx)
+	case shop.FieldDashboardPasswordHash:
+		return m.OldDashboardPasswordHash(ctx)
+	case shop.FieldDashboardEmail:
+		return m.OldDashboardEmail(ctx)
+	case shop.FieldDashboardPasswordHint:
+		return m.OldDashboardPasswordHint(ctx)
+	case shop.FieldDashboardPasswordResetHash:
+		return m.OldDashboardPasswordResetHash(ctx)
+	case shop.FieldDashboardPasswordResetExpiresAt:
+		return m.OldDashboardPasswordResetExpiresAt(ctx)
 	case shop.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	}
@@ -8888,6 +9173,41 @@ func (m *ShopMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetDashboardUsername(v)
 		return nil
+	case shop.FieldDashboardPasswordHash:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDashboardPasswordHash(v)
+		return nil
+	case shop.FieldDashboardEmail:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDashboardEmail(v)
+		return nil
+	case shop.FieldDashboardPasswordHint:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDashboardPasswordHint(v)
+		return nil
+	case shop.FieldDashboardPasswordResetHash:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDashboardPasswordResetHash(v)
+		return nil
+	case shop.FieldDashboardPasswordResetExpiresAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDashboardPasswordResetExpiresAt(v)
+		return nil
 	case shop.FieldCreatedAt:
 		v, ok := value.(time.Time)
 		if !ok {
@@ -8946,6 +9266,21 @@ func (m *ShopMutation) ClearedFields() []string {
 	if m.FieldCleared(shop.FieldDashboardUsername) {
 		fields = append(fields, shop.FieldDashboardUsername)
 	}
+	if m.FieldCleared(shop.FieldDashboardPasswordHash) {
+		fields = append(fields, shop.FieldDashboardPasswordHash)
+	}
+	if m.FieldCleared(shop.FieldDashboardEmail) {
+		fields = append(fields, shop.FieldDashboardEmail)
+	}
+	if m.FieldCleared(shop.FieldDashboardPasswordHint) {
+		fields = append(fields, shop.FieldDashboardPasswordHint)
+	}
+	if m.FieldCleared(shop.FieldDashboardPasswordResetHash) {
+		fields = append(fields, shop.FieldDashboardPasswordResetHash)
+	}
+	if m.FieldCleared(shop.FieldDashboardPasswordResetExpiresAt) {
+		fields = append(fields, shop.FieldDashboardPasswordResetExpiresAt)
+	}
 	return fields
 }
 
@@ -8965,6 +9300,21 @@ func (m *ShopMutation) ClearField(name string) error {
 		return nil
 	case shop.FieldDashboardUsername:
 		m.ClearDashboardUsername()
+		return nil
+	case shop.FieldDashboardPasswordHash:
+		m.ClearDashboardPasswordHash()
+		return nil
+	case shop.FieldDashboardEmail:
+		m.ClearDashboardEmail()
+		return nil
+	case shop.FieldDashboardPasswordHint:
+		m.ClearDashboardPasswordHint()
+		return nil
+	case shop.FieldDashboardPasswordResetHash:
+		m.ClearDashboardPasswordResetHash()
+		return nil
+	case shop.FieldDashboardPasswordResetExpiresAt:
+		m.ClearDashboardPasswordResetExpiresAt()
 		return nil
 	}
 	return fmt.Errorf("unknown Shop nullable field %s", name)
@@ -8994,6 +9344,21 @@ func (m *ShopMutation) ResetField(name string) error {
 		return nil
 	case shop.FieldDashboardUsername:
 		m.ResetDashboardUsername()
+		return nil
+	case shop.FieldDashboardPasswordHash:
+		m.ResetDashboardPasswordHash()
+		return nil
+	case shop.FieldDashboardEmail:
+		m.ResetDashboardEmail()
+		return nil
+	case shop.FieldDashboardPasswordHint:
+		m.ResetDashboardPasswordHint()
+		return nil
+	case shop.FieldDashboardPasswordResetHash:
+		m.ResetDashboardPasswordResetHash()
+		return nil
+	case shop.FieldDashboardPasswordResetExpiresAt:
+		m.ResetDashboardPasswordResetExpiresAt()
 		return nil
 	case shop.FieldCreatedAt:
 		m.ResetCreatedAt()

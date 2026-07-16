@@ -386,6 +386,11 @@ var (
 		{Name: "plan", Type: field.TypeString, Default: "free"},
 		{Name: "dashboard_token_hash", Type: field.TypeString, Nullable: true},
 		{Name: "dashboard_username", Type: field.TypeString, Nullable: true},
+		{Name: "dashboard_password_hash", Type: field.TypeString, Nullable: true},
+		{Name: "dashboard_email", Type: field.TypeString, Nullable: true},
+		{Name: "dashboard_password_hint", Type: field.TypeString, Nullable: true},
+		{Name: "dashboard_password_reset_hash", Type: field.TypeString, Nullable: true},
+		{Name: "dashboard_password_reset_expires_at", Type: field.TypeTime, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 	}
 	// ShopsTable holds the schema information for the "shops" table.

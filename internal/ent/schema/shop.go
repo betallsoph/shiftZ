@@ -35,6 +35,15 @@ func (Shop) Fields() []ent.Field {
 		field.String("dashboard_token_hash").Optional().Nillable(),
 		// Lowercase owner dashboard login username; optional until provisioned.
 		field.String("dashboard_username").Optional().Nillable(),
+		// bcrypt hash of the owner dashboard password (never store plaintext).
+		field.String("dashboard_password_hash").Optional().Nillable(),
+		// Owner contact email for password recovery.
+		field.String("dashboard_email").Optional().Nillable(),
+		// Optional owner password hint shown only at first setup.
+		field.String("dashboard_password_hint").Optional().Nillable(),
+		// SHA-256 hex hash of a one-time password reset token.
+		field.String("dashboard_password_reset_hash").Optional().Nillable(),
+		field.Time("dashboard_password_reset_expires_at").Optional().Nillable(),
 		field.Time("created_at").Default(time.Now).Immutable(),
 	}
 }

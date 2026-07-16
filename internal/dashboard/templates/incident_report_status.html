@@ -1,0 +1,5 @@
+{{if .Message}}
+<div class="alert {{if .Success}}alert-notice{{else}}alert-error{{end}}" role="status">
+  {{if .Success}}<strong>Đã gửi</strong> — {{else}}<strong>Lỗi</strong> — {{end}}{{.Message}}
+</div>
+{{end}}

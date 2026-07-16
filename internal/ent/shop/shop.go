@@ -29,6 +29,16 @@ const (
 	FieldDashboardTokenHash = "dashboard_token_hash"
 	// FieldDashboardUsername holds the string denoting the dashboard_username field in the database.
 	FieldDashboardUsername = "dashboard_username"
+	// FieldDashboardPasswordHash holds the string denoting the dashboard_password_hash field in the database.
+	FieldDashboardPasswordHash = "dashboard_password_hash"
+	// FieldDashboardEmail holds the string denoting the dashboard_email field in the database.
+	FieldDashboardEmail = "dashboard_email"
+	// FieldDashboardPasswordHint holds the string denoting the dashboard_password_hint field in the database.
+	FieldDashboardPasswordHint = "dashboard_password_hint"
+	// FieldDashboardPasswordResetHash holds the string denoting the dashboard_password_reset_hash field in the database.
+	FieldDashboardPasswordResetHash = "dashboard_password_reset_hash"
+	// FieldDashboardPasswordResetExpiresAt holds the string denoting the dashboard_password_reset_expires_at field in the database.
+	FieldDashboardPasswordResetExpiresAt = "dashboard_password_reset_expires_at"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// EdgeEmployees holds the string denoting the employees edge name in mutations.
@@ -108,6 +118,11 @@ var Columns = []string{
 	FieldPlan,
 	FieldDashboardTokenHash,
 	FieldDashboardUsername,
+	FieldDashboardPasswordHash,
+	FieldDashboardEmail,
+	FieldDashboardPasswordHint,
+	FieldDashboardPasswordResetHash,
+	FieldDashboardPasswordResetExpiresAt,
 	FieldCreatedAt,
 }
 
@@ -173,6 +188,31 @@ func ByDashboardTokenHash(opts ...sql.OrderTermOption) OrderOption {
 // ByDashboardUsername orders the results by the dashboard_username field.
 func ByDashboardUsername(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDashboardUsername, opts...).ToFunc()
+}
+
+// ByDashboardPasswordHash orders the results by the dashboard_password_hash field.
+func ByDashboardPasswordHash(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDashboardPasswordHash, opts...).ToFunc()
+}
+
+// ByDashboardEmail orders the results by the dashboard_email field.
+func ByDashboardEmail(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDashboardEmail, opts...).ToFunc()
+}
+
+// ByDashboardPasswordHint orders the results by the dashboard_password_hint field.
+func ByDashboardPasswordHint(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDashboardPasswordHint, opts...).ToFunc()
+}
+
+// ByDashboardPasswordResetHash orders the results by the dashboard_password_reset_hash field.
+func ByDashboardPasswordResetHash(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDashboardPasswordResetHash, opts...).ToFunc()
+}
+
+// ByDashboardPasswordResetExpiresAt orders the results by the dashboard_password_reset_expires_at field.
+func ByDashboardPasswordResetExpiresAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDashboardPasswordResetExpiresAt, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.
