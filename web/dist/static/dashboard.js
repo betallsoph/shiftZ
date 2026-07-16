@@ -40,9 +40,46 @@
 
   initInteractiveAuthGrid();
 
+  function springScaleIn(element, options) {
+    const from = options?.from ?? 0.95;
+    const to = options?.to ?? 1;
+    const stiffness = options?.stiffness ?? 400;
+    const damping = options?.damping ?? 15;
+    const mass = options?.mass ?? 1;
+    const state = { value: from, velocity: 0 };
+    let lastTime = null;
+
+    element.style.transformOrigin = 'top center';
+    element.style.willChange = 'transform';
+    element.style.transform = 'scale(' + from + ')';
+
+    function tick(now) {
+      if (lastTime === null) {
+        lastTime = now;
+        requestAnimationFrame(tick);
+        return;
+      }
+      const dt = Math.min((now - lastTime) / 1000, 0.064);
+      lastTime = now;
+      const acceleration = (-stiffness * (state.value - to) - damping * state.velocity) / mass;
+      state.velocity += acceleration * dt;
+      state.value += state.velocity * dt;
+      element.style.transform = 'scale(' + state.value + ')';
+      if (Math.abs(state.value - to) > 0.0005 || Math.abs(state.velocity) > 0.0005) {
+        requestAnimationFrame(tick);
+        return;
+      }
+      element.style.transform = 'scale(' + to + ')';
+      element.style.willChange = '';
+    }
+
+    requestAnimationFrame(tick);
+  }
+
   function initAuthPasswordStep() {
     const step = document.querySelector('.auth-password-step');
     if (!step) return;
+    springScaleIn(step, { from: 0.95, to: 1, stiffness: 400, damping: 15 });
     const focusTarget =
       step.querySelector('input[name="dashboard_email"]') ||
       step.querySelector('input[name="dashboard_password"]');
