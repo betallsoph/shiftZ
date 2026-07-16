@@ -40,16 +40,18 @@
 
   initInteractiveAuthGrid();
 
-  function initAuthPasswordModal() {
-    const modal = document.querySelector('.auth-password-modal');
-    if (!modal) return;
-    const passwordInput = modal.querySelector('input[name="dashboard_password"]');
-    if (passwordInput instanceof HTMLInputElement) {
-      passwordInput.focus();
+  function initAuthPasswordStep() {
+    const step = document.querySelector('.auth-password-step');
+    if (!step) return;
+    const focusTarget =
+      step.querySelector('input[name="dashboard_email"]') ||
+      step.querySelector('input[name="dashboard_password"]');
+    if (focusTarget instanceof HTMLInputElement) {
+      focusTarget.focus();
     }
   }
 
-  initAuthPasswordModal();
+  initAuthPasswordStep();
 
   function findTapTarget(target) {
     if (!(target instanceof Element)) return null;

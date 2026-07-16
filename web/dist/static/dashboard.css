@@ -262,26 +262,66 @@ body {
   justify-content: center;
 }
 
-.auth-page--modal-open .auth-container {
-  pointer-events: none;
+.auth-username-value {
+  display: block;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  background: #f9fafb;
+  color: #111827;
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.35;
 }
 
-.auth-modal-backdrop {
-  position: fixed;
-  z-index: 20;
-  inset: 0;
-  background: rgba(255, 255, 255, 0.72);
-  backdrop-filter: blur(2px);
+.auth-password-step {
+  display: grid;
+  gap: 12px;
+  margin-top: 4px;
+  animation: auth-password-step-in 220ms ease-out;
 }
 
-.auth-password-modal {
-  position: fixed;
-  z-index: 30;
-  top: 50%;
-  left: 50%;
-  width: min(100% - 32px, 420px);
-  padding: 20px;
-  transform: translate(-50%, -50%);
+@keyframes auth-password-step-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.auth-password-step-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.auth-password-step-hint {
+  margin: -4px 0 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.45;
+  color: #4b5563;
+}
+
+.auth-step-actions {
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.auth-edit-username-link {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #6b7280;
+  text-decoration: none;
+}
+
+.auth-edit-username-link:hover {
+  color: #111827;
+  text-decoration: underline;
 }
 
 .auth-password-title {

@@ -81,8 +81,8 @@ func TestLoginSucceedsWithUsername(t *testing.T) {
 	if rec.Code != http.StatusOK {
 		t.Fatalf("status = %d", rec.Code)
 	}
-	if !strings.Contains(rec.Body.String(), "Đặt mật khẩu") {
-		t.Fatalf("expected set-password modal, body = %q", rec.Body.String())
+	if body := rec.Body.String(); !strings.Contains(body, "Đặt mật khẩu") || !strings.Contains(body, "Sửa username") {
+		t.Fatalf("expected set-password step, body = %q", body)
 	}
 }
 
