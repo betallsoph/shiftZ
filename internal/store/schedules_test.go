@@ -269,3 +269,41 @@ func TestRuleRepo_ListByShop(t *testing.T) {
 		t.Fatalf("unexpected rules: %+v", rules)
 	}
 }
+
+func TestRuleRepo_Create(t *testing.T) {
+	ctx := context.Background()
+	client := newTestClient(t)
+	repo := &RuleRepo{client: client}
+
+	shopRow, err := client.Shop.Create().
+		SetName("Create Rule Shop").
+		SetTimezone("UTC").
+		SetInviteCode("rule02").
+		SetTelegramGroupID(4).
+		Save(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	got, err := repo.Create(ctx, shopRow.ID, "Lan off tomorrow", map[string]any{
+		"kind":  "day_off",
+		"scope": "afternoon",
+	}, 5)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got.ShopID != shopRow.ID || got.Description != "Lan off tomorrow" || !got.IsActive {
+		t.Fatalf("got %+v", got)
+	}
+	if got.RuleJSON["kind"] != "day_off" || got.Weight != 5 {
+		t.Fatalf("json/weight = %+v / %v", got.RuleJSON, got.Weight)
+	}
+
+	listed, err := repo.ListByShop(ctx, shopRow.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(listed) != 1 || listed[0].ID != got.ID {
+		t.Fatalf("listed = %+v", listed)
+	}
+}

@@ -32,9 +32,15 @@ type AvailabilityParser interface {
 	ParseAvailability(ctx context.Context, text string, weekStart time.Time, loc *time.Location) ([]llm.AvailabilitySlot, error)
 }
 
-// ShopDirectory loads shop metadata. Satisfied by *store.ShopRepo.
+// ShopDirectory loads shop metadata and owner/group bind helpers.
+// Satisfied by *store.ShopRepo.
 type ShopDirectory interface {
 	ByID(ctx context.Context, id uuid.UUID) (*store.Shop, error)
+	ByOwnerTelegramID(ctx context.Context, telegramUserID int64) (*store.Shop, error)
+	ConsumeOwnerLinkToken(ctx context.Context, token string) (*store.Shop, error)
+	SetOwnerTelegramID(ctx context.Context, shopID uuid.UUID, telegramUserID int64) error
+	BindTelegramGroup(ctx context.Context, shopID uuid.UUID, chatID int64) error
+	BindTelegramTeamChat(ctx context.Context, shopID uuid.UUID, chatID int64) error
 }
 
 // EmployeeDirectory is the slice of the store the bot needs to identify and
@@ -42,6 +48,7 @@ type ShopDirectory interface {
 type EmployeeDirectory interface {
 	ByTelegramID(ctx context.Context, telegramUserID int64) (*store.Employee, error)
 	Join(ctx context.Context, inviteCode string, telegramUserID int64, displayName string) (*store.Employee, error)
+	ListActiveByShop(ctx context.Context, shopID uuid.UUID) ([]*store.Employee, error)
 }
 
 // AvailabilityStore persists parsed availability. Satisfied by
@@ -55,6 +62,11 @@ type VoteStore interface {
 	Record(ctx context.Context, shopID, scheduleID, employeeID uuid.UUID) error
 }
 
+// RuleStore persists owner soft scheduling rules. Satisfied by *store.RuleRepo.
+type RuleStore interface {
+	Create(ctx context.Context, shopID uuid.UUID, description string, ruleJSON map[string]any, weight float64) (*store.Rule, error)
+}
+
 // Bot routes Telegram updates to handlers.
 type Bot struct {
 	api          Messenger
@@ -64,6 +76,8 @@ type Bot struct {
 	availability AvailabilityStore
 	votes        VoteStore
 	drafts       AvailabilityDraftStore
+	rules        RuleStore
+	ownerDrafts  OwnerDraftStore
 	log          *slog.Logger
 }
 
@@ -76,10 +90,15 @@ func NewBot(
 	availability AvailabilityStore,
 	votes VoteStore,
 	drafts AvailabilityDraftStore,
+	rules RuleStore,
+	ownerDrafts OwnerDraftStore,
 	log *slog.Logger,
 ) *Bot {
 	if log == nil {
 		log = slog.Default()
+	}
+	if ownerDrafts == nil {
+		ownerDrafts = NewMemoryOwnerDraftStore(ownerDraftTTL)
 	}
 	return &Bot{
 		api:          api,
@@ -89,6 +108,8 @@ func NewBot(
 		availability: availability,
 		votes:        votes,
 		drafts:       drafts,
+		rules:        rules,
+		ownerDrafts:  ownerDrafts,
 		log:          log,
 	}
 }
@@ -96,6 +117,8 @@ func NewBot(
 // HandleUpdate dispatches one incoming update.
 func (b *Bot) HandleUpdate(ctx context.Context, u Update) error {
 	switch {
+	case u.MyChatMember != nil:
+		return b.handleMyChatMember(ctx, u.MyChatMember)
 	case u.Message != nil:
 		return b.handleMessage(ctx, u.Message)
 	case u.CallbackQuery != nil:
@@ -119,6 +142,11 @@ func (b *Bot) handleMessage(ctx context.Context, m *Message) error {
 	case strings.HasPrefix(text, "/start"):
 		return b.handleStart(ctx, m, strings.TrimSpace(strings.TrimPrefix(text, "/start")))
 	case text != "":
+		if shop, err := b.shops.ByOwnerTelegramID(ctx, m.From.ID); err == nil {
+			return b.handleOwnerText(ctx, m, shop, text)
+		} else if err != nil && !errors.Is(err, store.ErrNotFound) {
+			return fmt.Errorf("telegram: owner lookup: %w", err)
+		}
 		return b.handleAvailabilityText(ctx, m, text)
 	default:
 		return nil
@@ -126,6 +154,9 @@ func (b *Bot) handleMessage(ctx context.Context, m *Message) error {
 }
 
 func (b *Bot) handleStart(ctx context.Context, m *Message, inviteCode string) error {
+	if strings.HasPrefix(inviteCode, ownerStartPrefix) {
+		return b.handleOwnerStart(ctx, m, strings.TrimPrefix(inviteCode, ownerStartPrefix))
+	}
 	if inviteCode == "" {
 		return b.api.SendMessage(ctx, m.Chat.ID,
 			"Hi! Send /start <invite-code> to join your shop's schedule, then just message me your availability in plain words.", nil)
@@ -223,6 +254,9 @@ func (b *Bot) handleAvailabilityText(ctx context.Context, m *Message, text strin
 }
 
 func (b *Bot) handleCallback(ctx context.Context, q *CallbackQuery) error {
+	if isBindCallback(q.Data) {
+		return b.handleBindCallback(ctx, q)
+	}
 	if isGroupChat(callbackChat(q)) {
 		return b.api.AnswerCallbackQuery(ctx, q.ID, "")
 	}
@@ -231,6 +265,10 @@ func (b *Bot) handleCallback(ctx context.Context, q *CallbackQuery) error {
 		return b.handleAvailabilityConfirm(ctx, q)
 	case strings.HasPrefix(q.Data, availCancelPrefix):
 		return b.handleAvailabilityCancel(ctx, q)
+	case strings.HasPrefix(q.Data, ownerConfirmPrefix):
+		return b.handleOwnerConfirm(ctx, q)
+	case strings.HasPrefix(q.Data, ownerCancelPrefix):
+		return b.handleOwnerCancel(ctx, q)
 	case strings.HasPrefix(q.Data, votePrefix):
 		return b.handleVote(ctx, q)
 	default:

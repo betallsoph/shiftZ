@@ -11,6 +11,11 @@ import (
 // X-Telegram-Bot-Api-Secret-Token header must match — set the same value
 // when registering the webhook via setWebhook.
 //
+// Ops: when calling setWebhook, include my_chat_member in allowed_updates
+// so group-bind prompts work, e.g.:
+//
+//	allowed_updates=["message","callback_query","my_chat_member"]
+//
 // Handlers always answer 200 quickly; processing errors are logged, not
 // returned, so Telegram doesn't endlessly retry poisoned updates.
 func WebhookHandler(bot *Bot, secret string, log *slog.Logger) http.Handler {

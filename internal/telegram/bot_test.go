@@ -39,7 +39,7 @@ func TestHandleAvailabilityTextCreatesDraft(t *testing.T) {
 	availability := &fakeAvailability{}
 	drafts := NewMemoryAvailabilityDraftStore(30 * time.Minute)
 
-	bot := NewBot(msgAPI, parser, shops, employees, availability, &fakeVotes{}, drafts, testLogger())
+	bot := NewBot(msgAPI, parser, shops, employees, availability, &fakeVotes{}, drafts, nil, nil, testLogger())
 	if err := bot.handleAvailabilityText(context.Background(), msg, msg.Text); err != nil {
 		t.Fatal(err)
 	}
@@ -92,7 +92,7 @@ func TestHandleAvailabilityConfirmSavesAndDeletesDraft(t *testing.T) {
 
 	msgAPI := &fakeMessenger{}
 	availability := &fakeAvailability{}
-	bot := NewBot(msgAPI, &fakeParser{}, &fakeShops{}, &fakeEmployees{}, availability, &fakeVotes{}, drafts, testLogger())
+	bot := NewBot(msgAPI, &fakeParser{}, &fakeShops{}, &fakeEmployees{}, availability, &fakeVotes{}, drafts, nil, nil, testLogger())
 
 	q := &CallbackQuery{
 		ID:      "cb1",
@@ -138,7 +138,7 @@ func TestHandleAvailabilityCancelDoesNotSave(t *testing.T) {
 
 	msgAPI := &fakeMessenger{}
 	availability := &fakeAvailability{}
-	bot := NewBot(msgAPI, &fakeParser{}, &fakeShops{}, &fakeEmployees{}, availability, &fakeVotes{}, drafts, testLogger())
+	bot := NewBot(msgAPI, &fakeParser{}, &fakeShops{}, &fakeEmployees{}, availability, &fakeVotes{}, drafts, nil, nil, testLogger())
 
 	q := &CallbackQuery{
 		ID:      "cb2",
@@ -163,7 +163,7 @@ func TestHandleAvailabilityCancelDoesNotSave(t *testing.T) {
 func TestHandleAvailabilityConfirmExpiredDraft(t *testing.T) {
 	msgAPI := &fakeMessenger{}
 	drafts := NewMemoryAvailabilityDraftStore(time.Millisecond)
-	bot := NewBot(msgAPI, &fakeParser{}, &fakeShops{}, &fakeEmployees{}, &fakeAvailability{}, &fakeVotes{}, drafts, testLogger())
+	bot := NewBot(msgAPI, &fakeParser{}, &fakeShops{}, &fakeEmployees{}, &fakeAvailability{}, &fakeVotes{}, drafts, nil, nil, testLogger())
 
 	draftID := uuid.New()
 	_, _ = drafts.Create(context.Background(), AvailabilityDraft{
@@ -190,7 +190,7 @@ func TestHandleAvailabilityConfirmWrongUser(t *testing.T) {
 	})
 
 	msgAPI := &fakeMessenger{}
-	bot := NewBot(msgAPI, &fakeParser{}, &fakeShops{}, &fakeEmployees{}, &fakeAvailability{}, &fakeVotes{}, drafts, testLogger())
+	bot := NewBot(msgAPI, &fakeParser{}, &fakeShops{}, &fakeEmployees{}, &fakeAvailability{}, &fakeVotes{}, drafts, nil, nil, testLogger())
 
 	q := &CallbackQuery{ID: "cb4", From: User{ID: 99}, Data: availConfirmPrefix + draftID.String()}
 	if err := bot.handleCallback(context.Background(), q); err != nil {
@@ -209,7 +209,7 @@ func TestHandleVoteCallbackStillWorks(t *testing.T) {
 	msgAPI := &fakeMessenger{}
 	votes := &fakeVotes{}
 	employees := &fakeEmployees{emp: &store.Employee{ID: empID, ShopID: shopID}}
-	bot := NewBot(msgAPI, &fakeParser{}, &fakeShops{}, employees, &fakeAvailability{}, votes, NewMemoryAvailabilityDraftStore(0), testLogger())
+	bot := NewBot(msgAPI, &fakeParser{}, &fakeShops{}, employees, &fakeAvailability{}, votes, NewMemoryAvailabilityDraftStore(0), nil, nil, testLogger())
 
 	q := &CallbackQuery{ID: "vote1", From: User{ID: 42}, Data: votePrefix + scheduleID.String(), Message: &Message{Chat: Chat{ID: 100, Type: "private"}}}
 	if err := bot.handleCallback(context.Background(), q); err != nil {
@@ -230,7 +230,7 @@ func TestHandleAvailabilityTextClarificationNoDraft(t *testing.T) {
 	shops := &fakeShops{shop: &store.Shop{ID: shopID, Timezone: "UTC"}}
 	employees := &fakeEmployees{emp: &store.Employee{ID: uuid.New(), ShopID: shopID}}
 	drafts := NewMemoryAvailabilityDraftStore(30 * time.Minute)
-	bot := NewBot(msgAPI, parser, shops, employees, &fakeAvailability{}, &fakeVotes{}, drafts, testLogger())
+	bot := NewBot(msgAPI, parser, shops, employees, &fakeAvailability{}, &fakeVotes{}, drafts, nil, nil, testLogger())
 
 	msg := &Message{From: &User{ID: 42}, Chat: Chat{ID: 1, Type: "private"}, Text: "maybe Monday"}
 	if err := bot.handleAvailabilityText(context.Background(), msg, msg.Text); err != nil {
@@ -253,7 +253,7 @@ func TestHandleAvailabilityTextNoProvider(t *testing.T) {
 	parser := &fakeParser{err: llm.ErrNoProvider}
 	shops := &fakeShops{shop: &store.Shop{ID: shopID, Timezone: "UTC"}}
 	employees := &fakeEmployees{emp: &store.Employee{ID: uuid.New(), ShopID: shopID}}
-	bot := NewBot(msgAPI, parser, shops, employees, &fakeAvailability{}, &fakeVotes{}, NewMemoryAvailabilityDraftStore(0), testLogger())
+	bot := NewBot(msgAPI, parser, shops, employees, &fakeAvailability{}, &fakeVotes{}, NewMemoryAvailabilityDraftStore(0), nil, nil, testLogger())
 
 	msg := &Message{From: &User{ID: 42}, Chat: Chat{ID: 1, Type: "private"}, Text: "Mon mornings"}
 	if err := bot.handleAvailabilityText(context.Background(), msg, msg.Text); err != nil {
@@ -328,20 +328,87 @@ func (f *fakeParser) ParseAvailability(_ context.Context, _ string, weekStart ti
 }
 
 type fakeShops struct {
-	shop *store.Shop
+	shop              *store.Shop
+	byOwner           map[int64]*store.Shop
+	consumeShop       *store.Shop
+	consumeErr        error
+	setOwnerErr       error
+	setOwnerCalls     int
+	lastOwnerID       int64
+	boundGroupID      int64
+	boundTeamChatID   int64
+	bindGroupCalls    int
+	bindTeamCalls     int
 }
 
 func (f *fakeShops) ByID(_ context.Context, id uuid.UUID) (*store.Shop, error) {
 	if f.shop != nil && f.shop.ID == id {
 		return f.shop, nil
 	}
+	if f.byOwner != nil {
+		for _, s := range f.byOwner {
+			if s.ID == id {
+				return s, nil
+			}
+		}
+	}
 	return nil, store.ErrNotFound
 }
 
+func (f *fakeShops) ByOwnerTelegramID(_ context.Context, telegramUserID int64) (*store.Shop, error) {
+	if f.byOwner != nil {
+		if s, ok := f.byOwner[telegramUserID]; ok {
+			return s, nil
+		}
+	}
+	if f.shop != nil && f.shop.OwnerTelegramID == telegramUserID && telegramUserID != 0 {
+		return f.shop, nil
+	}
+	return nil, store.ErrNotFound
+}
+
+func (f *fakeShops) ConsumeOwnerLinkToken(_ context.Context, _ string) (*store.Shop, error) {
+	if f.consumeErr != nil {
+		return nil, f.consumeErr
+	}
+	if f.consumeShop != nil {
+		return f.consumeShop, nil
+	}
+	return nil, store.ErrInvalidCredentials
+}
+
+func (f *fakeShops) SetOwnerTelegramID(_ context.Context, shopID uuid.UUID, telegramUserID int64) error {
+	f.setOwnerCalls++
+	f.lastOwnerID = telegramUserID
+	if f.setOwnerErr != nil {
+		return f.setOwnerErr
+	}
+	if f.consumeShop != nil && f.consumeShop.ID == shopID {
+		f.consumeShop.OwnerTelegramID = telegramUserID
+	}
+	if f.shop != nil && f.shop.ID == shopID {
+		f.shop.OwnerTelegramID = telegramUserID
+	}
+	return nil
+}
+
+func (f *fakeShops) BindTelegramGroup(_ context.Context, _ uuid.UUID, chatID int64) error {
+	f.bindGroupCalls++
+	f.boundGroupID = chatID
+	return nil
+}
+
+func (f *fakeShops) BindTelegramTeamChat(_ context.Context, _ uuid.UUID, chatID int64) error {
+	f.bindTeamCalls++
+	f.boundTeamChatID = chatID
+	return nil
+}
+
 type fakeEmployees struct {
-	emp     *store.Employee
-	joinErr error
-	joinEmp *store.Employee
+	emp      *store.Employee
+	emps     []*store.Employee
+	joinErr  error
+	joinEmp  *store.Employee
 }
 
 func (f *fakeEmployees) ByTelegramID(_ context.Context, telegramUserID int64) (*store.Employee, error) {
@@ -364,6 +431,33 @@ func (f *fakeEmployees) Join(_ context.Context, _ string, _ int64, displayName s
 		return &emp, nil
 	}
 	return &store.Employee{ID: uuid.New(), DisplayName: displayName, IsActive: true}, nil
+}
+
+func (f *fakeEmployees) ListActiveByShop(_ context.Context, shopID uuid.UUID) ([]*store.Employee, error) {
+	if len(f.emps) > 0 {
+		return f.emps, nil
+	}
+	if f.emp != nil && f.emp.ShopID == shopID {
+		return []*store.Employee{f.emp}, nil
+	}
+	return nil, nil
+}
+
+type fakeRules struct {
+	createCalls int
+	lastShopID  uuid.UUID
+	lastDesc    string
+	lastJSON    map[string]any
+	lastWeight  float64
+}
+
+func (f *fakeRules) Create(_ context.Context, shopID uuid.UUID, description string, ruleJSON map[string]any, weight float64) (*store.Rule, error) {
+	f.createCalls++
+	f.lastShopID = shopID
+	f.lastDesc = description
+	f.lastJSON = ruleJSON
+	f.lastWeight = weight
+	return &store.Rule{ID: uuid.New(), ShopID: shopID, Description: description, RuleJSON: ruleJSON, Weight: weight, IsActive: true}, nil
 }
 
 type fakeAvailability struct {
@@ -404,7 +498,7 @@ func TestHandleAvailabilityTextInGroupIgnored(t *testing.T) {
 	parser := &fakeParser{slots: []llm.AvailabilitySlot{{Start: time.Now(), End: time.Now().Add(time.Hour), Preference: 1}}}
 	shops := &fakeShops{shop: &store.Shop{ID: shopID, Timezone: "UTC"}}
 	employees := &fakeEmployees{emp: &store.Employee{ID: uuid.New(), ShopID: shopID}}
-	bot := NewBot(msgAPI, parser, shops, employees, &fakeAvailability{}, &fakeVotes{}, NewMemoryAvailabilityDraftStore(0), testLogger())
+	bot := NewBot(msgAPI, parser, shops, employees, &fakeAvailability{}, &fakeVotes{}, NewMemoryAvailabilityDraftStore(0), nil, nil, testLogger())
 
 	msg := &Message{From: &User{ID: 42}, Chat: Chat{ID: -1001, Type: "group"}, Text: "Mon mornings"}
 	if err := bot.handleMessage(context.Background(), msg); err != nil {
@@ -420,7 +514,7 @@ func TestHandleAvailabilityTextInGroupIgnored(t *testing.T) {
 
 func TestHandleStartInGroupIgnored(t *testing.T) {
 	msgAPI := &fakeMessenger{}
-	bot := NewBot(msgAPI, &fakeParser{}, &fakeShops{}, &fakeEmployees{}, &fakeAvailability{}, &fakeVotes{}, NewMemoryAvailabilityDraftStore(0), testLogger())
+	bot := NewBot(msgAPI, &fakeParser{}, &fakeShops{}, &fakeEmployees{}, &fakeAvailability{}, &fakeVotes{}, NewMemoryAvailabilityDraftStore(0), nil, nil, testLogger())
 
 	msg := &Message{From: &User{ID: 42}, Chat: Chat{ID: -1001, Type: "supergroup"}, Text: "/start abc123"}
 	if err := bot.handleMessage(context.Background(), msg); err != nil {
@@ -444,7 +538,7 @@ func TestHandleAvailabilityConfirmInGroupIgnored(t *testing.T) {
 
 	msgAPI := &fakeMessenger{}
 	availability := &fakeAvailability{}
-	bot := NewBot(msgAPI, &fakeParser{}, &fakeShops{}, &fakeEmployees{}, availability, &fakeVotes{}, drafts, testLogger())
+	bot := NewBot(msgAPI, &fakeParser{}, &fakeShops{}, &fakeEmployees{}, availability, &fakeVotes{}, drafts, nil, nil, testLogger())
 
 	q := &CallbackQuery{
 		ID:      "cb-group",
@@ -468,7 +562,7 @@ func TestHandleVoteInGroupIgnored(t *testing.T) {
 	msgAPI := &fakeMessenger{}
 	votes := &fakeVotes{}
 	employees := &fakeEmployees{emp: &store.Employee{ID: empID, ShopID: shopID}}
-	bot := NewBot(msgAPI, &fakeParser{}, &fakeShops{}, employees, &fakeAvailability{}, votes, NewMemoryAvailabilityDraftStore(0), testLogger())
+	bot := NewBot(msgAPI, &fakeParser{}, &fakeShops{}, employees, &fakeAvailability{}, votes, NewMemoryAvailabilityDraftStore(0), nil, nil, testLogger())
 
 	q := &CallbackQuery{
 		ID:      "vote-group",
@@ -487,7 +581,7 @@ func TestHandleVoteInGroupIgnored(t *testing.T) {
 func TestHandleStartInactiveEmployee(t *testing.T) {
 	msgAPI := &fakeMessenger{}
 	employees := &fakeEmployees{joinErr: store.ErrEmployeeInactive}
-	bot := NewBot(msgAPI, &fakeParser{}, &fakeShops{}, employees, &fakeAvailability{}, &fakeVotes{}, NewMemoryAvailabilityDraftStore(0), testLogger())
+	bot := NewBot(msgAPI, &fakeParser{}, &fakeShops{}, employees, &fakeAvailability{}, &fakeVotes{}, NewMemoryAvailabilityDraftStore(0), nil, nil, testLogger())
 
 	msg := &Message{
 		From: &User{ID: 42, FirstName: "Anna"},
@@ -511,7 +605,7 @@ func TestHandleStartJoinSuccess(t *testing.T) {
 	empID := uuid.New()
 	msgAPI := &fakeMessenger{}
 	employees := &fakeEmployees{joinEmp: &store.Employee{ID: empID, ShopID: shopID, DisplayName: "Anna", IsActive: true}}
-	bot := NewBot(msgAPI, &fakeParser{}, &fakeShops{}, employees, &fakeAvailability{}, &fakeVotes{}, NewMemoryAvailabilityDraftStore(0), testLogger())
+	bot := NewBot(msgAPI, &fakeParser{}, &fakeShops{}, employees, &fakeAvailability{}, &fakeVotes{}, NewMemoryAvailabilityDraftStore(0), nil, nil, testLogger())
 
 	msg := &Message{
 		From: &User{ID: 42, FirstName: "Anna"},

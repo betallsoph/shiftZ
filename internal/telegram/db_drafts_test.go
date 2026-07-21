@@ -60,7 +60,7 @@ func TestStoreDraftConfirmAcrossBotInstances(t *testing.T) {
 	msgAPI := &fakeMessenger{}
 	availability := &fakeAvailability{}
 	employees := &fakeEmployees{emp: &store.Employee{ID: empRow.ID, ShopID: shopRow.ID, TelegramUserID: 42}}
-	botB := NewBot(msgAPI, &fakeParser{}, &fakeShops{}, employees, availability, &fakeVotes{}, draftsB, testLogger())
+	botB := NewBot(msgAPI, &fakeParser{}, &fakeShops{}, employees, availability, &fakeVotes{}, draftsB, nil, nil, testLogger())
 
 	q := &CallbackQuery{
 		ID:      "cb-db",
@@ -116,7 +116,7 @@ func TestStoreDraftConfirmWrongUser(t *testing.T) {
 	}
 
 	msgAPI := &fakeMessenger{}
-	bot := NewBot(msgAPI, &fakeParser{}, &fakeShops{}, &fakeEmployees{}, &fakeAvailability{}, &fakeVotes{}, drafts, testLogger())
+	bot := NewBot(msgAPI, &fakeParser{}, &fakeShops{}, &fakeEmployees{}, &fakeAvailability{}, &fakeVotes{}, drafts, nil, nil, testLogger())
 	q := &CallbackQuery{ID: "cb-wrong", From: User{ID: 99}, Data: availConfirmPrefix + draftID.String()}
 	if err := bot.handleCallback(ctx, q); err != nil {
 		t.Fatal(err)
