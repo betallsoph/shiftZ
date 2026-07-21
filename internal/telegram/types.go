@@ -8,9 +8,10 @@ package telegram
 
 // Update is an incoming Telegram update (the subset shiftbot handles).
 type Update struct {
-	UpdateID      int64          `json:"update_id"`
-	Message       *Message       `json:"message,omitempty"`
-	CallbackQuery *CallbackQuery `json:"callback_query,omitempty"`
+	UpdateID      int64              `json:"update_id"`
+	Message       *Message           `json:"message,omitempty"`
+	CallbackQuery *CallbackQuery     `json:"callback_query,omitempty"`
+	MyChatMember  *ChatMemberUpdated `json:"my_chat_member,omitempty"`
 }
 
 // Message is an incoming chat message.
@@ -33,6 +34,21 @@ type User struct {
 type Chat struct {
 	ID   int64  `json:"id"`
 	Type string `json:"type"`
+}
+
+// ChatMemberUpdated is a bot membership change in a chat (my_chat_member).
+type ChatMemberUpdated struct {
+	Chat          Chat       `json:"chat"`
+	From          User       `json:"from"`
+	Date          int64      `json:"date"`
+	OldChatMember ChatMember `json:"old_chat_member"`
+	NewChatMember ChatMember `json:"new_chat_member"`
+}
+
+// ChatMember is the bot's status in a chat.
+type ChatMember struct {
+	Status string `json:"status"`
+	User   User   `json:"user"`
 }
 
 // CallbackQuery is a press on an inline keyboard button (used for schedule

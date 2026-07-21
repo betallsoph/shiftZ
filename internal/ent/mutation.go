@@ -7875,6 +7875,12 @@ type ShopMutation struct {
 	invite_code                         *string
 	telegram_group_id                   *int64
 	addtelegram_group_id                *int64
+	telegram_team_chat_id               *int64
+	addtelegram_team_chat_id            *int64
+	owner_telegram_id                   *int64
+	addowner_telegram_id                *int64
+	owner_link_token_hash               *string
+	owner_link_token_expires_at         *time.Time
 	plan                                *string
 	dashboard_token_hash                *string
 	dashboard_username                  *string
@@ -8177,6 +8183,244 @@ func (m *ShopMutation) AddedTelegramGroupID() (r int64, exists bool) {
 func (m *ShopMutation) ResetTelegramGroupID() {
 	m.telegram_group_id = nil
 	m.addtelegram_group_id = nil
+}
+
+// SetTelegramTeamChatID sets the "telegram_team_chat_id" field.
+func (m *ShopMutation) SetTelegramTeamChatID(i int64) {
+	m.telegram_team_chat_id = &i
+	m.addtelegram_team_chat_id = nil
+}
+
+// TelegramTeamChatID returns the value of the "telegram_team_chat_id" field in the mutation.
+func (m *ShopMutation) TelegramTeamChatID() (r int64, exists bool) {
+	v := m.telegram_team_chat_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTelegramTeamChatID returns the old "telegram_team_chat_id" field's value of the Shop entity.
+// If the Shop object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ShopMutation) OldTelegramTeamChatID(ctx context.Context) (v *int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTelegramTeamChatID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTelegramTeamChatID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTelegramTeamChatID: %w", err)
+	}
+	return oldValue.TelegramTeamChatID, nil
+}
+
+// AddTelegramTeamChatID adds i to the "telegram_team_chat_id" field.
+func (m *ShopMutation) AddTelegramTeamChatID(i int64) {
+	if m.addtelegram_team_chat_id != nil {
+		*m.addtelegram_team_chat_id += i
+	} else {
+		m.addtelegram_team_chat_id = &i
+	}
+}
+
+// AddedTelegramTeamChatID returns the value that was added to the "telegram_team_chat_id" field in this mutation.
+func (m *ShopMutation) AddedTelegramTeamChatID() (r int64, exists bool) {
+	v := m.addtelegram_team_chat_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearTelegramTeamChatID clears the value of the "telegram_team_chat_id" field.
+func (m *ShopMutation) ClearTelegramTeamChatID() {
+	m.telegram_team_chat_id = nil
+	m.addtelegram_team_chat_id = nil
+	m.clearedFields[shop.FieldTelegramTeamChatID] = struct{}{}
+}
+
+// TelegramTeamChatIDCleared returns if the "telegram_team_chat_id" field was cleared in this mutation.
+func (m *ShopMutation) TelegramTeamChatIDCleared() bool {
+	_, ok := m.clearedFields[shop.FieldTelegramTeamChatID]
+	return ok
+}
+
+// ResetTelegramTeamChatID resets all changes to the "telegram_team_chat_id" field.
+func (m *ShopMutation) ResetTelegramTeamChatID() {
+	m.telegram_team_chat_id = nil
+	m.addtelegram_team_chat_id = nil
+	delete(m.clearedFields, shop.FieldTelegramTeamChatID)
+}
+
+// SetOwnerTelegramID sets the "owner_telegram_id" field.
+func (m *ShopMutation) SetOwnerTelegramID(i int64) {
+	m.owner_telegram_id = &i
+	m.addowner_telegram_id = nil
+}
+
+// OwnerTelegramID returns the value of the "owner_telegram_id" field in the mutation.
+func (m *ShopMutation) OwnerTelegramID() (r int64, exists bool) {
+	v := m.owner_telegram_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOwnerTelegramID returns the old "owner_telegram_id" field's value of the Shop entity.
+// If the Shop object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ShopMutation) OldOwnerTelegramID(ctx context.Context) (v *int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOwnerTelegramID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOwnerTelegramID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOwnerTelegramID: %w", err)
+	}
+	return oldValue.OwnerTelegramID, nil
+}
+
+// AddOwnerTelegramID adds i to the "owner_telegram_id" field.
+func (m *ShopMutation) AddOwnerTelegramID(i int64) {
+	if m.addowner_telegram_id != nil {
+		*m.addowner_telegram_id += i
+	} else {
+		m.addowner_telegram_id = &i
+	}
+}
+
+// AddedOwnerTelegramID returns the value that was added to the "owner_telegram_id" field in this mutation.
+func (m *ShopMutation) AddedOwnerTelegramID() (r int64, exists bool) {
+	v := m.addowner_telegram_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearOwnerTelegramID clears the value of the "owner_telegram_id" field.
+func (m *ShopMutation) ClearOwnerTelegramID() {
+	m.owner_telegram_id = nil
+	m.addowner_telegram_id = nil
+	m.clearedFields[shop.FieldOwnerTelegramID] = struct{}{}
+}
+
+// OwnerTelegramIDCleared returns if the "owner_telegram_id" field was cleared in this mutation.
+func (m *ShopMutation) OwnerTelegramIDCleared() bool {
+	_, ok := m.clearedFields[shop.FieldOwnerTelegramID]
+	return ok
+}
+
+// ResetOwnerTelegramID resets all changes to the "owner_telegram_id" field.
+func (m *ShopMutation) ResetOwnerTelegramID() {
+	m.owner_telegram_id = nil
+	m.addowner_telegram_id = nil
+	delete(m.clearedFields, shop.FieldOwnerTelegramID)
+}
+
+// SetOwnerLinkTokenHash sets the "owner_link_token_hash" field.
+func (m *ShopMutation) SetOwnerLinkTokenHash(s string) {
+	m.owner_link_token_hash = &s
+}
+
+// OwnerLinkTokenHash returns the value of the "owner_link_token_hash" field in the mutation.
+func (m *ShopMutation) OwnerLinkTokenHash() (r string, exists bool) {
+	v := m.owner_link_token_hash
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOwnerLinkTokenHash returns the old "owner_link_token_hash" field's value of the Shop entity.
+// If the Shop object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ShopMutation) OldOwnerLinkTokenHash(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOwnerLinkTokenHash is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOwnerLinkTokenHash requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOwnerLinkTokenHash: %w", err)
+	}
+	return oldValue.OwnerLinkTokenHash, nil
+}
+
+// ClearOwnerLinkTokenHash clears the value of the "owner_link_token_hash" field.
+func (m *ShopMutation) ClearOwnerLinkTokenHash() {
+	m.owner_link_token_hash = nil
+	m.clearedFields[shop.FieldOwnerLinkTokenHash] = struct{}{}
+}
+
+// OwnerLinkTokenHashCleared returns if the "owner_link_token_hash" field was cleared in this mutation.
+func (m *ShopMutation) OwnerLinkTokenHashCleared() bool {
+	_, ok := m.clearedFields[shop.FieldOwnerLinkTokenHash]
+	return ok
+}
+
+// ResetOwnerLinkTokenHash resets all changes to the "owner_link_token_hash" field.
+func (m *ShopMutation) ResetOwnerLinkTokenHash() {
+	m.owner_link_token_hash = nil
+	delete(m.clearedFields, shop.FieldOwnerLinkTokenHash)
+}
+
+// SetOwnerLinkTokenExpiresAt sets the "owner_link_token_expires_at" field.
+func (m *ShopMutation) SetOwnerLinkTokenExpiresAt(t time.Time) {
+	m.owner_link_token_expires_at = &t
+}
+
+// OwnerLinkTokenExpiresAt returns the value of the "owner_link_token_expires_at" field in the mutation.
+func (m *ShopMutation) OwnerLinkTokenExpiresAt() (r time.Time, exists bool) {
+	v := m.owner_link_token_expires_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOwnerLinkTokenExpiresAt returns the old "owner_link_token_expires_at" field's value of the Shop entity.
+// If the Shop object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ShopMutation) OldOwnerLinkTokenExpiresAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOwnerLinkTokenExpiresAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOwnerLinkTokenExpiresAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOwnerLinkTokenExpiresAt: %w", err)
+	}
+	return oldValue.OwnerLinkTokenExpiresAt, nil
+}
+
+// ClearOwnerLinkTokenExpiresAt clears the value of the "owner_link_token_expires_at" field.
+func (m *ShopMutation) ClearOwnerLinkTokenExpiresAt() {
+	m.owner_link_token_expires_at = nil
+	m.clearedFields[shop.FieldOwnerLinkTokenExpiresAt] = struct{}{}
+}
+
+// OwnerLinkTokenExpiresAtCleared returns if the "owner_link_token_expires_at" field was cleared in this mutation.
+func (m *ShopMutation) OwnerLinkTokenExpiresAtCleared() bool {
+	_, ok := m.clearedFields[shop.FieldOwnerLinkTokenExpiresAt]
+	return ok
+}
+
+// ResetOwnerLinkTokenExpiresAt resets all changes to the "owner_link_token_expires_at" field.
+func (m *ShopMutation) ResetOwnerLinkTokenExpiresAt() {
+	m.owner_link_token_expires_at = nil
+	delete(m.clearedFields, shop.FieldOwnerLinkTokenExpiresAt)
 }
 
 // SetPlan sets the "plan" field.
@@ -9006,7 +9250,7 @@ func (m *ShopMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ShopMutation) Fields() []string {
-	fields := make([]string, 0, 13)
+	fields := make([]string, 0, 17)
 	if m.name != nil {
 		fields = append(fields, shop.FieldName)
 	}
@@ -9018,6 +9262,18 @@ func (m *ShopMutation) Fields() []string {
 	}
 	if m.telegram_group_id != nil {
 		fields = append(fields, shop.FieldTelegramGroupID)
+	}
+	if m.telegram_team_chat_id != nil {
+		fields = append(fields, shop.FieldTelegramTeamChatID)
+	}
+	if m.owner_telegram_id != nil {
+		fields = append(fields, shop.FieldOwnerTelegramID)
+	}
+	if m.owner_link_token_hash != nil {
+		fields = append(fields, shop.FieldOwnerLinkTokenHash)
+	}
+	if m.owner_link_token_expires_at != nil {
+		fields = append(fields, shop.FieldOwnerLinkTokenExpiresAt)
 	}
 	if m.plan != nil {
 		fields = append(fields, shop.FieldPlan)
@@ -9062,6 +9318,14 @@ func (m *ShopMutation) Field(name string) (ent.Value, bool) {
 		return m.InviteCode()
 	case shop.FieldTelegramGroupID:
 		return m.TelegramGroupID()
+	case shop.FieldTelegramTeamChatID:
+		return m.TelegramTeamChatID()
+	case shop.FieldOwnerTelegramID:
+		return m.OwnerTelegramID()
+	case shop.FieldOwnerLinkTokenHash:
+		return m.OwnerLinkTokenHash()
+	case shop.FieldOwnerLinkTokenExpiresAt:
+		return m.OwnerLinkTokenExpiresAt()
 	case shop.FieldPlan:
 		return m.Plan()
 	case shop.FieldDashboardTokenHash:
@@ -9097,6 +9361,14 @@ func (m *ShopMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldInviteCode(ctx)
 	case shop.FieldTelegramGroupID:
 		return m.OldTelegramGroupID(ctx)
+	case shop.FieldTelegramTeamChatID:
+		return m.OldTelegramTeamChatID(ctx)
+	case shop.FieldOwnerTelegramID:
+		return m.OldOwnerTelegramID(ctx)
+	case shop.FieldOwnerLinkTokenHash:
+		return m.OldOwnerLinkTokenHash(ctx)
+	case shop.FieldOwnerLinkTokenExpiresAt:
+		return m.OldOwnerLinkTokenExpiresAt(ctx)
 	case shop.FieldPlan:
 		return m.OldPlan(ctx)
 	case shop.FieldDashboardTokenHash:
@@ -9151,6 +9423,34 @@ func (m *ShopMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTelegramGroupID(v)
+		return nil
+	case shop.FieldTelegramTeamChatID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTelegramTeamChatID(v)
+		return nil
+	case shop.FieldOwnerTelegramID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOwnerTelegramID(v)
+		return nil
+	case shop.FieldOwnerLinkTokenHash:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOwnerLinkTokenHash(v)
+		return nil
+	case shop.FieldOwnerLinkTokenExpiresAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOwnerLinkTokenExpiresAt(v)
 		return nil
 	case shop.FieldPlan:
 		v, ok := value.(string)
@@ -9226,6 +9526,12 @@ func (m *ShopMutation) AddedFields() []string {
 	if m.addtelegram_group_id != nil {
 		fields = append(fields, shop.FieldTelegramGroupID)
 	}
+	if m.addtelegram_team_chat_id != nil {
+		fields = append(fields, shop.FieldTelegramTeamChatID)
+	}
+	if m.addowner_telegram_id != nil {
+		fields = append(fields, shop.FieldOwnerTelegramID)
+	}
 	return fields
 }
 
@@ -9236,6 +9542,10 @@ func (m *ShopMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
 	case shop.FieldTelegramGroupID:
 		return m.AddedTelegramGroupID()
+	case shop.FieldTelegramTeamChatID:
+		return m.AddedTelegramTeamChatID()
+	case shop.FieldOwnerTelegramID:
+		return m.AddedOwnerTelegramID()
 	}
 	return nil, false
 }
@@ -9252,6 +9562,20 @@ func (m *ShopMutation) AddField(name string, value ent.Value) error {
 		}
 		m.AddTelegramGroupID(v)
 		return nil
+	case shop.FieldTelegramTeamChatID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddTelegramTeamChatID(v)
+		return nil
+	case shop.FieldOwnerTelegramID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddOwnerTelegramID(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Shop numeric field %s", name)
 }
@@ -9260,6 +9584,18 @@ func (m *ShopMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *ShopMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(shop.FieldTelegramTeamChatID) {
+		fields = append(fields, shop.FieldTelegramTeamChatID)
+	}
+	if m.FieldCleared(shop.FieldOwnerTelegramID) {
+		fields = append(fields, shop.FieldOwnerTelegramID)
+	}
+	if m.FieldCleared(shop.FieldOwnerLinkTokenHash) {
+		fields = append(fields, shop.FieldOwnerLinkTokenHash)
+	}
+	if m.FieldCleared(shop.FieldOwnerLinkTokenExpiresAt) {
+		fields = append(fields, shop.FieldOwnerLinkTokenExpiresAt)
+	}
 	if m.FieldCleared(shop.FieldDashboardTokenHash) {
 		fields = append(fields, shop.FieldDashboardTokenHash)
 	}
@@ -9295,6 +9631,18 @@ func (m *ShopMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *ShopMutation) ClearField(name string) error {
 	switch name {
+	case shop.FieldTelegramTeamChatID:
+		m.ClearTelegramTeamChatID()
+		return nil
+	case shop.FieldOwnerTelegramID:
+		m.ClearOwnerTelegramID()
+		return nil
+	case shop.FieldOwnerLinkTokenHash:
+		m.ClearOwnerLinkTokenHash()
+		return nil
+	case shop.FieldOwnerLinkTokenExpiresAt:
+		m.ClearOwnerLinkTokenExpiresAt()
+		return nil
 	case shop.FieldDashboardTokenHash:
 		m.ClearDashboardTokenHash()
 		return nil
@@ -9335,6 +9683,18 @@ func (m *ShopMutation) ResetField(name string) error {
 		return nil
 	case shop.FieldTelegramGroupID:
 		m.ResetTelegramGroupID()
+		return nil
+	case shop.FieldTelegramTeamChatID:
+		m.ResetTelegramTeamChatID()
+		return nil
+	case shop.FieldOwnerTelegramID:
+		m.ResetOwnerTelegramID()
+		return nil
+	case shop.FieldOwnerLinkTokenHash:
+		m.ResetOwnerLinkTokenHash()
+		return nil
+	case shop.FieldOwnerLinkTokenExpiresAt:
+		m.ResetOwnerLinkTokenExpiresAt()
 		return nil
 	case shop.FieldPlan:
 		m.ResetPlan()

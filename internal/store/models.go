@@ -10,14 +10,16 @@ import (
 
 // Shop is a tenant: one restaurant or cafe.
 type Shop struct {
-	ID                         uuid.UUID
-	Name                       string
-	Timezone                   string
-	InviteCode                 string
-	TelegramGroupID int64
-	Plan            string
-	DashboardUsername          string
-	CreatedAt                  time.Time
+	ID                  uuid.UUID
+	Name                string
+	Timezone            string
+	InviteCode          string
+	TelegramGroupID     int64 // broadcast group for schedules and votes
+	TelegramTeamChatID  int64 // optional internal team chat group
+	OwnerTelegramID     int64 // linked owner Telegram user
+	Plan                string
+	DashboardUsername   string
+	CreatedAt           time.Time
 }
 
 // Employee is a staff member of one shop, linked to a Telegram account.
@@ -147,6 +149,12 @@ func shopFromEnt(m *ent.Shop) *Shop {
 		TelegramGroupID: m.TelegramGroupID,
 		Plan:            m.Plan,
 		CreatedAt:       m.CreatedAt,
+	}
+	if m.TelegramTeamChatID != nil {
+		s.TelegramTeamChatID = *m.TelegramTeamChatID
+	}
+	if m.OwnerTelegramID != nil {
+		s.OwnerTelegramID = *m.OwnerTelegramID
 	}
 	if m.DashboardUsername != nil {
 		s.DashboardUsername = *m.DashboardUsername

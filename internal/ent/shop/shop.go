@@ -23,6 +23,14 @@ const (
 	FieldInviteCode = "invite_code"
 	// FieldTelegramGroupID holds the string denoting the telegram_group_id field in the database.
 	FieldTelegramGroupID = "telegram_group_id"
+	// FieldTelegramTeamChatID holds the string denoting the telegram_team_chat_id field in the database.
+	FieldTelegramTeamChatID = "telegram_team_chat_id"
+	// FieldOwnerTelegramID holds the string denoting the owner_telegram_id field in the database.
+	FieldOwnerTelegramID = "owner_telegram_id"
+	// FieldOwnerLinkTokenHash holds the string denoting the owner_link_token_hash field in the database.
+	FieldOwnerLinkTokenHash = "owner_link_token_hash"
+	// FieldOwnerLinkTokenExpiresAt holds the string denoting the owner_link_token_expires_at field in the database.
+	FieldOwnerLinkTokenExpiresAt = "owner_link_token_expires_at"
 	// FieldPlan holds the string denoting the plan field in the database.
 	FieldPlan = "plan"
 	// FieldDashboardTokenHash holds the string denoting the dashboard_token_hash field in the database.
@@ -115,6 +123,10 @@ var Columns = []string{
 	FieldTimezone,
 	FieldInviteCode,
 	FieldTelegramGroupID,
+	FieldTelegramTeamChatID,
+	FieldOwnerTelegramID,
+	FieldOwnerLinkTokenHash,
+	FieldOwnerLinkTokenExpiresAt,
 	FieldPlan,
 	FieldDashboardTokenHash,
 	FieldDashboardUsername,
@@ -173,6 +185,26 @@ func ByInviteCode(opts ...sql.OrderTermOption) OrderOption {
 // ByTelegramGroupID orders the results by the telegram_group_id field.
 func ByTelegramGroupID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTelegramGroupID, opts...).ToFunc()
+}
+
+// ByTelegramTeamChatID orders the results by the telegram_team_chat_id field.
+func ByTelegramTeamChatID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTelegramTeamChatID, opts...).ToFunc()
+}
+
+// ByOwnerTelegramID orders the results by the owner_telegram_id field.
+func ByOwnerTelegramID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldOwnerTelegramID, opts...).ToFunc()
+}
+
+// ByOwnerLinkTokenHash orders the results by the owner_link_token_hash field.
+func ByOwnerLinkTokenHash(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldOwnerLinkTokenHash, opts...).ToFunc()
+}
+
+// ByOwnerLinkTokenExpiresAt orders the results by the owner_link_token_expires_at field.
+func ByOwnerLinkTokenExpiresAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldOwnerLinkTokenExpiresAt, opts...).ToFunc()
 }
 
 // ByPlan orders the results by the plan field.

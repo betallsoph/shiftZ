@@ -32,9 +32,15 @@ type AvailabilityParser interface {
 	ParseAvailability(ctx context.Context, text string, weekStart time.Time, loc *time.Location) ([]llm.AvailabilitySlot, error)
 }
 
-// ShopDirectory loads shop metadata. Satisfied by *store.ShopRepo.
+// ShopDirectory loads shop metadata and owner/group bind helpers.
+// Satisfied by *store.ShopRepo.
 type ShopDirectory interface {
 	ByID(ctx context.Context, id uuid.UUID) (*store.Shop, error)
+	ByOwnerTelegramID(ctx context.Context, telegramUserID int64) (*store.Shop, error)
+	ConsumeOwnerLinkToken(ctx context.Context, token string) (*store.Shop, error)
+	SetOwnerTelegramID(ctx context.Context, shopID uuid.UUID, telegramUserID int64) error
+	BindTelegramGroup(ctx context.Context, shopID uuid.UUID, chatID int64) error
+	BindTelegramTeamChat(ctx context.Context, shopID uuid.UUID, chatID int64) error
 }
 
 // EmployeeDirectory is the slice of the store the bot needs to identify and
@@ -42,6 +48,7 @@ type ShopDirectory interface {
 type EmployeeDirectory interface {
 	ByTelegramID(ctx context.Context, telegramUserID int64) (*store.Employee, error)
 	Join(ctx context.Context, inviteCode string, telegramUserID int64, displayName string) (*store.Employee, error)
+	ListActiveByShop(ctx context.Context, shopID uuid.UUID) ([]*store.Employee, error)
 }
 
 // AvailabilityStore persists parsed availability. Satisfied by
@@ -55,6 +62,11 @@ type VoteStore interface {
 	Record(ctx context.Context, shopID, scheduleID, employeeID uuid.UUID) error
 }
 
+// RuleStore persists owner soft scheduling rules. Satisfied by *store.RuleRepo.
+type RuleStore interface {
+	Create(ctx context.Context, shopID uuid.UUID, description string, ruleJSON map[string]any, weight float64) (*store.Rule, error)
+}
+
 // Bot routes Telegram updates to handlers.
 type Bot struct {
 	api          Messenger
@@ -64,6 +76,8 @@ type Bot struct {
 	availability AvailabilityStore
 	votes        VoteStore
 	drafts       AvailabilityDraftStore
+	rules        RuleStore
+	ownerDrafts  OwnerDraftStore
 	log          *slog.Logger
 }
 
@@ -76,10 +90,15 @@ func NewBot(
 	availability AvailabilityStore,
 	votes VoteStore,
 	drafts AvailabilityDraftStore,
+	rules RuleStore,
+	ownerDrafts OwnerDraftStore,
 	log *slog.Logger,
 ) *Bot {
 	if log == nil {
 		log = slog.Default()
+	}
+	if ownerDrafts == nil {
+		ownerDrafts = NewMemoryOwnerDraftStore(ownerDraftTTL)
 	}
 	return &Bot{
 		api:          api,
@@ -89,6 +108,8 @@ func NewBot(
 		availability: availability,
 		votes:        votes,
 		drafts:       drafts,
+		rules:        rules,
+		ownerDrafts:  ownerDrafts,
 		log:          log,
 	}
 }
@@ -96,6 +117,8 @@ func NewBot(
 // HandleUpdate dispatches one incoming update.
 func (b *Bot) HandleUpdate(ctx context.Context, u Update) error {
 	switch {
+	case u.MyChatMember != nil:
+		return b.handleMyChatMember(ctx, u.MyChatMember)
 	case u.Message != nil:
 		return b.handleMessage(ctx, u.Message)
 	case u.CallbackQuery != nil:
@@ -119,6 +142,11 @@ func (b *Bot) handleMessage(ctx context.Context, m *Message) error {
 	case strings.HasPrefix(text, "/start"):
 		return b.handleStart(ctx, m, strings.TrimSpace(strings.TrimPrefix(text, "/start")))
 	case text != "":
+		if shop, err := b.shops.ByOwnerTelegramID(ctx, m.From.ID); err == nil {
+			return b.handleOwnerText(ctx, m, shop, text)
+		} else if err != nil && !errors.Is(err, store.ErrNotFound) {
+			return fmt.Errorf("telegram: owner lookup: %w", err)
+		}
 		return b.handleAvailabilityText(ctx, m, text)
 	default:
 		return nil
@@ -126,24 +154,24 @@ func (b *Bot) handleMessage(ctx context.Context, m *Message) error {
 }
 
 func (b *Bot) handleStart(ctx context.Context, m *Message, inviteCode string) error {
+	if strings.HasPrefix(inviteCode, ownerStartPrefix) {
+		return b.handleOwnerStart(ctx, m, strings.TrimPrefix(inviteCode, ownerStartPrefix))
+	}
 	if inviteCode == "" {
-		return b.api.SendMessage(ctx, m.Chat.ID,
-			"Hi! Send /start <invite-code> to join your shop's schedule, then just message me your availability in plain words.", nil)
+		return b.api.SendMessage(ctx, m.Chat.ID, msgStartNoCode, nil)
 	}
 	name := strings.TrimSpace(m.From.FirstName + " " + m.From.LastName)
 	emp, err := b.employees.Join(ctx, inviteCode, m.From.ID, name)
 	if errors.Is(err, store.ErrNotFound) {
-		return b.api.SendMessage(ctx, m.Chat.ID, "That invite code doesn't match any shop. Double-check it with your manager.", nil)
+		return b.api.SendMessage(ctx, m.Chat.ID, msgBadInviteCode, nil)
 	}
 	if errors.Is(err, store.ErrEmployeeInactive) {
-		return b.api.SendMessage(ctx, m.Chat.ID,
-			"Tài khoản của bạn đang bị tạm ngưng trong quán này.\nHãy liên hệ chủ quán để được bật lại.", nil)
+		return b.api.SendMessage(ctx, m.Chat.ID, msgEmployeeInactive, nil)
 	}
 	if err != nil {
 		return fmt.Errorf("telegram: join shop: %w", err)
 	}
-	return b.api.SendMessage(ctx, m.Chat.ID,
-		fmt.Sprintf("Welcome, %s! You're on the roster. Send me your availability for next week whenever you're ready — plain language is fine.", emp.DisplayName), nil)
+	return b.api.SendMessage(ctx, m.Chat.ID, msgWelcomeJoin(emp.DisplayName), nil)
 }
 
 func (b *Bot) handleAvailabilityText(ctx context.Context, m *Message, text string) error {
@@ -152,7 +180,7 @@ func (b *Bot) handleAvailabilityText(ctx context.Context, m *Message, text strin
 	}
 	emp, err := b.employees.ByTelegramID(ctx, m.From.ID)
 	if errors.Is(err, store.ErrNotFound) {
-		return b.api.SendMessage(ctx, m.Chat.ID, "I don't know you yet — join your shop first with /start <invite-code>.", nil)
+		return b.api.SendMessage(ctx, m.Chat.ID, msgUnknownUser, nil)
 	}
 	if err != nil {
 		return fmt.Errorf("telegram: lookup employee: %w", err)
@@ -161,7 +189,7 @@ func (b *Bot) handleAvailabilityText(ctx context.Context, m *Message, text strin
 	shop, err := b.shops.ByID(ctx, emp.ShopID)
 	if err != nil {
 		if errors.Is(err, store.ErrNotFound) {
-			return b.api.SendMessage(ctx, m.Chat.ID, "Your shop could not be found. Ask your manager for help.", nil)
+			return b.api.SendMessage(ctx, m.Chat.ID, msgShopNotFound, nil)
 		}
 		return fmt.Errorf("telegram: lookup shop: %w", err)
 	}
@@ -175,7 +203,7 @@ func (b *Bot) handleAvailabilityText(ctx context.Context, m *Message, text strin
 	weekStart := nextMonday(time.Now().In(loc))
 	parsed, err := b.parser.ParseAvailability(ctx, text, weekStart, loc)
 	if errors.Is(err, llm.ErrNoProvider) {
-		return b.api.SendMessage(ctx, m.Chat.ID, "Availability parsing isn't configured yet — ask your admin to set up the LLM provider.", nil)
+		return b.api.SendMessage(ctx, m.Chat.ID, msgNoLLMProvider, nil)
 	}
 	var clarify *llm.ClarificationError
 	if errors.As(err, &clarify) {
@@ -183,10 +211,10 @@ func (b *Bot) handleAvailabilityText(ctx context.Context, m *Message, text strin
 	}
 	if err != nil {
 		b.log.Warn("availability parse failed", "err", err, "employee", emp.ID)
-		return b.api.SendMessage(ctx, m.Chat.ID, "Sorry, I couldn't understand that. Try something like: \"I can work Mon-Fri mornings, not Wednesday, prefer Friday evening.\"", nil)
+		return b.api.SendMessage(ctx, m.Chat.ID, msgParseFailed, nil)
 	}
 	if len(parsed) == 0 {
-		return b.api.SendMessage(ctx, m.Chat.ID, "I didn't find any availability in that message. Try again with days and times, e.g. \"Mon-Wed mornings, Thu off\".", nil)
+		return b.api.SendMessage(ctx, m.Chat.ID, msgNoSlotsFound, nil)
 	}
 
 	slots := make([]store.AvailabilitySlot, len(parsed))
@@ -200,7 +228,7 @@ func (b *Bot) handleAvailabilityText(ctx context.Context, m *Message, text strin
 	}
 	if err := validateAvailabilitySlots(slots, weekStart); err != nil {
 		b.log.Warn("availability slots invalid", "err", err, "employee", emp.ID)
-		return b.api.SendMessage(ctx, m.Chat.ID, "I couldn't turn that into valid availability for next week. Please rephrase with clear days and times.", nil)
+		return b.api.SendMessage(ctx, m.Chat.ID, msgInvalidSlots, nil)
 	}
 
 	draft := AvailabilityDraft{
@@ -223,6 +251,9 @@ func (b *Bot) handleAvailabilityText(ctx context.Context, m *Message, text strin
 }
 
 func (b *Bot) handleCallback(ctx context.Context, q *CallbackQuery) error {
+	if isBindCallback(q.Data) {
+		return b.handleBindCallback(ctx, q)
+	}
 	if isGroupChat(callbackChat(q)) {
 		return b.api.AnswerCallbackQuery(ctx, q.ID, "")
 	}
@@ -231,6 +262,10 @@ func (b *Bot) handleCallback(ctx context.Context, q *CallbackQuery) error {
 		return b.handleAvailabilityConfirm(ctx, q)
 	case strings.HasPrefix(q.Data, availCancelPrefix):
 		return b.handleAvailabilityCancel(ctx, q)
+	case strings.HasPrefix(q.Data, ownerConfirmPrefix):
+		return b.handleOwnerConfirm(ctx, q)
+	case strings.HasPrefix(q.Data, ownerCancelPrefix):
+		return b.handleOwnerCancel(ctx, q)
 	case strings.HasPrefix(q.Data, votePrefix):
 		return b.handleVote(ctx, q)
 	default:
@@ -244,7 +279,7 @@ func (b *Bot) handleAvailabilityConfirm(ctx context.Context, q *CallbackQuery) e
 		return err
 	}
 	if !ok {
-		return b.api.AnswerCallbackQuery(ctx, q.ID, "This confirmation expired. Please resend your availability.")
+		return b.api.AnswerCallbackQuery(ctx, q.ID, msgConfirmExpired)
 	}
 
 	if err := b.availability.ReplaceWeek(ctx, draft.ShopID, draft.EmployeeID, draft.WeekStart, draft.Slots, draft.RawMessage); err != nil {
@@ -252,12 +287,12 @@ func (b *Bot) handleAvailabilityConfirm(ctx context.Context, q *CallbackQuery) e
 	}
 	_ = b.drafts.Delete(ctx, draft.ID)
 
-	if err := b.api.AnswerCallbackQuery(ctx, q.ID, "Availability saved."); err != nil {
+	if err := b.api.AnswerCallbackQuery(ctx, q.ID, msgAvailabilitySaved); err != nil {
 		return err
 	}
 	chatID := callbackChatID(q, draft.ChatID)
 	return b.api.SendMessage(ctx, chatID,
-		fmt.Sprintf("Saved your availability for the week of %s.", draft.WeekStart.Format("2006-01-02")), nil)
+		fmt.Sprintf(msgAvailabilitySavedFollowUp, draft.WeekStart.Format("02/01/2006")), nil)
 }
 
 func (b *Bot) handleAvailabilityCancel(ctx context.Context, q *CallbackQuery) error {
@@ -266,21 +301,21 @@ func (b *Bot) handleAvailabilityCancel(ctx context.Context, q *CallbackQuery) er
 		return err
 	}
 	if !ok {
-		return b.api.AnswerCallbackQuery(ctx, q.ID, "This confirmation expired. Please resend your availability.")
+		return b.api.AnswerCallbackQuery(ctx, q.ID, msgConfirmExpired)
 	}
 
 	_ = b.drafts.Delete(ctx, draft.ID)
-	if err := b.api.AnswerCallbackQuery(ctx, q.ID, "Discarded."); err != nil {
+	if err := b.api.AnswerCallbackQuery(ctx, q.ID, msgDraftDiscarded); err != nil {
 		return err
 	}
 	chatID := callbackChatID(q, draft.ChatID)
-	return b.api.SendMessage(ctx, chatID, "Discarded. Send your availability again whenever you're ready.", nil)
+	return b.api.SendMessage(ctx, chatID, msgDraftDiscardedFollowUp, nil)
 }
 
 func (b *Bot) loadOwnedDraft(ctx context.Context, q *CallbackQuery, prefix string) (*AvailabilityDraft, bool, error) {
 	draftID, err := uuid.Parse(strings.TrimPrefix(q.Data, prefix))
 	if err != nil {
-		return nil, false, b.api.AnswerCallbackQuery(ctx, q.ID, "Invalid confirmation.")
+		return nil, false, b.api.AnswerCallbackQuery(ctx, q.ID, msgConfirmInvalid)
 	}
 	draft, ok, err := b.drafts.Get(ctx, draftID)
 	if err != nil {
@@ -290,7 +325,7 @@ func (b *Bot) loadOwnedDraft(ctx context.Context, q *CallbackQuery, prefix strin
 		return nil, false, nil
 	}
 	if q.From.ID != draft.TelegramUserID {
-		return nil, false, b.api.AnswerCallbackQuery(ctx, q.ID, "This confirmation is not yours.")
+		return nil, false, b.api.AnswerCallbackQuery(ctx, q.ID, msgConfirmNotYours)
 	}
 	return draft, true, nil
 }
@@ -316,8 +351,8 @@ func (b *Bot) handleVote(ctx context.Context, q *CallbackQuery) error {
 // AvailabilityConfirmKeyboard builds Confirm/Cancel buttons for a draft.
 func AvailabilityConfirmKeyboard(draftID uuid.UUID) *InlineKeyboardMarkup {
 	return &InlineKeyboardMarkup{InlineKeyboard: [][]InlineKeyboardButton{{
-		{Text: "Confirm", Data: availConfirmPrefix + draftID.String()},
-		{Text: "Cancel", Data: availCancelPrefix + draftID.String()},
+		{Text: btnConfirm, Data: availConfirmPrefix + draftID.String()},
+		{Text: btnCancel, Data: availCancelPrefix + draftID.String()},
 	}}}
 }
 
@@ -332,50 +367,6 @@ func VoteKeyboard(labels []string, scheduleIDs []uuid.UUID) *InlineKeyboardMarku
 		}})
 	}
 	return &InlineKeyboardMarkup{InlineKeyboard: rows}
-}
-
-func formatAvailabilityDraft(d AvailabilityDraft, loc *time.Location) string {
-	if loc == nil {
-		loc = time.UTC
-	}
-	var b strings.Builder
-	fmt.Fprintf(&b, "I understood this for the week of %s:\n\n", d.WeekStart.In(loc).Format("2006-01-02"))
-	for _, slot := range d.Slots {
-		start := slot.Start.In(loc)
-		end := slot.End.In(loc)
-		fmt.Fprintf(&b, "%s %s-%s %s\n",
-			start.Format("Mon"),
-			start.Format("15:04"),
-			end.Format("15:04"),
-			preferenceLabel(slot.Preference),
-		)
-	}
-	b.WriteString("\nConfirm?")
-	return b.String()
-}
-
-func preferenceLabel(pref int) string {
-	switch pref {
-	case 0:
-		return "unavailable"
-	case 2:
-		return "preferred"
-	default:
-		return "available"
-	}
-}
-
-func formatClarificationMessage(questions []string) string {
-	var b strings.Builder
-	b.WriteString("I need one clarification before saving:\n")
-	for _, q := range questions {
-		q = strings.TrimSpace(q)
-		if q == "" {
-			continue
-		}
-		fmt.Fprintf(&b, "- %s\n", q)
-	}
-	return strings.TrimSpace(b.String())
 }
 
 func validateAvailabilitySlots(slots []store.AvailabilitySlot, weekStart time.Time) error {

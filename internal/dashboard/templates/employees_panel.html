@@ -28,19 +28,7 @@
     {{end}}
 
     <div class="employees-telegram-block">
-      <div class="dashboard-section-header">
-        <h3 class="employees-heading">Telegram</h3>
-        <span class="status-dot status-dot-{{if .Telegram.Connected}}active{{else}}muted{{end}}">
-          {{if .Telegram.Connected}}Đã kết nối{{else}}Chưa kết nối{{end}}
-        </span>
-      </div>
-      <div class="telegram-setup">
-        {{if .Telegram.Connected}}
-        <p class="panel-meta">Group chat ID <code>{{.Telegram.TelegramGroupID}}</code></p>
-        {{else}}
-        <p class="panel-meta">Thêm bot vào group Telegram của quán để bot làm việc cùng nhân viên.</p>
-        {{end}}
-      </div>
+      {{template "telegram_setup.html" .Telegram}}
     </div>
 
     {{if .Employees}}

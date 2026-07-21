@@ -63,6 +63,62 @@ func (_c *ShopCreate) SetTelegramGroupID(v int64) *ShopCreate {
 	return _c
 }
 
+// SetTelegramTeamChatID sets the "telegram_team_chat_id" field.
+func (_c *ShopCreate) SetTelegramTeamChatID(v int64) *ShopCreate {
+	_c.mutation.SetTelegramTeamChatID(v)
+	return _c
+}
+
+// SetNillableTelegramTeamChatID sets the "telegram_team_chat_id" field if the given value is not nil.
+func (_c *ShopCreate) SetNillableTelegramTeamChatID(v *int64) *ShopCreate {
+	if v != nil {
+		_c.SetTelegramTeamChatID(*v)
+	}
+	return _c
+}
+
+// SetOwnerTelegramID sets the "owner_telegram_id" field.
+func (_c *ShopCreate) SetOwnerTelegramID(v int64) *ShopCreate {
+	_c.mutation.SetOwnerTelegramID(v)
+	return _c
+}
+
+// SetNillableOwnerTelegramID sets the "owner_telegram_id" field if the given value is not nil.
+func (_c *ShopCreate) SetNillableOwnerTelegramID(v *int64) *ShopCreate {
+	if v != nil {
+		_c.SetOwnerTelegramID(*v)
+	}
+	return _c
+}
+
+// SetOwnerLinkTokenHash sets the "owner_link_token_hash" field.
+func (_c *ShopCreate) SetOwnerLinkTokenHash(v string) *ShopCreate {
+	_c.mutation.SetOwnerLinkTokenHash(v)
+	return _c
+}
+
+// SetNillableOwnerLinkTokenHash sets the "owner_link_token_hash" field if the given value is not nil.
+func (_c *ShopCreate) SetNillableOwnerLinkTokenHash(v *string) *ShopCreate {
+	if v != nil {
+		_c.SetOwnerLinkTokenHash(*v)
+	}
+	return _c
+}
+
+// SetOwnerLinkTokenExpiresAt sets the "owner_link_token_expires_at" field.
+func (_c *ShopCreate) SetOwnerLinkTokenExpiresAt(v time.Time) *ShopCreate {
+	_c.mutation.SetOwnerLinkTokenExpiresAt(v)
+	return _c
+}
+
+// SetNillableOwnerLinkTokenExpiresAt sets the "owner_link_token_expires_at" field if the given value is not nil.
+func (_c *ShopCreate) SetNillableOwnerLinkTokenExpiresAt(v *time.Time) *ShopCreate {
+	if v != nil {
+		_c.SetOwnerLinkTokenExpiresAt(*v)
+	}
+	return _c
+}
+
 // SetPlan sets the "plan" field.
 func (_c *ShopCreate) SetPlan(v string) *ShopCreate {
 	_c.mutation.SetPlan(v)
@@ -433,6 +489,22 @@ func (_c *ShopCreate) createSpec() (*Shop, *sqlgraph.CreateSpec) {
 		_spec.SetField(shop.FieldTelegramGroupID, field.TypeInt64, value)
 		_node.TelegramGroupID = value
 	}
+	if value, ok := _c.mutation.TelegramTeamChatID(); ok {
+		_spec.SetField(shop.FieldTelegramTeamChatID, field.TypeInt64, value)
+		_node.TelegramTeamChatID = &value
+	}
+	if value, ok := _c.mutation.OwnerTelegramID(); ok {
+		_spec.SetField(shop.FieldOwnerTelegramID, field.TypeInt64, value)
+		_node.OwnerTelegramID = &value
+	}
+	if value, ok := _c.mutation.OwnerLinkTokenHash(); ok {
+		_spec.SetField(shop.FieldOwnerLinkTokenHash, field.TypeString, value)
+		_node.OwnerLinkTokenHash = &value
+	}
+	if value, ok := _c.mutation.OwnerLinkTokenExpiresAt(); ok {
+		_spec.SetField(shop.FieldOwnerLinkTokenExpiresAt, field.TypeTime, value)
+		_node.OwnerLinkTokenExpiresAt = &value
+	}
 	if value, ok := _c.mutation.Plan(); ok {
 		_spec.SetField(shop.FieldPlan, field.TypeString, value)
 		_node.Plan = value
@@ -687,6 +759,90 @@ func (u *ShopUpsert) AddTelegramGroupID(v int64) *ShopUpsert {
 	return u
 }
 
+// SetTelegramTeamChatID sets the "telegram_team_chat_id" field.
+func (u *ShopUpsert) SetTelegramTeamChatID(v int64) *ShopUpsert {
+	u.Set(shop.FieldTelegramTeamChatID, v)
+	return u
+}
+
+// UpdateTelegramTeamChatID sets the "telegram_team_chat_id" field to the value that was provided on create.
+func (u *ShopUpsert) UpdateTelegramTeamChatID() *ShopUpsert {
+	u.SetExcluded(shop.FieldTelegramTeamChatID)
+	return u
+}
+
+// AddTelegramTeamChatID adds v to the "telegram_team_chat_id" field.
+func (u *ShopUpsert) AddTelegramTeamChatID(v int64) *ShopUpsert {
+	u.Add(shop.FieldTelegramTeamChatID, v)
+	return u
+}
+
+// ClearTelegramTeamChatID clears the value of the "telegram_team_chat_id" field.
+func (u *ShopUpsert) ClearTelegramTeamChatID() *ShopUpsert {
+	u.SetNull(shop.FieldTelegramTeamChatID)
+	return u
+}
+
+// SetOwnerTelegramID sets the "owner_telegram_id" field.
+func (u *ShopUpsert) SetOwnerTelegramID(v int64) *ShopUpsert {
+	u.Set(shop.FieldOwnerTelegramID, v)
+	return u
+}
+
+// UpdateOwnerTelegramID sets the "owner_telegram_id" field to the value that was provided on create.
+func (u *ShopUpsert) UpdateOwnerTelegramID() *ShopUpsert {
+	u.SetExcluded(shop.FieldOwnerTelegramID)
+	return u
+}
+
+// AddOwnerTelegramID adds v to the "owner_telegram_id" field.
+func (u *ShopUpsert) AddOwnerTelegramID(v int64) *ShopUpsert {
+	u.Add(shop.FieldOwnerTelegramID, v)
+	return u
+}
+
+// ClearOwnerTelegramID clears the value of the "owner_telegram_id" field.
+func (u *ShopUpsert) ClearOwnerTelegramID() *ShopUpsert {
+	u.SetNull(shop.FieldOwnerTelegramID)
+	return u
+}
+
+// SetOwnerLinkTokenHash sets the "owner_link_token_hash" field.
+func (u *ShopUpsert) SetOwnerLinkTokenHash(v string) *ShopUpsert {
+	u.Set(shop.FieldOwnerLinkTokenHash, v)
+	return u
+}
+
+// UpdateOwnerLinkTokenHash sets the "owner_link_token_hash" field to the value that was provided on create.
+func (u *ShopUpsert) UpdateOwnerLinkTokenHash() *ShopUpsert {
+	u.SetExcluded(shop.FieldOwnerLinkTokenHash)
+	return u
+}
+
+// ClearOwnerLinkTokenHash clears the value of the "owner_link_token_hash" field.
+func (u *ShopUpsert) ClearOwnerLinkTokenHash() *ShopUpsert {
+	u.SetNull(shop.FieldOwnerLinkTokenHash)
+	return u
+}
+
+// SetOwnerLinkTokenExpiresAt sets the "owner_link_token_expires_at" field.
+func (u *ShopUpsert) SetOwnerLinkTokenExpiresAt(v time.Time) *ShopUpsert {
+	u.Set(shop.FieldOwnerLinkTokenExpiresAt, v)
+	return u
+}
+
+// UpdateOwnerLinkTokenExpiresAt sets the "owner_link_token_expires_at" field to the value that was provided on create.
+func (u *ShopUpsert) UpdateOwnerLinkTokenExpiresAt() *ShopUpsert {
+	u.SetExcluded(shop.FieldOwnerLinkTokenExpiresAt)
+	return u
+}
+
+// ClearOwnerLinkTokenExpiresAt clears the value of the "owner_link_token_expires_at" field.
+func (u *ShopUpsert) ClearOwnerLinkTokenExpiresAt() *ShopUpsert {
+	u.SetNull(shop.FieldOwnerLinkTokenExpiresAt)
+	return u
+}
+
 // SetPlan sets the "plan" field.
 func (u *ShopUpsert) SetPlan(v string) *ShopUpsert {
 	u.Set(shop.FieldPlan, v)
@@ -936,6 +1092,104 @@ func (u *ShopUpsertOne) AddTelegramGroupID(v int64) *ShopUpsertOne {
 func (u *ShopUpsertOne) UpdateTelegramGroupID() *ShopUpsertOne {
 	return u.Update(func(s *ShopUpsert) {
 		s.UpdateTelegramGroupID()
+	})
+}
+
+// SetTelegramTeamChatID sets the "telegram_team_chat_id" field.
+func (u *ShopUpsertOne) SetTelegramTeamChatID(v int64) *ShopUpsertOne {
+	return u.Update(func(s *ShopUpsert) {
+		s.SetTelegramTeamChatID(v)
+	})
+}
+
+// AddTelegramTeamChatID adds v to the "telegram_team_chat_id" field.
+func (u *ShopUpsertOne) AddTelegramTeamChatID(v int64) *ShopUpsertOne {
+	return u.Update(func(s *ShopUpsert) {
+		s.AddTelegramTeamChatID(v)
+	})
+}
+
+// UpdateTelegramTeamChatID sets the "telegram_team_chat_id" field to the value that was provided on create.
+func (u *ShopUpsertOne) UpdateTelegramTeamChatID() *ShopUpsertOne {
+	return u.Update(func(s *ShopUpsert) {
+		s.UpdateTelegramTeamChatID()
+	})
+}
+
+// ClearTelegramTeamChatID clears the value of the "telegram_team_chat_id" field.
+func (u *ShopUpsertOne) ClearTelegramTeamChatID() *ShopUpsertOne {
+	return u.Update(func(s *ShopUpsert) {
+		s.ClearTelegramTeamChatID()
+	})
+}
+
+// SetOwnerTelegramID sets the "owner_telegram_id" field.
+func (u *ShopUpsertOne) SetOwnerTelegramID(v int64) *ShopUpsertOne {
+	return u.Update(func(s *ShopUpsert) {
+		s.SetOwnerTelegramID(v)
+	})
+}
+
+// AddOwnerTelegramID adds v to the "owner_telegram_id" field.
+func (u *ShopUpsertOne) AddOwnerTelegramID(v int64) *ShopUpsertOne {
+	return u.Update(func(s *ShopUpsert) {
+		s.AddOwnerTelegramID(v)
+	})
+}
+
+// UpdateOwnerTelegramID sets the "owner_telegram_id" field to the value that was provided on create.
+func (u *ShopUpsertOne) UpdateOwnerTelegramID() *ShopUpsertOne {
+	return u.Update(func(s *ShopUpsert) {
+		s.UpdateOwnerTelegramID()
+	})
+}
+
+// ClearOwnerTelegramID clears the value of the "owner_telegram_id" field.
+func (u *ShopUpsertOne) ClearOwnerTelegramID() *ShopUpsertOne {
+	return u.Update(func(s *ShopUpsert) {
+		s.ClearOwnerTelegramID()
+	})
+}
+
+// SetOwnerLinkTokenHash sets the "owner_link_token_hash" field.
+func (u *ShopUpsertOne) SetOwnerLinkTokenHash(v string) *ShopUpsertOne {
+	return u.Update(func(s *ShopUpsert) {
+		s.SetOwnerLinkTokenHash(v)
+	})
+}
+
+// UpdateOwnerLinkTokenHash sets the "owner_link_token_hash" field to the value that was provided on create.
+func (u *ShopUpsertOne) UpdateOwnerLinkTokenHash() *ShopUpsertOne {
+	return u.Update(func(s *ShopUpsert) {
+		s.UpdateOwnerLinkTokenHash()
+	})
+}
+
+// ClearOwnerLinkTokenHash clears the value of the "owner_link_token_hash" field.
+func (u *ShopUpsertOne) ClearOwnerLinkTokenHash() *ShopUpsertOne {
+	return u.Update(func(s *ShopUpsert) {
+		s.ClearOwnerLinkTokenHash()
+	})
+}
+
+// SetOwnerLinkTokenExpiresAt sets the "owner_link_token_expires_at" field.
+func (u *ShopUpsertOne) SetOwnerLinkTokenExpiresAt(v time.Time) *ShopUpsertOne {
+	return u.Update(func(s *ShopUpsert) {
+		s.SetOwnerLinkTokenExpiresAt(v)
+	})
+}
+
+// UpdateOwnerLinkTokenExpiresAt sets the "owner_link_token_expires_at" field to the value that was provided on create.
+func (u *ShopUpsertOne) UpdateOwnerLinkTokenExpiresAt() *ShopUpsertOne {
+	return u.Update(func(s *ShopUpsert) {
+		s.UpdateOwnerLinkTokenExpiresAt()
+	})
+}
+
+// ClearOwnerLinkTokenExpiresAt clears the value of the "owner_link_token_expires_at" field.
+func (u *ShopUpsertOne) ClearOwnerLinkTokenExpiresAt() *ShopUpsertOne {
+	return u.Update(func(s *ShopUpsert) {
+		s.ClearOwnerLinkTokenExpiresAt()
 	})
 }
 
@@ -1378,6 +1632,104 @@ func (u *ShopUpsertBulk) AddTelegramGroupID(v int64) *ShopUpsertBulk {
 func (u *ShopUpsertBulk) UpdateTelegramGroupID() *ShopUpsertBulk {
 	return u.Update(func(s *ShopUpsert) {
 		s.UpdateTelegramGroupID()
+	})
+}
+
+// SetTelegramTeamChatID sets the "telegram_team_chat_id" field.
+func (u *ShopUpsertBulk) SetTelegramTeamChatID(v int64) *ShopUpsertBulk {
+	return u.Update(func(s *ShopUpsert) {
+		s.SetTelegramTeamChatID(v)
+	})
+}
+
+// AddTelegramTeamChatID adds v to the "telegram_team_chat_id" field.
+func (u *ShopUpsertBulk) AddTelegramTeamChatID(v int64) *ShopUpsertBulk {
+	return u.Update(func(s *ShopUpsert) {
+		s.AddTelegramTeamChatID(v)
+	})
+}
+
+// UpdateTelegramTeamChatID sets the "telegram_team_chat_id" field to the value that was provided on create.
+func (u *ShopUpsertBulk) UpdateTelegramTeamChatID() *ShopUpsertBulk {
+	return u.Update(func(s *ShopUpsert) {
+		s.UpdateTelegramTeamChatID()
+	})
+}
+
+// ClearTelegramTeamChatID clears the value of the "telegram_team_chat_id" field.
+func (u *ShopUpsertBulk) ClearTelegramTeamChatID() *ShopUpsertBulk {
+	return u.Update(func(s *ShopUpsert) {
+		s.ClearTelegramTeamChatID()
+	})
+}
+
+// SetOwnerTelegramID sets the "owner_telegram_id" field.
+func (u *ShopUpsertBulk) SetOwnerTelegramID(v int64) *ShopUpsertBulk {
+	return u.Update(func(s *ShopUpsert) {
+		s.SetOwnerTelegramID(v)
+	})
+}
+
+// AddOwnerTelegramID adds v to the "owner_telegram_id" field.
+func (u *ShopUpsertBulk) AddOwnerTelegramID(v int64) *ShopUpsertBulk {
+	return u.Update(func(s *ShopUpsert) {
+		s.AddOwnerTelegramID(v)
+	})
+}
+
+// UpdateOwnerTelegramID sets the "owner_telegram_id" field to the value that was provided on create.
+func (u *ShopUpsertBulk) UpdateOwnerTelegramID() *ShopUpsertBulk {
+	return u.Update(func(s *ShopUpsert) {
+		s.UpdateOwnerTelegramID()
+	})
+}
+
+// ClearOwnerTelegramID clears the value of the "owner_telegram_id" field.
+func (u *ShopUpsertBulk) ClearOwnerTelegramID() *ShopUpsertBulk {
+	return u.Update(func(s *ShopUpsert) {
+		s.ClearOwnerTelegramID()
+	})
+}
+
+// SetOwnerLinkTokenHash sets the "owner_link_token_hash" field.
+func (u *ShopUpsertBulk) SetOwnerLinkTokenHash(v string) *ShopUpsertBulk {
+	return u.Update(func(s *ShopUpsert) {
+		s.SetOwnerLinkTokenHash(v)
+	})
+}
+
+// UpdateOwnerLinkTokenHash sets the "owner_link_token_hash" field to the value that was provided on create.
+func (u *ShopUpsertBulk) UpdateOwnerLinkTokenHash() *ShopUpsertBulk {
+	return u.Update(func(s *ShopUpsert) {
+		s.UpdateOwnerLinkTokenHash()
+	})
+}
+
+// ClearOwnerLinkTokenHash clears the value of the "owner_link_token_hash" field.
+func (u *ShopUpsertBulk) ClearOwnerLinkTokenHash() *ShopUpsertBulk {
+	return u.Update(func(s *ShopUpsert) {
+		s.ClearOwnerLinkTokenHash()
+	})
+}
+
+// SetOwnerLinkTokenExpiresAt sets the "owner_link_token_expires_at" field.
+func (u *ShopUpsertBulk) SetOwnerLinkTokenExpiresAt(v time.Time) *ShopUpsertBulk {
+	return u.Update(func(s *ShopUpsert) {
+		s.SetOwnerLinkTokenExpiresAt(v)
+	})
+}
+
+// UpdateOwnerLinkTokenExpiresAt sets the "owner_link_token_expires_at" field to the value that was provided on create.
+func (u *ShopUpsertBulk) UpdateOwnerLinkTokenExpiresAt() *ShopUpsertBulk {
+	return u.Update(func(s *ShopUpsert) {
+		s.UpdateOwnerLinkTokenExpiresAt()
+	})
+}
+
+// ClearOwnerLinkTokenExpiresAt clears the value of the "owner_link_token_expires_at" field.
+func (u *ShopUpsertBulk) ClearOwnerLinkTokenExpiresAt() *ShopUpsertBulk {
+	return u.Update(func(s *ShopUpsert) {
+		s.ClearOwnerLinkTokenExpiresAt()
 	})
 }
 
