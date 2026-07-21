@@ -253,7 +253,116 @@
     if (activeLink?.getAttribute('href') === `#${id}`) {
       live.classList.add('is-active');
     }
+    enhanceFormControls(live);
   });
 
+  function closeAllCustomSelects(except) {
+    document.querySelectorAll('[data-custom-select].is-open').forEach((field) => {
+      if (field !== except) field.classList.remove('is-open');
+    });
+  }
+
+  function enhanceCustomSelect(field) {
+    if (!(field instanceof HTMLElement) || field.dataset.enhanced === 'true') return;
+    const native = field.querySelector('[data-custom-select-native]');
+    if (!(native instanceof HTMLSelectElement)) return;
+
+    const trigger = document.createElement('button');
+    trigger.type = 'button';
+    trigger.className = 'custom-select-trigger';
+    trigger.setAttribute('aria-haspopup', 'listbox');
+    trigger.setAttribute('aria-expanded', 'false');
+
+    const label = document.createElement('span');
+    label.className = 'custom-select-label';
+    const chevron = document.createElement('span');
+    chevron.className = 'custom-select-chevron';
+    chevron.setAttribute('aria-hidden', 'true');
+    trigger.append(label, chevron);
+
+    const menu = document.createElement('ul');
+    menu.className = 'custom-select-menu';
+    menu.setAttribute('role', 'listbox');
+
+    function syncFromNative() {
+      const selected = native.selectedOptions[0];
+      label.textContent = selected ? selected.textContent : '';
+      menu.querySelectorAll('.custom-select-option').forEach((btn) => {
+        btn.classList.toggle('is-selected', btn.dataset.value === native.value);
+      });
+    }
+
+    Array.from(native.options).forEach((option) => {
+      const item = document.createElement('li');
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'custom-select-option';
+      button.dataset.value = option.value;
+      button.textContent = option.textContent;
+      button.setAttribute('role', 'option');
+      button.addEventListener('click', () => {
+        native.value = option.value;
+        native.dispatchEvent(new Event('change', { bubbles: true }));
+        syncFromNative();
+        field.classList.remove('is-open');
+        trigger.setAttribute('aria-expanded', 'false');
+      });
+      button.addEventListener('mouseenter', () => {
+        menu.querySelectorAll('.custom-select-option').forEach((btn) => btn.classList.remove('is-active'));
+        button.classList.add('is-active');
+      });
+      item.append(button);
+      menu.append(item);
+    });
+
+    trigger.addEventListener('click', (event) => {
+      event.preventDefault();
+      const willOpen = !field.classList.contains('is-open');
+      closeAllCustomSelects(field);
+      field.classList.toggle('is-open', willOpen);
+      trigger.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+    });
+
+    field.append(trigger, menu);
+    field.dataset.enhanced = 'true';
+    syncFromNative();
+  }
+
+  function enhanceFormControls(root) {
+    const scope = root instanceof Element ? root : document;
+    scope.querySelectorAll('[data-custom-select]').forEach(enhanceCustomSelect);
+  }
+
+  document.addEventListener('click', (event) => {
+    if (!(event.target instanceof Element)) return;
+    if (event.target.closest('[data-custom-select]')) return;
+    closeAllCustomSelects();
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') closeAllCustomSelects();
+  });
+
+  document.addEventListener('click', (event) => {
+    if (!(event.target instanceof Element)) return;
+    const stepBtn = event.target.closest('[data-number-step]');
+    if (!(stepBtn instanceof HTMLButtonElement)) return;
+    const field = stepBtn.closest('[data-number-field]');
+    const input = field?.querySelector('input[type="number"]');
+    if (!(input instanceof HTMLInputElement)) return;
+    event.preventDefault();
+    const delta = Number(stepBtn.dataset.numberStep || '0');
+    const min = input.min === '' ? null : Number(input.min);
+    const max = input.max === '' ? null : Number(input.max);
+    const current = input.value === '' ? 0 : Number(input.value);
+    let next = (Number.isFinite(current) ? current : 0) + delta;
+    if (min !== null && Number.isFinite(min)) next = Math.max(min, next);
+    if (max !== null && Number.isFinite(max)) next = Math.min(max, next);
+    input.value = String(next);
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+
+  enhanceFormControls(document);
   initDashboardTabs();
 })();

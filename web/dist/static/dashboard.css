@@ -1464,16 +1464,158 @@ body {
 }
 
 .dashboard-page .input {
+  box-sizing: border-box;
+  height: 42px;
   min-height: 42px;
-  padding: 9px 11px;
+  padding: 0 11px;
   border: 1.5px solid #18181b;
   border-radius: 8px;
   font-size: 0.84rem;
   font-weight: 600;
+  line-height: 1.2;
 }
 
 .dashboard-page .input:focus {
   box-shadow: 0 0 0 3px #bfdbfe;
+}
+
+.dashboard-page input[type="time"].input {
+  padding-right: 8px;
+}
+
+.dashboard-page input[type="number"].input {
+  -moz-appearance: textfield;
+  appearance: textfield;
+  padding-right: 34px;
+}
+
+.dashboard-page input[type="number"].input::-webkit-outer-spin-button,
+.dashboard-page input[type="number"].input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+  display: none;
+}
+
+.field-control {
+  position: relative;
+  width: 100%;
+}
+
+.select-field .select-input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  width: 1px;
+  height: 1px;
+}
+
+.custom-select-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  height: 42px;
+  padding: 0 11px;
+  border: 1.5px solid #18181b;
+  border-radius: 8px;
+  background: #fff;
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: #000;
+  text-align: left;
+  cursor: pointer;
+}
+
+.custom-select-trigger:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px #bfdbfe;
+}
+
+.custom-select-chevron {
+  flex: 0 0 auto;
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid #18181b;
+}
+
+.custom-select-menu {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  border: 1.5px solid #18181b;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: var(--shadow-secondary);
+  display: none;
+}
+
+.select-field.is-open .custom-select-menu {
+  display: grid;
+  gap: 2px;
+}
+
+.custom-select-option {
+  width: 100%;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: #18181b;
+  text-align: left;
+  cursor: pointer;
+}
+
+.custom-select-option:hover,
+.custom-select-option.is-active {
+  background: var(--blue-100);
+}
+
+.custom-select-option.is-selected {
+  background: var(--blue-300);
+}
+
+.number-field .input {
+  width: 100%;
+}
+
+.number-steppers {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  display: grid;
+  gap: 2px;
+  transform: translateY(-50%);
+}
+
+.number-step {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 14px;
+  padding: 0;
+  border: 1.5px solid #18181b;
+  border-radius: 4px;
+  background: var(--blue-100);
+  color: #18181b;
+  font-size: 8px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.number-step:hover {
+  background: var(--blue-300);
 }
 
 .week-toolbar .control-actions {

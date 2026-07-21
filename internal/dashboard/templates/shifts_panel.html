@@ -48,15 +48,17 @@
           </label>
           <label>
             Thứ
-            <select class="input" name="weekday">
-              <option value="0" {{if eq .Form.Weekday 0}}selected{{end}}>Chủ nhật</option>
-              <option value="1" {{if eq .Form.Weekday 1}}selected{{end}}>Thứ hai</option>
-              <option value="2" {{if eq .Form.Weekday 2}}selected{{end}}>Thứ ba</option>
-              <option value="3" {{if eq .Form.Weekday 3}}selected{{end}}>Thứ tư</option>
-              <option value="4" {{if eq .Form.Weekday 4}}selected{{end}}>Thứ năm</option>
-              <option value="5" {{if eq .Form.Weekday 5}}selected{{end}}>Thứ sáu</option>
-              <option value="6" {{if eq .Form.Weekday 6}}selected{{end}}>Thứ bảy</option>
-            </select>
+            <div class="field-control select-field" data-custom-select>
+              <select class="input select-input" name="weekday" data-custom-select-native>
+                <option value="0" {{if eq .Form.Weekday 0}}selected{{end}}>Chủ nhật</option>
+                <option value="1" {{if eq .Form.Weekday 1}}selected{{end}}>Thứ hai</option>
+                <option value="2" {{if eq .Form.Weekday 2}}selected{{end}}>Thứ ba</option>
+                <option value="3" {{if eq .Form.Weekday 3}}selected{{end}}>Thứ tư</option>
+                <option value="4" {{if eq .Form.Weekday 4}}selected{{end}}>Thứ năm</option>
+                <option value="5" {{if eq .Form.Weekday 5}}selected{{end}}>Thứ sáu</option>
+                <option value="6" {{if eq .Form.Weekday 6}}selected{{end}}>Thứ bảy</option>
+              </select>
+            </div>
           </label>
           <label>
             Bắt đầu
@@ -68,11 +70,23 @@
           </label>
           <label>
             Tối thiểu
-            <input class="input" type="number" name="min_staff" min="0" value="{{.Form.MinStaff}}" required />
+            <div class="field-control number-field" data-number-field>
+              <input class="input" type="number" name="min_staff" min="0" value="{{.Form.MinStaff}}" required />
+              <div class="number-steppers" aria-hidden="true">
+                <button type="button" class="number-step" data-number-step="1" tabindex="-1">▲</button>
+                <button type="button" class="number-step" data-number-step="-1" tabindex="-1">▼</button>
+              </div>
+            </div>
           </label>
           <label>
             Tối đa
-            <input class="input" type="number" name="max_staff" min="1" value="{{.Form.MaxStaff}}" required />
+            <div class="field-control number-field" data-number-field>
+              <input class="input" type="number" name="max_staff" min="1" value="{{.Form.MaxStaff}}" required />
+              <div class="number-steppers" aria-hidden="true">
+                <button type="button" class="number-step" data-number-step="1" tabindex="-1">▲</button>
+                <button type="button" class="number-step" data-number-step="-1" tabindex="-1">▼</button>
+              </div>
+            </div>
           </label>
         </div>
         <div class="control-actions">
