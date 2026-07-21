@@ -18,12 +18,14 @@
         <button
           type="button"
           class="status-toggle{{if .IsActive}} is-active{{end}}"
+          role="switch"
+          aria-checked="{{if .IsActive}}true{{else}}false{{end}}"
+          aria-label="{{.Name}}: {{.StatusLabel}}"
+          title="{{.StatusLabel}}"
           hx-post="/dashboard/shifts/{{.ID}}/{{if .IsActive}}deactivate{{else}}activate{{end}}"
           hx-target="#shifts-panel"
           hx-swap="outerHTML"
-        >
-          {{.StatusLabel}}
-        </button>
+        ></button>
       </li>
       {{end}}
     </ul>

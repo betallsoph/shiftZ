@@ -29,8 +29,14 @@ func TestShiftsPanelRendersList(t *testing.T) {
 	mux.ServeHTTP(rec, req)
 
 	body := rec.Body.String()
-	if !strings.Contains(body, "morning") || !strings.Contains(body, "đang dùng") {
+	if !strings.Contains(body, "morning") {
 		t.Fatalf("body = %q", body)
+	}
+	if !strings.Contains(body, `role="switch"`) || !strings.Contains(body, `aria-checked="true"`) {
+		t.Fatalf("expected active status switch, body = %q", body)
+	}
+	if !strings.Contains(body, `hx-post="/dashboard/shifts/`+shiftID.String()+`/deactivate"`) {
+		t.Fatalf("expected deactivate endpoint, body = %q", body)
 	}
 }
 
@@ -104,8 +110,12 @@ func TestDeactivateShiftUpdatesPanel(t *testing.T) {
 	if fake.shifts[0].IsActive {
 		t.Fatal("expected inactive")
 	}
-	if !strings.Contains(rec.Body.String(), "đã tắt") {
-		t.Fatalf("body = %q", rec.Body.String())
+	body := rec.Body.String()
+	if !strings.Contains(body, `role="switch"`) || !strings.Contains(body, `aria-checked="false"`) {
+		t.Fatalf("expected inactive status switch, body = %q", body)
+	}
+	if !strings.Contains(body, `hx-post="/dashboard/shifts/`+shiftID.String()+`/activate"`) {
+		t.Fatalf("expected activate endpoint, body = %q", body)
 	}
 }
 
