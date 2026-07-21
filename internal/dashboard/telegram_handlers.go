@@ -20,17 +20,18 @@ type TelegramPanelView struct {
 	Owner    TelegramSetupView
 }
 
-// TelegramSetupView is the owner Telegram connection status in the Telegram panel.
+// TelegramSetupView is the owner Telegram connection status fragment
+// (partial: telegram_owner_setup.html, swap target #telegram-setup).
 type TelegramSetupView struct {
-	OwnerLinked         bool
-	OwnerTelegramID     int64
-	BroadcastConnected  bool
-	TelegramGroupID     int64
-	TeamChatConnected   bool
-	TelegramTeamChatID  int64
-	OwnerLinkURL        string
-	Error               string
-	Notice              string
+	OwnerLinked        bool
+	OwnerTelegramID    int64
+	BroadcastConnected bool
+	TelegramGroupID    int64
+	TeamChatConnected  bool
+	TelegramTeamChatID int64
+	OwnerLinkURL       string
+	Error              string
+	Notice             string
 }
 
 func buildTelegramSetupView(shop *store.Shop) TelegramSetupView {
@@ -58,8 +59,10 @@ func (s *Server) renderTelegramSetup(ctx context.Context, shopID uuid.UUID, noti
 }
 
 func (s *Server) renderTelegramSetupView(w http.ResponseWriter, view TelegramSetupView) {
-	if err := s.tmpl.render(w, "telegram_setup.html", view); err != nil {
-		s.log.Error("render telegram setup", "err", err)
+	// Render owner fragment only so HTMX outerHTML swaps #telegram-setup
+	// without replacing the Telegram tab panel / is-active state.
+	if err := s.tmpl.render(w, "telegram_owner_setup.html", view); err != nil {
+		s.log.Error("render telegram owner setup", "err", err)
 		http.Error(w, "template error", http.StatusInternalServerError)
 	}
 }
