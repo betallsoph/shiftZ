@@ -38,6 +38,7 @@ type EmployeeRowView struct {
 // EmployeesPanelView is the HTMX-swapped employees panel.
 type EmployeesPanelView struct {
 	Error                  string
+	IsActive               bool
 	Employees              []EmployeeRowView
 	EmployeeInviteURL      string
 	EmployeeInviteShareURL string
@@ -127,6 +128,9 @@ func (s *Server) renderEmployeesPanel(ctx context.Context, shopID uuid.UUID, pen
 }
 
 func (s *Server) renderEmployeesPanelView(w http.ResponseWriter, view EmployeesPanelView) {
+	// HTMX outerHTML replaces the panel node and drops client-side is-active;
+	// mark the partial active so the tab content stays visible after edits.
+	view.IsActive = true
 	if err := s.tmpl.render(w, "employees_panel.html", view); err != nil {
 		s.log.Error("render employees panel", "err", err)
 		http.Error(w, "template error", http.StatusInternalServerError)

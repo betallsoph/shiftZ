@@ -42,9 +42,10 @@ type ShiftRowView struct {
 
 // ShiftsPanelView is the HTMX-swapped shifts panel.
 type ShiftsPanelView struct {
-	Error  string
-	Shifts []ShiftRowView
-	Form   ShiftFormView
+	Error    string
+	IsActive bool
+	Shifts   []ShiftRowView
+	Form     ShiftFormView
 }
 
 func defaultShiftForm() ShiftFormView {
@@ -100,6 +101,9 @@ func (s *Server) renderShiftsPanel(ctx context.Context, shopID uuid.UUID, form S
 }
 
 func (s *Server) renderShiftsPanelView(w http.ResponseWriter, view ShiftsPanelView) {
+	// HTMX outerHTML replaces the panel node and drops client-side is-active;
+	// mark the partial active so the tab content stays visible after save/toggle.
+	view.IsActive = true
 	if err := s.tmpl.render(w, "shifts_panel.html", view); err != nil {
 		s.log.Error("render shifts panel", "err", err)
 		http.Error(w, "template error", http.StatusInternalServerError)

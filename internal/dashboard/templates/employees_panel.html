@@ -1,4 +1,4 @@
-<section id="employees-panel" class="dashboard-view" data-dashboard-view="employees">
+<section id="employees-panel" class="dashboard-view{{if .IsActive}} is-active{{end}}" data-dashboard-view="employees">
   <h2 class="dashboard-section-title">Nhân viên</h2>
   <div class="dashboard-tool employees-panel">
     {{if .Error}}

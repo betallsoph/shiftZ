@@ -241,19 +241,30 @@
     showView(initial);
   }
 
-  // outerHTML swaps replace the node; re-apply is-active on the live element by id.
+  // outerHTML swaps replace the node; force the swapped panel visible and sync tabs.
   document.body.addEventListener('htmx:afterSwap', (event) => {
     const target = event.detail.target;
-    if (!(target instanceof HTMLElement)) return;
-    const id = target.id;
+    const elt = event.detail.elt;
+    const id =
+      (target instanceof HTMLElement && target.id) ||
+      (elt instanceof HTMLElement && elt.id) ||
+      '';
     if (!DASHBOARD_VIEW_IDS.includes(id)) return;
-    const live = document.getElementById(id);
-    if (!live) return;
-    const activeLink = document.querySelector('[data-tab-link].is-active');
-    if (activeLink?.getAttribute('href') === `#${id}`) {
-      live.classList.add('is-active');
+    DASHBOARD_VIEW_IDS.forEach((viewID) => {
+      const view = document.getElementById(viewID);
+      if (view) view.classList.toggle('is-active', viewID === id);
+    });
+    document.querySelectorAll('[data-tab-link]').forEach((link) => {
+      const active = link.getAttribute('href') === `#${id}`;
+      link.classList.toggle('is-active', active);
+      if (active) link.setAttribute('aria-current', 'page');
+      else link.removeAttribute('aria-current');
+    });
+    if (window.location.hash !== `#${id}`) {
+      history.replaceState(null, '', `#${id}`);
     }
-    enhanceFormControls(live);
+    const live = document.getElementById(id);
+    if (live) enhanceFormControls(live);
   });
 
   function closeAllCustomSelects(except) {
