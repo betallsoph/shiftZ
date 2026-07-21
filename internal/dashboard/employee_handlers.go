@@ -37,11 +37,9 @@ type EmployeeRowView struct {
 
 // EmployeesPanelView is the HTMX-swapped employees panel.
 type EmployeesPanelView struct {
-	Error                  string
-	IsActive               bool
-	Employees              []EmployeeRowView
-	EmployeeInviteURL      string
-	EmployeeInviteShareURL string
+	Error     string
+	IsActive  bool
+	Employees []EmployeeRowView
 }
 
 type employeePendingEdit struct {
@@ -61,8 +59,6 @@ func buildEmployeesPanelView(
 	employees []*store.Employee,
 	pending *employeePendingEdit,
 	panelErr string,
-	inviteURL string,
-	inviteShareURL string,
 ) EmployeesPanelView {
 	rows := make([]EmployeeRowView, len(employees))
 	for i, emp := range employees {
@@ -92,10 +88,8 @@ func buildEmployeesPanelView(
 		}
 	}
 	return EmployeesPanelView{
-		Error:                  panelErr,
-		Employees:              rows,
-		EmployeeInviteURL:      inviteURL,
-		EmployeeInviteShareURL: inviteShareURL,
+		Error:     panelErr,
+		Employees: rows,
 	}
 }
 
@@ -107,20 +101,13 @@ func roleDisplayLabel(role string) string {
 }
 
 func (s *Server) renderEmployeesPanel(ctx context.Context, shopID uuid.UUID, pending *employeePendingEdit, panelErr string, w http.ResponseWriter) {
-	shop, err := s.shops.ByID(ctx, shopID)
-	if err != nil {
-		s.log.Error("load shop for employees panel", "err", err)
-		s.renderEmployeesPanelView(w, buildEmployeesPanelView(nil, pending, "không tải được thông tin quán", "", ""))
-		return
-	}
-	inviteURL, inviteShareURL := employeeInviteLinks(s.botUsername, shop.InviteCode)
 	employees, err := s.employeeMgmt.ListAllByShop(ctx, shopID)
 	if err != nil {
 		s.log.Error("list employees", "err", err)
-		s.renderEmployeesPanelView(w, buildEmployeesPanelView(nil, pending, "không tải được danh sách nhân viên", inviteURL, inviteShareURL))
+		s.renderEmployeesPanelView(w, buildEmployeesPanelView(nil, pending, "không tải được danh sách nhân viên"))
 		return
 	}
-	s.renderEmployeesPanelView(w, buildEmployeesPanelView(employees, pending, panelErr, inviteURL, inviteShareURL))
+	s.renderEmployeesPanelView(w, buildEmployeesPanelView(employees, pending, panelErr))
 }
 
 func (s *Server) renderEmployeesPanelView(w http.ResponseWriter, view EmployeesPanelView) {
@@ -241,11 +228,11 @@ func (s *Server) findEmployeeInShop(ctx context.Context, shopID, employeeID uuid
 	return nil, store.ErrNotFound
 }
 
-func (s *Server) loadEmployeesPanelView(ctx context.Context, shop *store.Shop, inviteURL, inviteShareURL string) EmployeesPanelView {
+func (s *Server) loadEmployeesPanelView(ctx context.Context, shop *store.Shop) EmployeesPanelView {
 	employees, err := s.employeeMgmt.ListAllByShop(ctx, shop.ID)
 	if err != nil {
 		s.log.Error("list employees for page", "err", err)
-		return buildEmployeesPanelView(nil, nil, "", inviteURL, inviteShareURL)
+		return buildEmployeesPanelView(nil, nil, "")
 	}
-	return buildEmployeesPanelView(employees, nil, "", inviteURL, inviteShareURL)
+	return buildEmployeesPanelView(employees, nil, "")
 }

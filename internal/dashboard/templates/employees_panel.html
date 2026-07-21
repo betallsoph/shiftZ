@@ -5,28 +5,6 @@
     <p class="panel-error" role="alert">{{.Error}}</p>
     {{end}}
 
-    {{if .EmployeeInviteURL}}
-    <div class="employee-invite">
-      <div class="employee-invite-copy">
-        <strong>Mời nhân viên</strong>
-        <span>Gửi link để nhân viên mở bot và tham gia quán.</span>
-      </div>
-      <div class="employee-invite-actions">
-        <button
-          type="button"
-          class="btn btn-ghost btn-sm"
-          data-copy-text="{{.EmployeeInviteURL}}"
-        >Sao chép link</button>
-        <a
-          class="btn btn-primary btn-sm"
-          href="{{.EmployeeInviteShareURL}}"
-          target="_blank"
-          rel="noopener noreferrer"
-        >Gửi qua Telegram</a>
-      </div>
-    </div>
-    {{end}}
-
     {{if .Employees}}
     <ul class="employee-list">
       {{range .Employees}}
@@ -89,7 +67,6 @@
     {{else}}
     <div class="compact-empty-state">
       <p>Chưa có nhân viên.</p>
-      <span>Dùng link mời ở trên để nhân viên tham gia qua Telegram.</span>
     </div>
     {{end}}
   </div>

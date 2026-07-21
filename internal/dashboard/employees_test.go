@@ -44,6 +44,32 @@ func TestEmployeesPanelRendersList(t *testing.T) {
 	}
 }
 
+func TestEmployeesPanelOmitsInviteCard(t *testing.T) {
+	shopID := uuid.New()
+	srv, mux := newEmployeesTestServer(t, shopID, &fakeEmployeeMgmt{})
+	srv.SetTelegramBotUsername("shiftzz_bot")
+	srv.shops = &fakeShops{shop: &store.Shop{ID: shopID, Name: "Cafe", Timezone: "UTC", InviteCode: "invite99"}}
+
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	addSessionCookie(t, srv, shopID, req)
+	rec := httptest.NewRecorder()
+	mux.ServeHTTP(rec, req)
+
+	employeesPanel := sectionBetween(t, rec.Body.String(), `id="employees-panel"`, `id="shifts-panel"`)
+	for _, needle := range []string{
+		"employee-invite",
+		"Mời nhân viên",
+		"Sao chép link",
+		"Gửi qua Telegram",
+		"https://t.me/shiftzz_bot?start=invite99",
+		"link mời",
+	} {
+		if strings.Contains(employeesPanel, needle) {
+			t.Fatalf("employees panel should not contain invite UI %q: %q", needle, employeesPanel)
+		}
+	}
+}
+
 func TestUpdateEmployeeValid(t *testing.T) {
 	shopID := uuid.New()
 	empID := uuid.New()

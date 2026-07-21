@@ -25,12 +25,11 @@ func (s *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
 		return
 	}
-	employeeInviteURL, employeeInviteShareURL := employeeInviteLinks(s.botUsername, shop.InviteCode)
 	if err := s.tmpl.render(w, "page.html", PageData{
 		Today:                 time.Now().Format(dateLayout),
 		ShopName:              shop.Name,
 		Shifts:                s.loadShiftsPanelView(r.Context(), sess.ShopID),
-		Employees:             s.loadEmployeesPanelView(r.Context(), shop, employeeInviteURL, employeeInviteShareURL),
+		Employees:             s.loadEmployeesPanelView(r.Context(), shop),
 		Telegram: TelegramPanelView{
 			Owner:     buildTelegramSetupView(shop),
 			Employees: s.loadTelegramEmployeesView(r.Context(), shop),
