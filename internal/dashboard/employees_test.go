@@ -43,9 +43,8 @@ func TestUpdateEmployeeValid(t *testing.T) {
 	srv, mux := newEmployeesTestServer(t, shopID, fake)
 
 	form := url.Values{
-		"display_name":       {"Anna K"},
-		"role":               {"kitchen"},
-		"max_hours_per_week": {"35"},
+		"display_name": {"Anna K"},
+		"role":         {"kitchen"},
 	}
 	req := httptest.NewRequest(http.MethodPost, "/dashboard/employees/"+empID.String(), strings.NewReader(form.Encode()))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
@@ -53,7 +52,7 @@ func TestUpdateEmployeeValid(t *testing.T) {
 	rec := httptest.NewRecorder()
 	mux.ServeHTTP(rec, req)
 
-	if fake.employees[0].DisplayName != "Anna K" || fake.employees[0].Role != "kitchen" || fake.employees[0].MaxHoursPerWeek != 35 {
+	if fake.employees[0].DisplayName != "Anna K" || fake.employees[0].Role != "kitchen" || fake.employees[0].MaxHoursPerWeek != 40 {
 		t.Fatalf("employee = %+v", fake.employees[0])
 	}
 	if !strings.Contains(rec.Body.String(), "Anna K") {
@@ -70,9 +69,8 @@ func TestUpdateEmployeeInvalidShowsError(t *testing.T) {
 	srv, mux := newEmployeesTestServer(t, shopID, fake)
 
 	form := url.Values{
-		"display_name":       {""},
-		"role":               {"barista"},
-		"max_hours_per_week": {"40"},
+		"display_name": {""},
+		"role":         {"barista"},
 	}
 	req := httptest.NewRequest(http.MethodPost, "/dashboard/employees/"+empID.String(), strings.NewReader(form.Encode()))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")

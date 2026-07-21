@@ -3,9 +3,7 @@ package dashboard
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net/http"
-	"strconv"
 	"strings"
 
 	"github.com/google/uuid"
@@ -21,9 +19,8 @@ type employeeAdmin interface {
 
 // EmployeeFormView is one employee's inline edit form state.
 type EmployeeFormView struct {
-	DisplayName     string
-	Role            string
-	MaxHoursPerWeek string
+	DisplayName string
+	Role        string
 }
 
 // EmployeeRowView is one employee row in the owner panel.
@@ -31,7 +28,6 @@ type EmployeeRowView struct {
 	ID             string
 	DisplayName    string
 	RoleLabel      string
-	MaxHoursLabel  string
 	TelegramLinked bool
 	IsActive       bool
 	StatusLabel    string
@@ -56,17 +52,9 @@ type employeePendingEdit struct {
 
 func employeeFormFromDB(emp *store.Employee) EmployeeFormView {
 	return EmployeeFormView{
-		DisplayName:     emp.DisplayName,
-		Role:            emp.Role,
-		MaxHoursPerWeek: formatMaxHours(emp.MaxHoursPerWeek),
+		DisplayName: emp.DisplayName,
+		Role:        emp.Role,
 	}
-}
-
-func formatMaxHours(v float64) string {
-	if v == float64(int64(v)) {
-		return strconv.FormatInt(int64(v), 10)
-	}
-	return strconv.FormatFloat(v, 'f', -1, 64)
 }
 
 func buildEmployeesPanelView(
@@ -97,19 +85,11 @@ func buildEmployeesPanelView(
 			ID:             emp.ID.String(),
 			DisplayName:    emp.DisplayName,
 			RoleLabel:      roleLabel,
-			MaxHoursLabel:  formatMaxHours(emp.MaxHoursPerWeek),
 			TelegramLinked: emp.TelegramUserID != 0,
 			IsActive:       emp.IsActive,
 			StatusLabel:    status,
 			FieldError:     fieldErr,
 			Form:           form,
-		}
-		if pending != nil && emp.ID == pending.employeeID {
-			if maxHours, err := strconv.ParseFloat(form.MaxHoursPerWeek, 64); err == nil {
-				rows[i].MaxHoursLabel = formatMaxHours(maxHours)
-			} else {
-				rows[i].MaxHoursLabel = form.MaxHoursPerWeek
-			}
 		}
 	}
 	return EmployeesPanelView{
@@ -168,14 +148,24 @@ func (s *Server) handleUpdateEmployee(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	form := parseEmployeeForm(r)
-	input, parseErr := formToEmployeeInput(form)
-	if parseErr != nil {
+	existing, err := s.findEmployeeInShop(r.Context(), sess.ShopID, employeeID)
+	if err != nil {
+		if errors.Is(err, store.ErrNotFound) {
+			http.NotFound(w, r)
+			return
+		}
+		s.log.Error("load employee for update", "err", err)
 		s.renderEmployeesPanel(r.Context(), sess.ShopID, &employeePendingEdit{
 			employeeID: employeeID,
 			form:       form,
-			errMsg:     parseErr.Error(),
+			errMsg:     "cập nhật nhân viên thất bại",
 		}, "", w)
 		return
+	}
+	input := store.UpdateEmployeeInput{
+		DisplayName:     form.DisplayName,
+		Role:            form.Role,
+		MaxHoursPerWeek: existing.MaxHoursPerWeek,
 	}
 	if _, err := s.employeeMgmt.Update(r.Context(), sess.ShopID, employeeID, input); err != nil {
 		if errors.Is(err, store.ErrNotFound) {
@@ -233,22 +223,22 @@ func (s *Server) handleSetEmployeeActive(w http.ResponseWriter, r *http.Request,
 
 func parseEmployeeForm(r *http.Request) EmployeeFormView {
 	return EmployeeFormView{
-		DisplayName:     r.FormValue("display_name"),
-		Role:            r.FormValue("role"),
-		MaxHoursPerWeek: r.FormValue("max_hours_per_week"),
+		DisplayName: r.FormValue("display_name"),
+		Role:        r.FormValue("role"),
 	}
 }
 
-func formToEmployeeInput(form EmployeeFormView) (store.UpdateEmployeeInput, error) {
-	maxHours, err := strconv.ParseFloat(strings.TrimSpace(form.MaxHoursPerWeek), 64)
+func (s *Server) findEmployeeInShop(ctx context.Context, shopID, employeeID uuid.UUID) (*store.Employee, error) {
+	employees, err := s.employeeMgmt.ListAllByShop(ctx, shopID)
 	if err != nil {
-		return store.UpdateEmployeeInput{}, fmt.Errorf("giới hạn giờ/tuần không hợp lệ")
+		return nil, err
 	}
-	return store.UpdateEmployeeInput{
-		DisplayName:     form.DisplayName,
-		Role:            form.Role,
-		MaxHoursPerWeek: maxHours,
-	}, nil
+	for _, emp := range employees {
+		if emp.ID == employeeID {
+			return emp, nil
+		}
+	}
+	return nil, store.ErrNotFound
 }
 
 func (s *Server) loadEmployeesPanelView(ctx context.Context, shop *store.Shop, telegram TelegramSetupView, inviteURL, inviteShareURL string) EmployeesPanelView {

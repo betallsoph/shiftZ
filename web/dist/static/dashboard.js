@@ -212,15 +212,13 @@
     const tabBar = document.querySelector('.dashboard-tabs');
     if (!tabBar) return;
 
-    const links = tabBar.querySelectorAll('[data-tab-link]');
-    const views = DASHBOARD_VIEW_IDS.map((id) => document.getElementById(id)).filter(Boolean);
-
     function showView(viewID) {
       const targetID = DASHBOARD_VIEW_IDS.includes(viewID) ? viewID : 'schedule-section';
-      views.forEach((view) => {
-        view.classList.toggle('is-active', view.id === targetID);
+      DASHBOARD_VIEW_IDS.forEach((id) => {
+        const view = document.getElementById(id);
+        if (view) view.classList.toggle('is-active', view.id === targetID);
       });
-      links.forEach((link) => {
+      tabBar.querySelectorAll('[data-tab-link]').forEach((link) => {
         const active = link.getAttribute('href') === `#${targetID}`;
         link.classList.toggle('is-active', active);
         if (active) link.setAttribute('aria-current', 'page');
@@ -243,12 +241,17 @@
     showView(initial);
   }
 
+  // outerHTML swaps replace the node; re-apply is-active on the live element by id.
   document.body.addEventListener('htmx:afterSwap', (event) => {
     const target = event.detail.target;
-    if (!(target instanceof HTMLElement) || !target.classList.contains('dashboard-view')) return;
+    if (!(target instanceof HTMLElement)) return;
+    const id = target.id;
+    if (!DASHBOARD_VIEW_IDS.includes(id)) return;
+    const live = document.getElementById(id);
+    if (!live) return;
     const activeLink = document.querySelector('[data-tab-link].is-active');
-    if (activeLink?.getAttribute('href') === `#${target.id}`) {
-      target.classList.add('is-active');
+    if (activeLink?.getAttribute('href') === `#${id}`) {
+      live.classList.add('is-active');
     }
   });
 
