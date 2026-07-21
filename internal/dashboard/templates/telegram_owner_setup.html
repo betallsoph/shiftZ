@@ -25,29 +25,14 @@
       {{end}}
     </div>
     <div class="telegram-owner-actions">
-      {{if .OwnerLinkURL}}
-      <a
-        class="btn btn-primary btn-sm"
-        href="{{.OwnerLinkURL}}"
-        target="_blank"
-        rel="noopener noreferrer"
-      >Mở Telegram</a>
-      {{else if not .OwnerLinked}}
+      {{if not .OwnerLinkURL}}
       <button
         type="button"
         class="btn btn-primary btn-sm"
         hx-post="/dashboard/telegram/owner-link"
         hx-target="#telegram-setup"
         hx-swap="outerHTML"
-      >Liên kết Telegram</button>
-      {{else}}
-      <button
-        type="button"
-        class="btn btn-ghost btn-sm"
-        hx-post="/dashboard/telegram/owner-link"
-        hx-target="#telegram-setup"
-        hx-swap="outerHTML"
-      >Liên kết lại</button>
+      >Tạo link telegram</button>
       {{end}}
       <button
         type="button"
@@ -58,6 +43,17 @@
       >Làm mới</button>
     </div>
   </div>
+
+  {{if .OwnerLinkURL}}
+  <div class="telegram-owner-link-result">
+    <code class="telegram-owner-link-url" title="{{.OwnerLinkURL}}">{{.OwnerLinkURL}}</code>
+    <button
+      type="button"
+      class="btn btn-ghost btn-sm"
+      data-copy-text="{{.OwnerLinkURL}}"
+    >Sao chép link</button>
+  </div>
+  {{end}}
 
   {{if .OwnerLinked}}
   <p class="panel-meta telegram-owner-hint">Sau khi liên kết, nhắn bot để báo nghỉ đột xuất.</p>
