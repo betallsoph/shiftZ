@@ -30,6 +30,13 @@
       >Tạo link telegram</button>
       {{end}}
       {{end}}
+      <button
+        type="button"
+        class="btn btn-ghost btn-sm"
+        hx-post="/dashboard/telegram/employees/refresh"
+        hx-target="#telegram-employees"
+        hx-swap="outerHTML"
+      >Làm mới</button>
     </div>
   </div>
 
