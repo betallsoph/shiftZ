@@ -414,6 +414,27 @@ body {
   flex-shrink: 0;
 }
 
+.telegram-owner-link-result {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 8px 10px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+  background: #fafafa;
+}
+
+.telegram-owner-link-url {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.78rem;
+  color: #3f3f46;
+}
+
 .telegram-owner-hint {
   margin: 0 0 14px;
 }
@@ -2153,6 +2174,15 @@ body {
 
   .telegram-owner-actions .btn {
     flex: 1;
+  }
+
+  .telegram-owner-link-result {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .telegram-owner-link-result .btn {
+    width: 100%;
   }
 
   .dashboard-tool {
