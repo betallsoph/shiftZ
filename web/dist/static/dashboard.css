@@ -370,6 +370,7 @@ body {
 
 .logout-form {
   margin: 0;
+  flex-shrink: 0;
 }
 
 .telegram-setup {
@@ -1346,6 +1347,10 @@ body {
   padding: 10px 24px;
 }
 
+.dashboard-topbar-inner > .brand-link {
+  flex-shrink: 0;
+}
+
 .dashboard-logo {
   display: block;
   width: 142px;
@@ -1356,7 +1361,10 @@ body {
 .dashboard-account {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 18px;
+  min-width: 0;
+  flex: 1;
 }
 
 .incident-report {
@@ -1411,11 +1419,15 @@ body {
 }
 
 .dashboard-shop-name {
-  max-width: 280px;
+  margin: 0;
+  min-width: 0;
+  max-width: min(280px, 36vw);
   overflow: hidden;
   color: #52525b;
   font-size: 0.82rem;
   font-weight: 700;
+  line-height: 1.2;
+  text-align: right;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -1447,23 +1459,6 @@ body {
   padding: 44px 24px 80px;
 }
 
-.dashboard-intro {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 24px;
-  margin-bottom: 18px;
-}
-
-.dashboard-shop-title {
-  margin: 0;
-  font-family: var(--font-sans);
-  font-size: 2rem;
-  font-weight: 700;
-  line-height: 1.15;
-  letter-spacing: 0;
-}
-
 .dashboard-eyebrow {
   margin: 0 0 5px;
   color: #2563eb;
@@ -1471,13 +1466,6 @@ body {
   font-weight: 900;
   letter-spacing: 0;
   text-transform: uppercase;
-}
-
-.dashboard-intro h1 {
-  margin: 0;
-  font-size: 2rem;
-  line-height: 1.15;
-  letter-spacing: 0;
 }
 
 .dashboard-subtitle {
@@ -2137,22 +2125,17 @@ body {
     width: 120px;
   }
 
+  .dashboard-account {
+    gap: 12px;
+  }
+
   .dashboard-shop-name {
-    display: none;
+    max-width: min(160px, 42vw);
+    font-size: 0.75rem;
   }
 
   .dashboard-container {
     padding-top: 30px;
-  }
-
-  .dashboard-intro {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .dashboard-intro h1,
-  .dashboard-shop-title {
-    font-size: 1.65rem;
   }
 
   .dashboard-section-title {
