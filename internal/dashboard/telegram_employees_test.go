@@ -57,7 +57,10 @@ func TestTelegramEmployeesInitialLoadHidesInviteLink(t *testing.T) {
 	if !strings.Contains(employeesSection, "Tạo link telegram") {
 		t.Fatalf("missing create link button, section = %q", employeesSection)
 	}
-	if strings.Contains(employeesSection, "Gửi qua Telegram") || strings.Contains(employeesSection, "Làm mới") {
+	if !strings.Contains(employeesSection, "Làm mới") {
+		t.Fatalf("missing refresh button, section = %q", employeesSection)
+	}
+	if strings.Contains(employeesSection, "Gửi qua Telegram") {
 		t.Fatalf("removed actions should not appear, section = %q", employeesSection)
 	}
 	if strings.Contains(employeesSection, "employee-invite") {
@@ -101,7 +104,10 @@ func TestTelegramEmployeesLinkShowsCopyAction(t *testing.T) {
 	if !strings.Contains(body, "Sao chép link") {
 		t.Fatalf("missing copy action, body = %q", body)
 	}
-	if strings.Contains(body, "Gửi qua Telegram") || strings.Contains(body, "Làm mới") || strings.Contains(body, "Tạo link telegram") {
+	if !strings.Contains(body, "Làm mới") {
+		t.Fatalf("missing refresh button after link created, body = %q", body)
+	}
+	if strings.Contains(body, "Gửi qua Telegram") || strings.Contains(body, "Tạo link telegram") {
 		t.Fatalf("unexpected actions after link created, body = %q", body)
 	}
 	if !strings.Contains(body, "Chi") || !strings.Contains(body, "Đã liên kết") || !strings.Contains(body, "99") {
@@ -118,6 +124,60 @@ func TestTelegramEmployeesLinkShowsCopyAction(t *testing.T) {
 	}
 	if strings.Contains(body, `telegram-card-title`) || strings.Contains(body, "Nhân viên</h3>") {
 		t.Fatalf("employees title must stay outside #telegram-employees swap root, body = %q", body)
+	}
+}
+
+func TestTelegramEmployeesRefreshShowsStatus(t *testing.T) {
+	shopID := uuid.New()
+	empID := uuid.New()
+	srv, mux := newTelegramEmployeesTestServer(t, shopID, &fakeEmployeeMgmt{employees: []*store.Employee{
+		{ID: empID, ShopID: shopID, TelegramUserID: 99, DisplayName: "Chi", Role: "pha chế", IsActive: true},
+		{ID: uuid.New(), ShopID: shopID, TelegramUserID: 0, DisplayName: "Dũng", IsActive: true},
+	}})
+	srv.shops = &fakeShops{shop: &store.Shop{ID: shopID, Name: "Cafe", Timezone: "UTC", InviteCode: "invite99"}}
+	srv.SetTelegramBotUsername("shiftzz_bot")
+
+	req := httptest.NewRequest(http.MethodPost, "/dashboard/telegram/employees/refresh", nil)
+	addSessionCookie(t, srv, shopID, req)
+	req.Header.Set("HX-Request", "true")
+	rec := httptest.NewRecorder()
+	mux.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, body = %q", rec.Code, rec.Body.String())
+	}
+	body := rec.Body.String()
+	if !strings.Contains(body, `id="telegram-employees"`) {
+		t.Fatalf("missing swap root, body = %q", body)
+	}
+	if strings.Contains(body, "https://t.me/shiftzz_bot?start=invite99") {
+		t.Fatalf("invite link should stay hidden until created, body = %q", body)
+	}
+	if !strings.Contains(body, "Tạo link telegram") || !strings.Contains(body, "Làm mới") {
+		t.Fatalf("missing toolbar actions, body = %q", body)
+	}
+	if strings.Contains(body, "Gửi qua Telegram") || strings.Contains(body, "employee-invite") {
+		t.Fatalf("removed invite card/actions should not appear, body = %q", body)
+	}
+	if !strings.Contains(body, "Chi") || !strings.Contains(body, "Đã liên kết") || !strings.Contains(body, "99") {
+		t.Fatalf("missing linked employee, body = %q", body)
+	}
+	if !strings.Contains(body, "Dũng") || !strings.Contains(body, "Chưa liên kết") {
+		t.Fatalf("missing unlinked employee, body = %q", body)
+	}
+	if !strings.Contains(body, "đã làm mới trạng thái liên kết") {
+		t.Fatalf("missing refresh notice, body = %q", body)
+	}
+}
+
+func TestTelegramEmployeesRefreshRequiresAuth(t *testing.T) {
+	_, mux := newTelegramEmployeesTestServer(t, uuid.New(), &fakeEmployeeMgmt{})
+	req := httptest.NewRequest(http.MethodPost, "/dashboard/telegram/employees/refresh", nil)
+	req.Header.Set("HX-Request", "true")
+	rec := httptest.NewRecorder()
+	mux.ServeHTTP(rec, req)
+	if rec.Code != http.StatusUnauthorized {
+		t.Fatalf("status = %d", rec.Code)
 	}
 }
 
@@ -138,7 +198,7 @@ func TestTelegramEmployeesEmptyState(t *testing.T) {
 	srv.shops = &fakeShops{shop: &store.Shop{ID: shopID, Name: "Cafe", Timezone: "UTC", InviteCode: "empty01"}}
 	srv.SetTelegramBotUsername("shiftzz_bot")
 
-	req := httptest.NewRequest(http.MethodPost, "/dashboard/telegram/employees/link", nil)
+	req := httptest.NewRequest(http.MethodPost, "/dashboard/telegram/employees/refresh", nil)
 	addSessionCookie(t, srv, shopID, req)
 	rec := httptest.NewRecorder()
 	mux.ServeHTTP(rec, req)

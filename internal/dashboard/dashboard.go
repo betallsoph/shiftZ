@@ -130,6 +130,7 @@ func (s *Server) Register(mux *http.ServeMux) {
 	mux.HandleFunc("POST /dashboard/telegram/owner-link", s.handleOwnerTelegramLink)
 	mux.HandleFunc("POST /dashboard/telegram/refresh", s.handleTelegramStatusRefresh)
 	mux.HandleFunc("POST /dashboard/telegram/employees/link", s.handleTelegramEmployeesLink)
+	mux.HandleFunc("POST /dashboard/telegram/employees/refresh", s.handleTelegramEmployeesRefresh)
 	mux.HandleFunc("POST /dashboard/incident-report", s.handleIncidentReport)
 }
 

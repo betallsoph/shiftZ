@@ -128,3 +128,11 @@ func (s *Server) handleTelegramEmployeesLink(w http.ResponseWriter, r *http.Requ
 	view.Notice = "Link đã sẵn sàng — gửi cho nhân viên để họ liên kết Telegram."
 	s.renderTelegramEmployeesView(w, view)
 }
+
+func (s *Server) handleTelegramEmployeesRefresh(w http.ResponseWriter, r *http.Request) {
+	sess, ok := s.requireSession(w, r)
+	if !ok {
+		return
+	}
+	s.renderTelegramEmployees(r.Context(), sess.ShopID, "đã làm mới trạng thái liên kết", "", w)
+}
