@@ -28,6 +28,9 @@ func TestDashboardShowsLinkedOwnerTelegram(t *testing.T) {
 	mux.ServeHTTP(rec, req)
 
 	body := rec.Body.String()
+	if !strings.Contains(body, "Chủ quán") {
+		t.Fatalf("missing owner section heading, body = %q", body)
+	}
 	if !strings.Contains(body, "Đã liên kết") {
 		t.Fatalf("missing owner linked status, body = %q", body)
 	}
@@ -39,6 +42,9 @@ func TestDashboardShowsLinkedOwnerTelegram(t *testing.T) {
 	}
 	if !strings.Contains(body, "Tạo group Thông báo") {
 		t.Fatalf("missing group checklist, body = %q", body)
+	}
+	if !strings.Contains(body, `data-telegram-owner-setup`) {
+		t.Fatalf("expected owner setup partial marker, body = %q", body)
 	}
 }
 
@@ -95,6 +101,10 @@ func TestOwnerTelegramLinkGeneratesDeepLink(t *testing.T) {
 	if !strings.Contains(body, `id="telegram-setup"`) {
 		t.Fatalf("expected telegram partial swap target, body = %q", body)
 	}
+	if !strings.Contains(body, `data-telegram-owner-setup`) {
+		t.Fatalf("expected owner setup partial marker, body = %q", body)
+	}
+	assertOwnerSetupFragmentOnly(t, body)
 }
 
 func TestTelegramStatusRefreshShowsGroupAndOwner(t *testing.T) {
@@ -124,6 +134,10 @@ func TestTelegramStatusRefreshShowsGroupAndOwner(t *testing.T) {
 	if !strings.Contains(body, "đã làm mới trạng thái") {
 		t.Fatalf("missing refresh notice, body = %q", body)
 	}
+	if !strings.Contains(body, "Sau khi liên kết, nhắn bot để báo nghỉ đột xuất.") {
+		t.Fatalf("missing ad-hoc leave hint, body = %q", body)
+	}
+	assertOwnerSetupFragmentOnly(t, body)
 }
 
 func TestOwnerTelegramLinkRequiresAuth(t *testing.T) {
@@ -134,6 +148,21 @@ func TestOwnerTelegramLinkRequiresAuth(t *testing.T) {
 	mux.ServeHTTP(rec, req)
 	if rec.Code != http.StatusUnauthorized {
 		t.Fatalf("status = %d", rec.Code)
+	}
+}
+
+func assertOwnerSetupFragmentOnly(t *testing.T, body string) {
+	t.Helper()
+	for _, needle := range []string{
+		`id="telegram-panel"`,
+		`id="employees-panel"`,
+		`id="shifts-panel"`,
+		`data-dashboard-view`,
+		`dashboard-view is-active`,
+	} {
+		if strings.Contains(body, needle) {
+			t.Fatalf("owner HTMX response must swap #telegram-setup only, found %q in body = %q", needle, body)
+		}
 	}
 }
 
