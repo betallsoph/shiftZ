@@ -27,10 +27,6 @@
     </div>
     {{end}}
 
-    <div class="employees-telegram-block">
-      {{template "telegram_setup.html" .Telegram}}
-    </div>
-
     {{if .Employees}}
     <ul class="employee-list">
       {{range .Employees}}
