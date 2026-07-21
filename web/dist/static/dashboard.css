@@ -710,7 +710,7 @@ body {
 
 :is(.toolbar-action, .modal-action, .btn)::before {
   position: absolute;
-  z-index: 0;
+  z-index: -1;
   inset: 0;
   background: #fff;
   clip-path: circle(0 at var(--hover-x) var(--hover-y));
@@ -720,6 +720,10 @@ body {
 
 :is(.toolbar-action, .modal-action, .btn):not(:disabled):hover::before {
   clip-path: circle(160% at var(--hover-x) var(--hover-y));
+}
+
+:is(.toolbar-action, .modal-action, .btn):not(:disabled):hover {
+  color: #2563eb;
 }
 
 :is(.toolbar-action-label, .modal-action-label, .btn-label) {
