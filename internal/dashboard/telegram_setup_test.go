@@ -86,8 +86,8 @@ func TestDashboardShowsUnlinkedOwnerTelegram(t *testing.T) {
 	if !strings.Contains(body, "Chưa liên kết") {
 		t.Fatalf("missing unlinked status, body = %q", body)
 	}
-	if !strings.Contains(body, "Liên kết Telegram") {
-		t.Fatalf("missing owner link button, body = %q", body)
+	if !strings.Contains(body, "Tạo link telegram") {
+		t.Fatalf("missing owner create-link button, body = %q", body)
 	}
 	if !strings.Contains(body, "Chat đội") {
 		t.Fatalf("missing optional team chat checklist, body = %q", body)
@@ -116,8 +116,14 @@ func TestOwnerTelegramLinkGeneratesDeepLink(t *testing.T) {
 	if !strings.Contains(body, want) {
 		t.Fatalf("missing deep link %q in body = %q", want, body)
 	}
-	if !strings.Contains(body, "Mở Telegram") {
-		t.Fatalf("missing open button, body = %q", body)
+	if !strings.Contains(body, want) {
+		t.Fatalf("missing visible link text in body = %q", body)
+	}
+	if !strings.Contains(body, `data-copy-text="`+want+`"`) {
+		t.Fatalf("missing copy button data attribute for %q in body = %q", want, body)
+	}
+	if !strings.Contains(body, "Sao chép link") {
+		t.Fatalf("missing copy button, body = %q", body)
 	}
 	if !strings.Contains(body, `id="telegram-setup"`) {
 		t.Fatalf("expected telegram partial swap target, body = %q", body)

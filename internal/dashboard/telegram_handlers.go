@@ -97,7 +97,7 @@ func (s *Server) handleOwnerTelegramLink(w http.ResponseWriter, r *http.Request)
 	}
 	view := buildTelegramSetupView(shop)
 	view.OwnerLinkURL = ownerTelegramLink(s.botUsername, token)
-	view.Notice = "Link đã sẵn sàng — mở Telegram để hoàn tất liên kết (hết hạn sau 15 phút)."
+	view.Notice = "Link đã sẵn sàng — sao chép và mở để hoàn tất liên kết (hết hạn sau 15 phút)."
 	s.renderTelegramSetupView(w, view)
 }
 

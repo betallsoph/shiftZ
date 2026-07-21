@@ -2169,6 +2169,15 @@ body {
     flex: 1;
   }
 
+  .telegram-owner-link-result {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .telegram-owner-link-result .btn {
+    width: 100%;
+  }
+
   .dashboard-tool {
     padding: 18px;
   }
