@@ -29,8 +29,18 @@ func TestEmployeesPanelRendersList(t *testing.T) {
 	mux.ServeHTTP(rec, req)
 
 	body := rec.Body.String()
-	if !strings.Contains(body, "Anna") || !strings.Contains(body, "đang làm") || !strings.Contains(body, "đã liên kết") {
-		t.Fatalf("body = %q", body)
+	employeesPanel := sectionBetween(t, body, `id="employees-panel"`, `id="shifts-panel"`)
+	if !strings.Contains(employeesPanel, "Anna") || !strings.Contains(employeesPanel, "đang làm") || !strings.Contains(employeesPanel, "đã liên kết") {
+		t.Fatalf("employees panel = %q", employeesPanel)
+	}
+	if !strings.Contains(employeesPanel, `class="status-toggle is-active"`) ||
+		!strings.Contains(employeesPanel, `role="switch"`) ||
+		!strings.Contains(employeesPanel, `aria-checked="true"`) ||
+		!strings.Contains(employeesPanel, `/dashboard/employees/`+empID.String()+`/deactivate`) {
+		t.Fatalf("missing active status toggle markup: %q", employeesPanel)
+	}
+	if strings.Contains(employeesPanel, "status-dot") || strings.Contains(employeesPanel, "Tạm ngưng") || strings.Contains(employeesPanel, "Bật lại") {
+		t.Fatalf("expected status badge/text buttons replaced by toggle: %q", employeesPanel)
 	}
 }
 
@@ -102,8 +112,17 @@ func TestDeactivateEmployeeUpdatesPanel(t *testing.T) {
 	if fake.employees[0].IsActive {
 		t.Fatal("expected inactive")
 	}
-	if !strings.Contains(rec.Body.String(), "đã tạm ngưng") {
-		t.Fatalf("body = %q", rec.Body.String())
+	body := rec.Body.String()
+	if !strings.Contains(body, "đã tạm ngưng") {
+		t.Fatalf("body = %q", body)
+	}
+	if !strings.Contains(body, `id="employees-panel" class="dashboard-view is-active"`) {
+		t.Fatalf("expected employees panel to keep is-active after HTMX swap: %q", body)
+	}
+	if !strings.Contains(body, `class="status-toggle"`) ||
+		!strings.Contains(body, `aria-checked="false"`) ||
+		!strings.Contains(body, `/dashboard/employees/`+empID.String()+`/activate`) {
+		t.Fatalf("missing inactive status toggle markup: %q", body)
 	}
 }
 
@@ -123,8 +142,17 @@ func TestReactivateEmployeeUpdatesPanel(t *testing.T) {
 	if !fake.employees[0].IsActive {
 		t.Fatal("expected active")
 	}
-	if !strings.Contains(rec.Body.String(), "đang làm") {
-		t.Fatalf("body = %q", rec.Body.String())
+	body := rec.Body.String()
+	if !strings.Contains(body, "đang làm") {
+		t.Fatalf("body = %q", body)
+	}
+	if !strings.Contains(body, `id="employees-panel" class="dashboard-view is-active"`) {
+		t.Fatalf("expected employees panel to keep is-active after HTMX swap: %q", body)
+	}
+	if !strings.Contains(body, `class="status-toggle is-active"`) ||
+		!strings.Contains(body, `aria-checked="true"`) ||
+		!strings.Contains(body, `/dashboard/employees/`+empID.String()+`/deactivate`) {
+		t.Fatalf("missing active status toggle markup: %q", body)
 	}
 }
 

@@ -1983,38 +1983,43 @@ body {
 .status-toggle {
   position: relative;
   flex: 0 0 auto;
-  min-width: 84px;
-  padding: 5px 9px 5px 24px;
+  width: 42px;
+  height: 24px;
+  padding: 0;
   border: 1px solid #d4d4d8;
   border-radius: 999px;
-  background: #f4f4f5;
-  color: #71717a;
-  font: inherit;
-  font-size: 0.68rem;
-  font-weight: 800;
+  background: #e4e4e7;
   cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
 }
 
 .status-toggle::before {
   position: absolute;
-  top: 50%;
-  left: 8px;
-  width: 9px;
-  height: 9px;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
-  background: #a1a1aa;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.16);
   content: "";
-  transform: translateY(-50%);
+  transition: transform 0.15s ease;
 }
 
 .status-toggle.is-active {
-  border-color: #86efac;
-  background: #f0fdf4;
-  color: #15803d;
+  border-color: var(--blue-400);
+  background: var(--blue-300);
 }
 
 .status-toggle.is-active::before {
-  background: #22c55e;
+  transform: translateX(18px);
+}
+
+.status-toggle:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
 }
 
 .panel-meta {
