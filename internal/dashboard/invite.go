@@ -29,3 +29,18 @@ func employeeInviteLinks(botUsername, inviteCode string) (string, string) {
 
 	return direct.String(), share.String()
 }
+
+// ownerTelegramLink builds the deep link owners open to bind their Telegram account.
+// Payload format: start=owner_<token>
+func ownerTelegramLink(botUsername, token string) string {
+	botUsername = normalizeTelegramUsername(botUsername)
+	token = strings.TrimSpace(token)
+	if botUsername == "" || token == "" {
+		return ""
+	}
+	direct := &url.URL{Scheme: "https", Host: "t.me", Path: "/" + botUsername}
+	q := direct.Query()
+	q.Set("start", "owner_"+token)
+	direct.RawQuery = q.Encode()
+	return direct.String()
+}

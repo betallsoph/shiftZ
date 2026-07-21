@@ -1,0 +1,89 @@
+<div id="telegram-setup" class="telegram-setup">
+  <div class="dashboard-section-header">
+    <h3 class="employees-heading">Telegram</h3>
+    <span class="status-dot status-dot-{{if .OwnerLinked}}active{{else}}muted{{end}}">
+      {{if .OwnerLinked}}Đã liên kết{{else}}Chưa liên kết{{end}}
+    </span>
+  </div>
+
+  {{if .Error}}
+  <p class="panel-error" role="alert">{{.Error}}</p>
+  {{end}}
+  {{if .Notice}}
+  <p class="alert alert-notice telegram-setup-notice">{{.Notice}}</p>
+  {{end}}
+
+  <div class="telegram-owner-link">
+    <div class="telegram-owner-copy">
+      <strong>Tài khoản chủ quán</strong>
+      {{if .OwnerLinked}}
+      <span>Đã liên kết Telegram (ID <code>{{.OwnerTelegramID}}</code>).</span>
+      {{else}}
+      <span>Liên kết tài khoản Telegram để nhận thông báo và báo nghỉ đột xuất qua bot.</span>
+      {{end}}
+    </div>
+    <div class="telegram-owner-actions">
+      {{if .OwnerLinkURL}}
+      <a
+        class="btn btn-primary btn-sm"
+        href="{{.OwnerLinkURL}}"
+        target="_blank"
+        rel="noopener noreferrer"
+      >Mở Telegram</a>
+      {{else if not .OwnerLinked}}
+      <button
+        type="button"
+        class="btn btn-primary btn-sm"
+        hx-post="/dashboard/telegram/owner-link"
+        hx-target="#telegram-setup"
+        hx-swap="outerHTML"
+      >Liên kết Telegram</button>
+      {{else}}
+      <button
+        type="button"
+        class="btn btn-ghost btn-sm"
+        hx-post="/dashboard/telegram/owner-link"
+        hx-target="#telegram-setup"
+        hx-swap="outerHTML"
+      >Liên kết lại</button>
+      {{end}}
+      <button
+        type="button"
+        class="btn btn-ghost btn-sm"
+        hx-post="/dashboard/telegram/refresh"
+        hx-target="#telegram-setup"
+        hx-swap="outerHTML"
+      >Làm mới</button>
+    </div>
+  </div>
+
+  {{if .OwnerLinked}}
+  <p class="panel-meta telegram-owner-hint">Sau khi liên kết, nhắn bot để báo nghỉ đột xuất.</p>
+  {{end}}
+
+  <div class="telegram-group-checklist">
+    <p class="telegram-checklist-title">Thiết lập group (bot không tạo group giúp bạn)</p>
+    <ol class="telegram-checklist">
+      <li class="telegram-check-item{{if .BroadcastConnected}} is-done{{end}}">
+        <span class="telegram-check-mark" aria-hidden="true">{{if .BroadcastConnected}}✓{{else}}1{{end}}</span>
+        <div class="telegram-check-body">
+          <strong>Tạo group Thông báo</strong>
+          <span>Thêm bot vào group và cấp quyền admin để bot gửi lịch / thông báo.</span>
+          {{if .BroadcastConnected}}
+          <p class="panel-meta">Group thông báo ID <code>{{.TelegramGroupID}}</code></p>
+          {{end}}
+        </div>
+      </li>
+      <li class="telegram-check-item{{if .TeamChatConnected}} is-done{{end}}">
+        <span class="telegram-check-mark" aria-hidden="true">{{if .TeamChatConnected}}✓{{else}}2{{end}}</span>
+        <div class="telegram-check-body">
+          <strong>Group Chat đội <em>(tuỳ chọn)</em></strong>
+          <span>Tạo group nội bộ riêng nếu muốn tách chat đội khỏi kênh thông báo.</span>
+          {{if .TeamChatConnected}}
+          <p class="panel-meta">Group chat đội ID <code>{{.TelegramTeamChatID}}</code></p>
+          {{end}}
+        </div>
+      </li>
+    </ol>
+  </div>
+</div>

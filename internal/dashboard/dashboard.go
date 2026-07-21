@@ -51,24 +51,25 @@ type weekGenerator interface {
 
 // Server renders the owner dashboard with HTMX partials.
 type Server struct {
-	shops         shopReader
-	shopAuth      shopAuthenticator
-	shifts        shiftRepo
-	schedules     scheduleRepo
-	employees     employeeLister
-	employeeMgmt  employeeAdmin
-	availability  availabilityLister
-	planner       weekGenerator
-	onboarding    shopOnboarder
-	signupEnabled bool
-	botUsername   string
+	shops             shopReader
+	shopAuth          shopAuthenticator
+	ownerLinks        ownerLinkIssuer
+	shifts            shiftRepo
+	schedules         scheduleRepo
+	employees         employeeLister
+	employeeMgmt      employeeAdmin
+	availability      availabilityLister
+	planner           weekGenerator
+	onboarding        shopOnboarder
+	signupEnabled     bool
+	botUsername       string
 	incidentMessenger incidentMessenger
 	incidentChatID    int64
 	mail              mailSender
 	dashboardBaseURL  string
-	sessions      *SessionManager
-	log           *slog.Logger
-	tmpl          *templateSet
+	sessions          *SessionManager
+	log               *slog.Logger
+	tmpl              *templateSet
 }
 
 // SetTelegramBotUsername configures the public bot username used for employee invites.
@@ -94,6 +95,7 @@ func New(st *store.Store, sessions *SessionManager, onboard shopOnboarder, signu
 	return &Server{
 		shops:         st.Shops,
 		shopAuth:      st.Shops,
+		ownerLinks:    st.Shops,
 		shifts:        st.Shifts,
 		schedules:     st.Schedules,
 		employees:     st.Employees,
@@ -125,6 +127,8 @@ func (s *Server) Register(mux *http.ServeMux) {
 	mux.HandleFunc("POST /dashboard/employees/{id}", s.handleUpdateEmployee)
 	mux.HandleFunc("POST /dashboard/employees/{id}/activate", s.handleActivateEmployee)
 	mux.HandleFunc("POST /dashboard/employees/{id}/deactivate", s.handleDeactivateEmployee)
+	mux.HandleFunc("POST /dashboard/telegram/owner-link", s.handleOwnerTelegramLink)
+	mux.HandleFunc("POST /dashboard/telegram/refresh", s.handleTelegramStatusRefresh)
 	mux.HandleFunc("POST /dashboard/incident-report", s.handleIncidentReport)
 }
 

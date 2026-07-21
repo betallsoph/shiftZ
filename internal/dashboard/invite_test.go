@@ -37,3 +37,13 @@ func TestEmployeeInviteLinksRequireUsernameAndCode(t *testing.T) {
 		}
 	}
 }
+
+func TestOwnerTelegramLink(t *testing.T) {
+	got := ownerTelegramLink("@shiftzz_bot", "abc123")
+	if got != "https://t.me/shiftzz_bot?start=owner_abc123" {
+		t.Fatalf("got %q", got)
+	}
+	if ownerTelegramLink("", "abc") != "" || ownerTelegramLink("bot", "") != "" {
+		t.Fatal("expected empty link when username or token missing")
+	}
+}

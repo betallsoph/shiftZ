@@ -373,7 +373,120 @@ body {
 }
 
 .telegram-setup {
-  margin-bottom: 16px;
+  margin-bottom: 0;
+}
+
+.telegram-setup-notice {
+  margin: 0 0 12px;
+}
+
+.telegram-owner-link {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.telegram-owner-copy {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.telegram-owner-copy strong {
+  font-size: 0.92rem;
+}
+
+.telegram-owner-copy span {
+  color: #71717a;
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.telegram-owner-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.telegram-owner-hint {
+  margin: 0 0 14px;
+}
+
+.telegram-group-checklist {
+  display: grid;
+  gap: 10px;
+}
+
+.telegram-checklist-title {
+  margin: 0;
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.telegram-checklist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.telegram-check-item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.telegram-check-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  flex-shrink: 0;
+  border: 2px solid #18181b;
+  border-radius: 6px;
+  background: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.telegram-check-item.is-done .telegram-check-mark {
+  background: #dcfce7;
+  border-color: #16a34a;
+  color: #15803d;
+}
+
+.telegram-check-body {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.telegram-check-body strong {
+  font-size: 0.88rem;
+}
+
+.telegram-check-body strong em {
+  font-style: normal;
+  font-weight: 600;
+  color: #71717a;
+}
+
+.telegram-check-body > span {
+  color: #71717a;
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.telegram-check-body .panel-meta {
+  margin-top: 4px;
 }
 
 .shifts-panel {
@@ -1995,6 +2108,15 @@ body {
   }
 
   .employee-invite-actions .btn {
+    flex: 1;
+  }
+
+  .telegram-owner-link {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .telegram-owner-actions .btn {
     flex: 1;
   }
 
