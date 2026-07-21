@@ -2011,8 +2011,8 @@ body {
 }
 
 .status-toggle.is-active {
-  border-color: var(--blue-400);
-  background: var(--blue-300);
+  border-color: #16a34a;
+  background: #4ade80;
 }
 
 .status-toggle.is-active::before {
@@ -2020,7 +2020,7 @@ body {
 }
 
 .status-toggle:focus-visible {
-  outline: 2px solid #2563eb;
+  outline: 2px solid #16a34a;
   outline-offset: 2px;
 }
 
