@@ -16,8 +16,9 @@ type ownerLinkIssuer interface {
 
 // TelegramPanelView is the dedicated Telegram linking tab.
 type TelegramPanelView struct {
-	IsActive bool
-	Owner    TelegramSetupView
+	IsActive  bool
+	Owner     TelegramSetupView
+	Employees TelegramEmployeesView
 }
 
 // TelegramSetupView is the owner Telegram connection status fragment

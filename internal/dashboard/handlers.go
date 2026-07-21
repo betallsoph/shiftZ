@@ -31,7 +31,10 @@ func (s *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
 		ShopName:              shop.Name,
 		Shifts:                s.loadShiftsPanelView(r.Context(), sess.ShopID),
 		Employees:             s.loadEmployeesPanelView(r.Context(), shop, employeeInviteURL, employeeInviteShareURL),
-		Telegram:              TelegramPanelView{Owner: buildTelegramSetupView(shop)},
+		Telegram: TelegramPanelView{
+			Owner:     buildTelegramSetupView(shop),
+			Employees: s.loadTelegramEmployeesView(r.Context(), shop),
+		},
 		IncidentReportEnabled: s.incidentReportEnabled(),
 	}); err != nil {
 		s.log.Error("render page", "err", err)

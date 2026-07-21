@@ -1,6 +1,75 @@
 <div id="telegram-employees" class="telegram-employees">
   <div class="dashboard-section-header">
     <h3 class="employees-heading">Nhân viên</h3>
+    <button
+      type="button"
+      class="btn btn-ghost btn-sm"
+      hx-post="/dashboard/telegram/employees/refresh"
+      hx-target="#telegram-employees"
+      hx-swap="outerHTML"
+    >Làm mới</button>
   </div>
-  <p class="panel-meta">Quản lý liên kết Telegram của nhân viên sẽ xuất hiện tại đây.</p>
+
+  {{if .Error}}
+  <p class="panel-error" role="alert">{{.Error}}</p>
+  {{end}}
+  {{if .Notice}}
+  <p class="alert alert-notice telegram-setup-notice">{{.Notice}}</p>
+  {{end}}
+
+  {{if .EmployeeInviteURL}}
+  <div class="employee-invite">
+    <div class="employee-invite-copy">
+      <strong>Mời liên kết Telegram</strong>
+      <span>Gửi link để nhân viên mở bot và liên kết tài khoản với quán.</span>
+    </div>
+    <div class="employee-invite-actions">
+      <button
+        type="button"
+        class="btn btn-ghost btn-sm"
+        data-copy-text="{{.EmployeeInviteURL}}"
+      >Sao chép link</button>
+      <a
+        class="btn btn-primary btn-sm"
+        href="{{.EmployeeInviteShareURL}}"
+        target="_blank"
+        rel="noopener noreferrer"
+      >Gửi qua Telegram</a>
+    </div>
+  </div>
+  {{else}}
+  <p class="panel-meta">Chưa cấu hình bot — không tạo được link mời nhân viên.</p>
+  {{end}}
+
+  {{if .Employees}}
+  <ul class="employee-list telegram-employee-list">
+    {{range .Employees}}
+    <li class="employee-row{{if not .IsActive}} is-inactive{{end}}">
+      <div class="employee-summary">
+        <div class="employee-avatar" aria-hidden="true">NV</div>
+        <div class="employee-primary">
+          <div class="employee-title-line">
+            <span class="employee-name">{{.DisplayName}}</span>
+            <span class="status-dot status-dot-{{if .TelegramLinked}}active{{else}}muted{{end}}">{{.LinkLabel}}</span>
+          </div>
+          <div class="employee-meta">
+            <span>{{.RoleLabel}}</span>
+            <span>{{.StatusLabel}}</span>
+            {{if .TelegramLinked}}
+            <span>Telegram ID <code>{{.TelegramUserID}}</code></span>
+            {{else}}
+            <span>Chưa có Telegram ID</span>
+            {{end}}
+          </div>
+        </div>
+      </div>
+    </li>
+    {{end}}
+  </ul>
+  {{else}}
+  <div class="compact-empty-state">
+    <p>Chưa có nhân viên để liên kết.</p>
+    <span>Tạo nhân viên ở tab Nhân viên, rồi gửi link mời ở trên để họ liên kết Telegram.</span>
+  </div>
+  {{end}}
 </div>
