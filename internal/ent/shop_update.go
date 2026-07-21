@@ -99,6 +99,100 @@ func (_u *ShopUpdate) AddTelegramGroupID(v int64) *ShopUpdate {
 	return _u
 }
 
+// SetTelegramTeamChatID sets the "telegram_team_chat_id" field.
+func (_u *ShopUpdate) SetTelegramTeamChatID(v int64) *ShopUpdate {
+	_u.mutation.ResetTelegramTeamChatID()
+	_u.mutation.SetTelegramTeamChatID(v)
+	return _u
+}
+
+// SetNillableTelegramTeamChatID sets the "telegram_team_chat_id" field if the given value is not nil.
+func (_u *ShopUpdate) SetNillableTelegramTeamChatID(v *int64) *ShopUpdate {
+	if v != nil {
+		_u.SetTelegramTeamChatID(*v)
+	}
+	return _u
+}
+
+// AddTelegramTeamChatID adds value to the "telegram_team_chat_id" field.
+func (_u *ShopUpdate) AddTelegramTeamChatID(v int64) *ShopUpdate {
+	_u.mutation.AddTelegramTeamChatID(v)
+	return _u
+}
+
+// ClearTelegramTeamChatID clears the value of the "telegram_team_chat_id" field.
+func (_u *ShopUpdate) ClearTelegramTeamChatID() *ShopUpdate {
+	_u.mutation.ClearTelegramTeamChatID()
+	return _u
+}
+
+// SetOwnerTelegramID sets the "owner_telegram_id" field.
+func (_u *ShopUpdate) SetOwnerTelegramID(v int64) *ShopUpdate {
+	_u.mutation.ResetOwnerTelegramID()
+	_u.mutation.SetOwnerTelegramID(v)
+	return _u
+}
+
+// SetNillableOwnerTelegramID sets the "owner_telegram_id" field if the given value is not nil.
+func (_u *ShopUpdate) SetNillableOwnerTelegramID(v *int64) *ShopUpdate {
+	if v != nil {
+		_u.SetOwnerTelegramID(*v)
+	}
+	return _u
+}
+
+// AddOwnerTelegramID adds value to the "owner_telegram_id" field.
+func (_u *ShopUpdate) AddOwnerTelegramID(v int64) *ShopUpdate {
+	_u.mutation.AddOwnerTelegramID(v)
+	return _u
+}
+
+// ClearOwnerTelegramID clears the value of the "owner_telegram_id" field.
+func (_u *ShopUpdate) ClearOwnerTelegramID() *ShopUpdate {
+	_u.mutation.ClearOwnerTelegramID()
+	return _u
+}
+
+// SetOwnerLinkTokenHash sets the "owner_link_token_hash" field.
+func (_u *ShopUpdate) SetOwnerLinkTokenHash(v string) *ShopUpdate {
+	_u.mutation.SetOwnerLinkTokenHash(v)
+	return _u
+}
+
+// SetNillableOwnerLinkTokenHash sets the "owner_link_token_hash" field if the given value is not nil.
+func (_u *ShopUpdate) SetNillableOwnerLinkTokenHash(v *string) *ShopUpdate {
+	if v != nil {
+		_u.SetOwnerLinkTokenHash(*v)
+	}
+	return _u
+}
+
+// ClearOwnerLinkTokenHash clears the value of the "owner_link_token_hash" field.
+func (_u *ShopUpdate) ClearOwnerLinkTokenHash() *ShopUpdate {
+	_u.mutation.ClearOwnerLinkTokenHash()
+	return _u
+}
+
+// SetOwnerLinkTokenExpiresAt sets the "owner_link_token_expires_at" field.
+func (_u *ShopUpdate) SetOwnerLinkTokenExpiresAt(v time.Time) *ShopUpdate {
+	_u.mutation.SetOwnerLinkTokenExpiresAt(v)
+	return _u
+}
+
+// SetNillableOwnerLinkTokenExpiresAt sets the "owner_link_token_expires_at" field if the given value is not nil.
+func (_u *ShopUpdate) SetNillableOwnerLinkTokenExpiresAt(v *time.Time) *ShopUpdate {
+	if v != nil {
+		_u.SetOwnerLinkTokenExpiresAt(*v)
+	}
+	return _u
+}
+
+// ClearOwnerLinkTokenExpiresAt clears the value of the "owner_link_token_expires_at" field.
+func (_u *ShopUpdate) ClearOwnerLinkTokenExpiresAt() *ShopUpdate {
+	_u.mutation.ClearOwnerLinkTokenExpiresAt()
+	return _u
+}
+
 // SetPlan sets the "plan" field.
 func (_u *ShopUpdate) SetPlan(v string) *ShopUpdate {
 	_u.mutation.SetPlan(v)
@@ -561,6 +655,36 @@ func (_u *ShopUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if value, ok := _u.mutation.AddedTelegramGroupID(); ok {
 		_spec.AddField(shop.FieldTelegramGroupID, field.TypeInt64, value)
 	}
+	if value, ok := _u.mutation.TelegramTeamChatID(); ok {
+		_spec.SetField(shop.FieldTelegramTeamChatID, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.AddedTelegramTeamChatID(); ok {
+		_spec.AddField(shop.FieldTelegramTeamChatID, field.TypeInt64, value)
+	}
+	if _u.mutation.TelegramTeamChatIDCleared() {
+		_spec.ClearField(shop.FieldTelegramTeamChatID, field.TypeInt64)
+	}
+	if value, ok := _u.mutation.OwnerTelegramID(); ok {
+		_spec.SetField(shop.FieldOwnerTelegramID, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.AddedOwnerTelegramID(); ok {
+		_spec.AddField(shop.FieldOwnerTelegramID, field.TypeInt64, value)
+	}
+	if _u.mutation.OwnerTelegramIDCleared() {
+		_spec.ClearField(shop.FieldOwnerTelegramID, field.TypeInt64)
+	}
+	if value, ok := _u.mutation.OwnerLinkTokenHash(); ok {
+		_spec.SetField(shop.FieldOwnerLinkTokenHash, field.TypeString, value)
+	}
+	if _u.mutation.OwnerLinkTokenHashCleared() {
+		_spec.ClearField(shop.FieldOwnerLinkTokenHash, field.TypeString)
+	}
+	if value, ok := _u.mutation.OwnerLinkTokenExpiresAt(); ok {
+		_spec.SetField(shop.FieldOwnerLinkTokenExpiresAt, field.TypeTime, value)
+	}
+	if _u.mutation.OwnerLinkTokenExpiresAtCleared() {
+		_spec.ClearField(shop.FieldOwnerLinkTokenExpiresAt, field.TypeTime)
+	}
 	if value, ok := _u.mutation.Plan(); ok {
 		_spec.SetField(shop.FieldPlan, field.TypeString, value)
 	}
@@ -1001,6 +1125,100 @@ func (_u *ShopUpdateOne) SetNillableTelegramGroupID(v *int64) *ShopUpdateOne {
 // AddTelegramGroupID adds value to the "telegram_group_id" field.
 func (_u *ShopUpdateOne) AddTelegramGroupID(v int64) *ShopUpdateOne {
 	_u.mutation.AddTelegramGroupID(v)
+	return _u
+}
+
+// SetTelegramTeamChatID sets the "telegram_team_chat_id" field.
+func (_u *ShopUpdateOne) SetTelegramTeamChatID(v int64) *ShopUpdateOne {
+	_u.mutation.ResetTelegramTeamChatID()
+	_u.mutation.SetTelegramTeamChatID(v)
+	return _u
+}
+
+// SetNillableTelegramTeamChatID sets the "telegram_team_chat_id" field if the given value is not nil.
+func (_u *ShopUpdateOne) SetNillableTelegramTeamChatID(v *int64) *ShopUpdateOne {
+	if v != nil {
+		_u.SetTelegramTeamChatID(*v)
+	}
+	return _u
+}
+
+// AddTelegramTeamChatID adds value to the "telegram_team_chat_id" field.
+func (_u *ShopUpdateOne) AddTelegramTeamChatID(v int64) *ShopUpdateOne {
+	_u.mutation.AddTelegramTeamChatID(v)
+	return _u
+}
+
+// ClearTelegramTeamChatID clears the value of the "telegram_team_chat_id" field.
+func (_u *ShopUpdateOne) ClearTelegramTeamChatID() *ShopUpdateOne {
+	_u.mutation.ClearTelegramTeamChatID()
+	return _u
+}
+
+// SetOwnerTelegramID sets the "owner_telegram_id" field.
+func (_u *ShopUpdateOne) SetOwnerTelegramID(v int64) *ShopUpdateOne {
+	_u.mutation.ResetOwnerTelegramID()
+	_u.mutation.SetOwnerTelegramID(v)
+	return _u
+}
+
+// SetNillableOwnerTelegramID sets the "owner_telegram_id" field if the given value is not nil.
+func (_u *ShopUpdateOne) SetNillableOwnerTelegramID(v *int64) *ShopUpdateOne {
+	if v != nil {
+		_u.SetOwnerTelegramID(*v)
+	}
+	return _u
+}
+
+// AddOwnerTelegramID adds value to the "owner_telegram_id" field.
+func (_u *ShopUpdateOne) AddOwnerTelegramID(v int64) *ShopUpdateOne {
+	_u.mutation.AddOwnerTelegramID(v)
+	return _u
+}
+
+// ClearOwnerTelegramID clears the value of the "owner_telegram_id" field.
+func (_u *ShopUpdateOne) ClearOwnerTelegramID() *ShopUpdateOne {
+	_u.mutation.ClearOwnerTelegramID()
+	return _u
+}
+
+// SetOwnerLinkTokenHash sets the "owner_link_token_hash" field.
+func (_u *ShopUpdateOne) SetOwnerLinkTokenHash(v string) *ShopUpdateOne {
+	_u.mutation.SetOwnerLinkTokenHash(v)
+	return _u
+}
+
+// SetNillableOwnerLinkTokenHash sets the "owner_link_token_hash" field if the given value is not nil.
+func (_u *ShopUpdateOne) SetNillableOwnerLinkTokenHash(v *string) *ShopUpdateOne {
+	if v != nil {
+		_u.SetOwnerLinkTokenHash(*v)
+	}
+	return _u
+}
+
+// ClearOwnerLinkTokenHash clears the value of the "owner_link_token_hash" field.
+func (_u *ShopUpdateOne) ClearOwnerLinkTokenHash() *ShopUpdateOne {
+	_u.mutation.ClearOwnerLinkTokenHash()
+	return _u
+}
+
+// SetOwnerLinkTokenExpiresAt sets the "owner_link_token_expires_at" field.
+func (_u *ShopUpdateOne) SetOwnerLinkTokenExpiresAt(v time.Time) *ShopUpdateOne {
+	_u.mutation.SetOwnerLinkTokenExpiresAt(v)
+	return _u
+}
+
+// SetNillableOwnerLinkTokenExpiresAt sets the "owner_link_token_expires_at" field if the given value is not nil.
+func (_u *ShopUpdateOne) SetNillableOwnerLinkTokenExpiresAt(v *time.Time) *ShopUpdateOne {
+	if v != nil {
+		_u.SetOwnerLinkTokenExpiresAt(*v)
+	}
+	return _u
+}
+
+// ClearOwnerLinkTokenExpiresAt clears the value of the "owner_link_token_expires_at" field.
+func (_u *ShopUpdateOne) ClearOwnerLinkTokenExpiresAt() *ShopUpdateOne {
+	_u.mutation.ClearOwnerLinkTokenExpiresAt()
 	return _u
 }
 
@@ -1495,6 +1713,36 @@ func (_u *ShopUpdateOne) sqlSave(ctx context.Context) (_node *Shop, err error) {
 	}
 	if value, ok := _u.mutation.AddedTelegramGroupID(); ok {
 		_spec.AddField(shop.FieldTelegramGroupID, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.TelegramTeamChatID(); ok {
+		_spec.SetField(shop.FieldTelegramTeamChatID, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.AddedTelegramTeamChatID(); ok {
+		_spec.AddField(shop.FieldTelegramTeamChatID, field.TypeInt64, value)
+	}
+	if _u.mutation.TelegramTeamChatIDCleared() {
+		_spec.ClearField(shop.FieldTelegramTeamChatID, field.TypeInt64)
+	}
+	if value, ok := _u.mutation.OwnerTelegramID(); ok {
+		_spec.SetField(shop.FieldOwnerTelegramID, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.AddedOwnerTelegramID(); ok {
+		_spec.AddField(shop.FieldOwnerTelegramID, field.TypeInt64, value)
+	}
+	if _u.mutation.OwnerTelegramIDCleared() {
+		_spec.ClearField(shop.FieldOwnerTelegramID, field.TypeInt64)
+	}
+	if value, ok := _u.mutation.OwnerLinkTokenHash(); ok {
+		_spec.SetField(shop.FieldOwnerLinkTokenHash, field.TypeString, value)
+	}
+	if _u.mutation.OwnerLinkTokenHashCleared() {
+		_spec.ClearField(shop.FieldOwnerLinkTokenHash, field.TypeString)
+	}
+	if value, ok := _u.mutation.OwnerLinkTokenExpiresAt(); ok {
+		_spec.SetField(shop.FieldOwnerLinkTokenExpiresAt, field.TypeTime, value)
+	}
+	if _u.mutation.OwnerLinkTokenExpiresAtCleared() {
+		_spec.ClearField(shop.FieldOwnerLinkTokenExpiresAt, field.TypeTime)
 	}
 	if value, ok := _u.mutation.Plan(); ok {
 		_spec.SetField(shop.FieldPlan, field.TypeString, value)

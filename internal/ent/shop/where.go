@@ -76,6 +76,26 @@ func TelegramGroupID(v int64) predicate.Shop {
 	return predicate.Shop(sql.FieldEQ(FieldTelegramGroupID, v))
 }
 
+// TelegramTeamChatID applies equality check predicate on the "telegram_team_chat_id" field. It's identical to TelegramTeamChatIDEQ.
+func TelegramTeamChatID(v int64) predicate.Shop {
+	return predicate.Shop(sql.FieldEQ(FieldTelegramTeamChatID, v))
+}
+
+// OwnerTelegramID applies equality check predicate on the "owner_telegram_id" field. It's identical to OwnerTelegramIDEQ.
+func OwnerTelegramID(v int64) predicate.Shop {
+	return predicate.Shop(sql.FieldEQ(FieldOwnerTelegramID, v))
+}
+
+// OwnerLinkTokenHash applies equality check predicate on the "owner_link_token_hash" field. It's identical to OwnerLinkTokenHashEQ.
+func OwnerLinkTokenHash(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldEQ(FieldOwnerLinkTokenHash, v))
+}
+
+// OwnerLinkTokenExpiresAt applies equality check predicate on the "owner_link_token_expires_at" field. It's identical to OwnerLinkTokenExpiresAtEQ.
+func OwnerLinkTokenExpiresAt(v time.Time) predicate.Shop {
+	return predicate.Shop(sql.FieldEQ(FieldOwnerLinkTokenExpiresAt, v))
+}
+
 // Plan applies equality check predicate on the "plan" field. It's identical to PlanEQ.
 func Plan(v string) predicate.Shop {
 	return predicate.Shop(sql.FieldEQ(FieldPlan, v))
@@ -354,6 +374,231 @@ func TelegramGroupIDLT(v int64) predicate.Shop {
 // TelegramGroupIDLTE applies the LTE predicate on the "telegram_group_id" field.
 func TelegramGroupIDLTE(v int64) predicate.Shop {
 	return predicate.Shop(sql.FieldLTE(FieldTelegramGroupID, v))
+}
+
+// TelegramTeamChatIDEQ applies the EQ predicate on the "telegram_team_chat_id" field.
+func TelegramTeamChatIDEQ(v int64) predicate.Shop {
+	return predicate.Shop(sql.FieldEQ(FieldTelegramTeamChatID, v))
+}
+
+// TelegramTeamChatIDNEQ applies the NEQ predicate on the "telegram_team_chat_id" field.
+func TelegramTeamChatIDNEQ(v int64) predicate.Shop {
+	return predicate.Shop(sql.FieldNEQ(FieldTelegramTeamChatID, v))
+}
+
+// TelegramTeamChatIDIn applies the In predicate on the "telegram_team_chat_id" field.
+func TelegramTeamChatIDIn(vs ...int64) predicate.Shop {
+	return predicate.Shop(sql.FieldIn(FieldTelegramTeamChatID, vs...))
+}
+
+// TelegramTeamChatIDNotIn applies the NotIn predicate on the "telegram_team_chat_id" field.
+func TelegramTeamChatIDNotIn(vs ...int64) predicate.Shop {
+	return predicate.Shop(sql.FieldNotIn(FieldTelegramTeamChatID, vs...))
+}
+
+// TelegramTeamChatIDGT applies the GT predicate on the "telegram_team_chat_id" field.
+func TelegramTeamChatIDGT(v int64) predicate.Shop {
+	return predicate.Shop(sql.FieldGT(FieldTelegramTeamChatID, v))
+}
+
+// TelegramTeamChatIDGTE applies the GTE predicate on the "telegram_team_chat_id" field.
+func TelegramTeamChatIDGTE(v int64) predicate.Shop {
+	return predicate.Shop(sql.FieldGTE(FieldTelegramTeamChatID, v))
+}
+
+// TelegramTeamChatIDLT applies the LT predicate on the "telegram_team_chat_id" field.
+func TelegramTeamChatIDLT(v int64) predicate.Shop {
+	return predicate.Shop(sql.FieldLT(FieldTelegramTeamChatID, v))
+}
+
+// TelegramTeamChatIDLTE applies the LTE predicate on the "telegram_team_chat_id" field.
+func TelegramTeamChatIDLTE(v int64) predicate.Shop {
+	return predicate.Shop(sql.FieldLTE(FieldTelegramTeamChatID, v))
+}
+
+// TelegramTeamChatIDIsNil applies the IsNil predicate on the "telegram_team_chat_id" field.
+func TelegramTeamChatIDIsNil() predicate.Shop {
+	return predicate.Shop(sql.FieldIsNull(FieldTelegramTeamChatID))
+}
+
+// TelegramTeamChatIDNotNil applies the NotNil predicate on the "telegram_team_chat_id" field.
+func TelegramTeamChatIDNotNil() predicate.Shop {
+	return predicate.Shop(sql.FieldNotNull(FieldTelegramTeamChatID))
+}
+
+// OwnerTelegramIDEQ applies the EQ predicate on the "owner_telegram_id" field.
+func OwnerTelegramIDEQ(v int64) predicate.Shop {
+	return predicate.Shop(sql.FieldEQ(FieldOwnerTelegramID, v))
+}
+
+// OwnerTelegramIDNEQ applies the NEQ predicate on the "owner_telegram_id" field.
+func OwnerTelegramIDNEQ(v int64) predicate.Shop {
+	return predicate.Shop(sql.FieldNEQ(FieldOwnerTelegramID, v))
+}
+
+// OwnerTelegramIDIn applies the In predicate on the "owner_telegram_id" field.
+func OwnerTelegramIDIn(vs ...int64) predicate.Shop {
+	return predicate.Shop(sql.FieldIn(FieldOwnerTelegramID, vs...))
+}
+
+// OwnerTelegramIDNotIn applies the NotIn predicate on the "owner_telegram_id" field.
+func OwnerTelegramIDNotIn(vs ...int64) predicate.Shop {
+	return predicate.Shop(sql.FieldNotIn(FieldOwnerTelegramID, vs...))
+}
+
+// OwnerTelegramIDGT applies the GT predicate on the "owner_telegram_id" field.
+func OwnerTelegramIDGT(v int64) predicate.Shop {
+	return predicate.Shop(sql.FieldGT(FieldOwnerTelegramID, v))
+}
+
+// OwnerTelegramIDGTE applies the GTE predicate on the "owner_telegram_id" field.
+func OwnerTelegramIDGTE(v int64) predicate.Shop {
+	return predicate.Shop(sql.FieldGTE(FieldOwnerTelegramID, v))
+}
+
+// OwnerTelegramIDLT applies the LT predicate on the "owner_telegram_id" field.
+func OwnerTelegramIDLT(v int64) predicate.Shop {
+	return predicate.Shop(sql.FieldLT(FieldOwnerTelegramID, v))
+}
+
+// OwnerTelegramIDLTE applies the LTE predicate on the "owner_telegram_id" field.
+func OwnerTelegramIDLTE(v int64) predicate.Shop {
+	return predicate.Shop(sql.FieldLTE(FieldOwnerTelegramID, v))
+}
+
+// OwnerTelegramIDIsNil applies the IsNil predicate on the "owner_telegram_id" field.
+func OwnerTelegramIDIsNil() predicate.Shop {
+	return predicate.Shop(sql.FieldIsNull(FieldOwnerTelegramID))
+}
+
+// OwnerTelegramIDNotNil applies the NotNil predicate on the "owner_telegram_id" field.
+func OwnerTelegramIDNotNil() predicate.Shop {
+	return predicate.Shop(sql.FieldNotNull(FieldOwnerTelegramID))
+}
+
+// OwnerLinkTokenHashEQ applies the EQ predicate on the "owner_link_token_hash" field.
+func OwnerLinkTokenHashEQ(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldEQ(FieldOwnerLinkTokenHash, v))
+}
+
+// OwnerLinkTokenHashNEQ applies the NEQ predicate on the "owner_link_token_hash" field.
+func OwnerLinkTokenHashNEQ(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldNEQ(FieldOwnerLinkTokenHash, v))
+}
+
+// OwnerLinkTokenHashIn applies the In predicate on the "owner_link_token_hash" field.
+func OwnerLinkTokenHashIn(vs ...string) predicate.Shop {
+	return predicate.Shop(sql.FieldIn(FieldOwnerLinkTokenHash, vs...))
+}
+
+// OwnerLinkTokenHashNotIn applies the NotIn predicate on the "owner_link_token_hash" field.
+func OwnerLinkTokenHashNotIn(vs ...string) predicate.Shop {
+	return predicate.Shop(sql.FieldNotIn(FieldOwnerLinkTokenHash, vs...))
+}
+
+// OwnerLinkTokenHashGT applies the GT predicate on the "owner_link_token_hash" field.
+func OwnerLinkTokenHashGT(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldGT(FieldOwnerLinkTokenHash, v))
+}
+
+// OwnerLinkTokenHashGTE applies the GTE predicate on the "owner_link_token_hash" field.
+func OwnerLinkTokenHashGTE(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldGTE(FieldOwnerLinkTokenHash, v))
+}
+
+// OwnerLinkTokenHashLT applies the LT predicate on the "owner_link_token_hash" field.
+func OwnerLinkTokenHashLT(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldLT(FieldOwnerLinkTokenHash, v))
+}
+
+// OwnerLinkTokenHashLTE applies the LTE predicate on the "owner_link_token_hash" field.
+func OwnerLinkTokenHashLTE(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldLTE(FieldOwnerLinkTokenHash, v))
+}
+
+// OwnerLinkTokenHashContains applies the Contains predicate on the "owner_link_token_hash" field.
+func OwnerLinkTokenHashContains(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldContains(FieldOwnerLinkTokenHash, v))
+}
+
+// OwnerLinkTokenHashHasPrefix applies the HasPrefix predicate on the "owner_link_token_hash" field.
+func OwnerLinkTokenHashHasPrefix(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldHasPrefix(FieldOwnerLinkTokenHash, v))
+}
+
+// OwnerLinkTokenHashHasSuffix applies the HasSuffix predicate on the "owner_link_token_hash" field.
+func OwnerLinkTokenHashHasSuffix(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldHasSuffix(FieldOwnerLinkTokenHash, v))
+}
+
+// OwnerLinkTokenHashIsNil applies the IsNil predicate on the "owner_link_token_hash" field.
+func OwnerLinkTokenHashIsNil() predicate.Shop {
+	return predicate.Shop(sql.FieldIsNull(FieldOwnerLinkTokenHash))
+}
+
+// OwnerLinkTokenHashNotNil applies the NotNil predicate on the "owner_link_token_hash" field.
+func OwnerLinkTokenHashNotNil() predicate.Shop {
+	return predicate.Shop(sql.FieldNotNull(FieldOwnerLinkTokenHash))
+}
+
+// OwnerLinkTokenHashEqualFold applies the EqualFold predicate on the "owner_link_token_hash" field.
+func OwnerLinkTokenHashEqualFold(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldEqualFold(FieldOwnerLinkTokenHash, v))
+}
+
+// OwnerLinkTokenHashContainsFold applies the ContainsFold predicate on the "owner_link_token_hash" field.
+func OwnerLinkTokenHashContainsFold(v string) predicate.Shop {
+	return predicate.Shop(sql.FieldContainsFold(FieldOwnerLinkTokenHash, v))
+}
+
+// OwnerLinkTokenExpiresAtEQ applies the EQ predicate on the "owner_link_token_expires_at" field.
+func OwnerLinkTokenExpiresAtEQ(v time.Time) predicate.Shop {
+	return predicate.Shop(sql.FieldEQ(FieldOwnerLinkTokenExpiresAt, v))
+}
+
+// OwnerLinkTokenExpiresAtNEQ applies the NEQ predicate on the "owner_link_token_expires_at" field.
+func OwnerLinkTokenExpiresAtNEQ(v time.Time) predicate.Shop {
+	return predicate.Shop(sql.FieldNEQ(FieldOwnerLinkTokenExpiresAt, v))
+}
+
+// OwnerLinkTokenExpiresAtIn applies the In predicate on the "owner_link_token_expires_at" field.
+func OwnerLinkTokenExpiresAtIn(vs ...time.Time) predicate.Shop {
+	return predicate.Shop(sql.FieldIn(FieldOwnerLinkTokenExpiresAt, vs...))
+}
+
+// OwnerLinkTokenExpiresAtNotIn applies the NotIn predicate on the "owner_link_token_expires_at" field.
+func OwnerLinkTokenExpiresAtNotIn(vs ...time.Time) predicate.Shop {
+	return predicate.Shop(sql.FieldNotIn(FieldOwnerLinkTokenExpiresAt, vs...))
+}
+
+// OwnerLinkTokenExpiresAtGT applies the GT predicate on the "owner_link_token_expires_at" field.
+func OwnerLinkTokenExpiresAtGT(v time.Time) predicate.Shop {
+	return predicate.Shop(sql.FieldGT(FieldOwnerLinkTokenExpiresAt, v))
+}
+
+// OwnerLinkTokenExpiresAtGTE applies the GTE predicate on the "owner_link_token_expires_at" field.
+func OwnerLinkTokenExpiresAtGTE(v time.Time) predicate.Shop {
+	return predicate.Shop(sql.FieldGTE(FieldOwnerLinkTokenExpiresAt, v))
+}
+
+// OwnerLinkTokenExpiresAtLT applies the LT predicate on the "owner_link_token_expires_at" field.
+func OwnerLinkTokenExpiresAtLT(v time.Time) predicate.Shop {
+	return predicate.Shop(sql.FieldLT(FieldOwnerLinkTokenExpiresAt, v))
+}
+
+// OwnerLinkTokenExpiresAtLTE applies the LTE predicate on the "owner_link_token_expires_at" field.
+func OwnerLinkTokenExpiresAtLTE(v time.Time) predicate.Shop {
+	return predicate.Shop(sql.FieldLTE(FieldOwnerLinkTokenExpiresAt, v))
+}
+
+// OwnerLinkTokenExpiresAtIsNil applies the IsNil predicate on the "owner_link_token_expires_at" field.
+func OwnerLinkTokenExpiresAtIsNil() predicate.Shop {
+	return predicate.Shop(sql.FieldIsNull(FieldOwnerLinkTokenExpiresAt))
+}
+
+// OwnerLinkTokenExpiresAtNotNil applies the NotNil predicate on the "owner_link_token_expires_at" field.
+func OwnerLinkTokenExpiresAtNotNil() predicate.Shop {
+	return predicate.Shop(sql.FieldNotNull(FieldOwnerLinkTokenExpiresAt))
 }
 
 // PlanEQ applies the EQ predicate on the "plan" field.

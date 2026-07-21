@@ -118,3 +118,74 @@ func newInviteCode() (string, error) {
 	}
 	return hex.EncodeToString(b[:]), nil
 }
+
+// SetOwnerTelegramID links a Telegram user as the shop owner.
+func (r *ShopRepo) SetOwnerTelegramID(ctx context.Context, shopID uuid.UUID, telegramUserID int64) error {
+	if telegramUserID == 0 {
+		return fmt.Errorf("%w: owner telegram user id is required", ErrValidation)
+	}
+	if err := r.client.Shop.UpdateOneID(shopID).SetOwnerTelegramID(telegramUserID).Exec(ctx); err != nil {
+		if ent.IsNotFound(err) {
+			return ErrNotFound
+		}
+		if ent.IsConstraintError(err) {
+			return ErrAlreadyExists
+		}
+		return fmt.Errorf("store: set owner telegram id: %w", err)
+	}
+	return nil
+}
+
+// ClearOwnerTelegramID removes the linked owner Telegram user.
+func (r *ShopRepo) ClearOwnerTelegramID(ctx context.Context, shopID uuid.UUID) error {
+	if err := r.client.Shop.UpdateOneID(shopID).ClearOwnerTelegramID().Exec(ctx); err != nil {
+		if ent.IsNotFound(err) {
+			return ErrNotFound
+		}
+		return fmt.Errorf("store: clear owner telegram id: %w", err)
+	}
+	return nil
+}
+
+// ByOwnerTelegramID fetches the shop owned by the given Telegram user.
+func (r *ShopRepo) ByOwnerTelegramID(ctx context.Context, telegramUserID int64) (*Shop, error) {
+	if telegramUserID == 0 {
+		return nil, ErrNotFound
+	}
+	row, err := r.client.Shop.Query().Where(shop.OwnerTelegramIDEQ(telegramUserID)).Only(ctx)
+	if ent.IsNotFound(err) {
+		return nil, ErrNotFound
+	}
+	if err != nil {
+		return nil, fmt.Errorf("store: shop by owner telegram id: %w", err)
+	}
+	return shopFromEnt(row), nil
+}
+
+// BindTelegramGroup sets the broadcast group chat ID for schedules and votes.
+func (r *ShopRepo) BindTelegramGroup(ctx context.Context, shopID uuid.UUID, chatID int64) error {
+	if chatID == 0 {
+		return fmt.Errorf("%w: telegram group id is required", ErrValidation)
+	}
+	if err := r.client.Shop.UpdateOneID(shopID).SetTelegramGroupID(chatID).Exec(ctx); err != nil {
+		if ent.IsNotFound(err) {
+			return ErrNotFound
+		}
+		return fmt.Errorf("store: bind telegram group: %w", err)
+	}
+	return nil
+}
+
+// BindTelegramTeamChat sets the optional internal team chat group ID.
+func (r *ShopRepo) BindTelegramTeamChat(ctx context.Context, shopID uuid.UUID, chatID int64) error {
+	if chatID == 0 {
+		return fmt.Errorf("%w: telegram team chat id is required", ErrValidation)
+	}
+	if err := r.client.Shop.UpdateOneID(shopID).SetTelegramTeamChatID(chatID).Exec(ctx); err != nil {
+		if ent.IsNotFound(err) {
+			return ErrNotFound
+		}
+		return fmt.Errorf("store: bind telegram team chat: %w", err)
+	}
+	return nil
+}

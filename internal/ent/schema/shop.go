@@ -27,8 +27,15 @@ func (Shop) Fields() []ent.Field {
 		field.String("name"),
 		field.String("timezone").Default("UTC"),
 		field.String("invite_code").Unique(),
-		// The Telegram group chat the bot posts schedules and votes into.
+		// Broadcast Telegram group: schedules, votes, and shop-wide announcements.
 		field.Int64("telegram_group_id"),
+		// Optional internal team chat group (separate from the broadcast group).
+		field.Int64("telegram_team_chat_id").Optional().Nillable(),
+		// Linked owner Telegram user ID for bot commands and notifications.
+		field.Int64("owner_telegram_id").Optional().Nillable(),
+		// SHA-256 hex hash of a one-time owner Telegram link token.
+		field.String("owner_link_token_hash").Optional().Nillable(),
+		field.Time("owner_link_token_expires_at").Optional().Nillable(),
 		// SaaS plan tier, e.g. "free", "pro".
 		field.String("plan").Default("free"),
 		// SHA-256 hex hash of the owner dashboard token (never store plaintext).
@@ -51,6 +58,7 @@ func (Shop) Fields() []ent.Field {
 func (Shop) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("dashboard_username").Unique(),
+		index.Fields("owner_telegram_id").Unique(),
 	}
 }
 

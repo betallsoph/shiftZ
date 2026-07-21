@@ -26,6 +26,14 @@ type Shop struct {
 	InviteCode string `json:"invite_code,omitempty"`
 	// TelegramGroupID holds the value of the "telegram_group_id" field.
 	TelegramGroupID int64 `json:"telegram_group_id,omitempty"`
+	// TelegramTeamChatID holds the value of the "telegram_team_chat_id" field.
+	TelegramTeamChatID *int64 `json:"telegram_team_chat_id,omitempty"`
+	// OwnerTelegramID holds the value of the "owner_telegram_id" field.
+	OwnerTelegramID *int64 `json:"owner_telegram_id,omitempty"`
+	// OwnerLinkTokenHash holds the value of the "owner_link_token_hash" field.
+	OwnerLinkTokenHash *string `json:"owner_link_token_hash,omitempty"`
+	// OwnerLinkTokenExpiresAt holds the value of the "owner_link_token_expires_at" field.
+	OwnerLinkTokenExpiresAt *time.Time `json:"owner_link_token_expires_at,omitempty"`
 	// Plan holds the value of the "plan" field.
 	Plan string `json:"plan,omitempty"`
 	// DashboardTokenHash holds the value of the "dashboard_token_hash" field.
@@ -139,11 +147,11 @@ func (*Shop) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case shop.FieldTelegramGroupID:
+		case shop.FieldTelegramGroupID, shop.FieldTelegramTeamChatID, shop.FieldOwnerTelegramID:
 			values[i] = new(sql.NullInt64)
-		case shop.FieldName, shop.FieldTimezone, shop.FieldInviteCode, shop.FieldPlan, shop.FieldDashboardTokenHash, shop.FieldDashboardUsername, shop.FieldDashboardPasswordHash, shop.FieldDashboardEmail, shop.FieldDashboardPasswordHint, shop.FieldDashboardPasswordResetHash:
+		case shop.FieldName, shop.FieldTimezone, shop.FieldInviteCode, shop.FieldOwnerLinkTokenHash, shop.FieldPlan, shop.FieldDashboardTokenHash, shop.FieldDashboardUsername, shop.FieldDashboardPasswordHash, shop.FieldDashboardEmail, shop.FieldDashboardPasswordHint, shop.FieldDashboardPasswordResetHash:
 			values[i] = new(sql.NullString)
-		case shop.FieldDashboardPasswordResetExpiresAt, shop.FieldCreatedAt:
+		case shop.FieldOwnerLinkTokenExpiresAt, shop.FieldDashboardPasswordResetExpiresAt, shop.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
 		case shop.FieldID:
 			values[i] = new(uuid.UUID)
@@ -191,6 +199,34 @@ func (_m *Shop) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field telegram_group_id", values[i])
 			} else if value.Valid {
 				_m.TelegramGroupID = value.Int64
+			}
+		case shop.FieldTelegramTeamChatID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field telegram_team_chat_id", values[i])
+			} else if value.Valid {
+				_m.TelegramTeamChatID = new(int64)
+				*_m.TelegramTeamChatID = value.Int64
+			}
+		case shop.FieldOwnerTelegramID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field owner_telegram_id", values[i])
+			} else if value.Valid {
+				_m.OwnerTelegramID = new(int64)
+				*_m.OwnerTelegramID = value.Int64
+			}
+		case shop.FieldOwnerLinkTokenHash:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field owner_link_token_hash", values[i])
+			} else if value.Valid {
+				_m.OwnerLinkTokenHash = new(string)
+				*_m.OwnerLinkTokenHash = value.String
+			}
+		case shop.FieldOwnerLinkTokenExpiresAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field owner_link_token_expires_at", values[i])
+			} else if value.Valid {
+				_m.OwnerLinkTokenExpiresAt = new(time.Time)
+				*_m.OwnerLinkTokenExpiresAt = value.Time
 			}
 		case shop.FieldPlan:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -335,6 +371,26 @@ func (_m *Shop) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("telegram_group_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TelegramGroupID))
+	builder.WriteString(", ")
+	if v := _m.TelegramTeamChatID; v != nil {
+		builder.WriteString("telegram_team_chat_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.OwnerTelegramID; v != nil {
+		builder.WriteString("owner_telegram_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.OwnerLinkTokenHash; v != nil {
+		builder.WriteString("owner_link_token_hash=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.OwnerLinkTokenExpiresAt; v != nil {
+		builder.WriteString("owner_link_token_expires_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
 	builder.WriteString(", ")
 	builder.WriteString("plan=")
 	builder.WriteString(_m.Plan)

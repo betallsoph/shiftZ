@@ -1,4 +1,4 @@
-h1:ANIHxpAXYBhbB8MgMjGbL4FJ6mY4uZZnASVW0tHx7uk=
+h1:Smlpt8/cT9jktOvB/lo76o6K1bdNC2uk2gBRppW3Ryo=
 20260709190436_initial.sql h1:+OsuFl0Lk85+B9fzP8yReEZF5rLssgdcfgLGX6N0K/8=
 20260712121254_unique_schedule_variant.sql h1:9fn/CvQ9xSEcj8o7Jj2NSR8XfVdfemMUHHAnHkZ8B78=
 20260712131312_reminder_deliveries.sql h1:xijnecajoxg9SjQKQUfmvNgANu6SN5YL6waHKh93I6k=
@@ -10,3 +10,4 @@ h1:ANIHxpAXYBhbB8MgMjGbL4FJ6mY4uZZnASVW0tHx7uk=
 20260716100000_drop_shop_telegram_setup_code.sql h1:bIAoALOLlHO0F3ZqMGHluQHwLvhPp7oNQ6kG62ikC5A=
 20260716120000_add_shop_dashboard_password_hash.sql h1:A7uErk0hJS1MYu0UnNhx35YjuDhoecPgtXiu5cFY9aM=
 20260716130000_add_shop_dashboard_email_hint_reset.sql h1:Sre0eSC1G7glOIF2LG/6+tSQE2rP3UgrMQ5VjuToYso=
+20260722140000_add_shop_owner_telegram_link.sql h1:tIQSL4nPMVsiO2Asv0KU54qUoKlkQAV8OzvU1VU+zlo=

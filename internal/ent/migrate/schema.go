@@ -383,6 +383,10 @@ var (
 		{Name: "timezone", Type: field.TypeString, Default: "UTC"},
 		{Name: "invite_code", Type: field.TypeString, Unique: true},
 		{Name: "telegram_group_id", Type: field.TypeInt64},
+		{Name: "telegram_team_chat_id", Type: field.TypeInt64, Nullable: true},
+		{Name: "owner_telegram_id", Type: field.TypeInt64, Nullable: true},
+		{Name: "owner_link_token_hash", Type: field.TypeString, Nullable: true},
+		{Name: "owner_link_token_expires_at", Type: field.TypeTime, Nullable: true},
 		{Name: "plan", Type: field.TypeString, Default: "free"},
 		{Name: "dashboard_token_hash", Type: field.TypeString, Nullable: true},
 		{Name: "dashboard_username", Type: field.TypeString, Nullable: true},
@@ -402,7 +406,12 @@ var (
 			{
 				Name:    "shop_dashboard_username",
 				Unique:  true,
-				Columns: []*schema.Column{ShopsColumns[7]},
+				Columns: []*schema.Column{ShopsColumns[11]},
+			},
+			{
+				Name:    "shop_owner_telegram_id",
+				Unique:  true,
+				Columns: []*schema.Column{ShopsColumns[6]},
 			},
 		},
 	}
