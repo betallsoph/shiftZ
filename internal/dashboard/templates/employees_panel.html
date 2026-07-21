@@ -36,7 +36,6 @@
           <div class="employee-primary">
             <div class="employee-title-line">
               <span class="employee-name">{{.DisplayName}}</span>
-              <span class="status-dot status-dot-{{if .IsActive}}active{{else}}muted{{end}}">{{.StatusLabel}}</span>
             </div>
             <div class="employee-meta">
               <span>{{.RoleLabel}}</span>
@@ -44,27 +43,17 @@
             </div>
           </div>
           <div class="employee-actions">
-            {{if .IsActive}}
             <button
               type="button"
-              class="text-button text-button-danger"
-              hx-post="/dashboard/employees/{{.ID}}/deactivate"
+              class="status-toggle{{if .IsActive}} is-active{{end}}"
+              role="switch"
+              aria-checked="{{if .IsActive}}true{{else}}false{{end}}"
+              aria-label="{{.DisplayName}}: {{.StatusLabel}}"
+              title="{{.StatusLabel}}"
+              hx-post="/dashboard/employees/{{.ID}}/{{if .IsActive}}deactivate{{else}}activate{{end}}"
               hx-target="#employees-panel"
               hx-swap="outerHTML"
-            >
-              Tạm ngưng
-            </button>
-            {{else}}
-            <button
-              type="button"
-              class="text-button"
-              hx-post="/dashboard/employees/{{.ID}}/activate"
-              hx-target="#employees-panel"
-              hx-swap="outerHTML"
-            >
-              Bật lại
-            </button>
-            {{end}}
+            ></button>
           </div>
         </div>
 
