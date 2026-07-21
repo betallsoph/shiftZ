@@ -2,16 +2,6 @@
      HTMX endpoints swap this root (#telegram-employees) only.
      Section title "Nhân viên" lives outside this fragment (in telegram_panel.html). */}}
 <div id="telegram-employees" class="telegram-employees">
-  <div class="dashboard-section-header telegram-card-toolbar">
-    <button
-      type="button"
-      class="btn btn-ghost btn-sm"
-      hx-post="/dashboard/telegram/employees/refresh"
-      hx-target="#telegram-employees"
-      hx-swap="outerHTML"
-    >Làm mới</button>
-  </div>
-
   {{if .Error}}
   <p class="panel-error" role="alert">{{.Error}}</p>
   {{end}}
@@ -19,28 +9,39 @@
   <p class="alert alert-notice telegram-setup-notice">{{.Notice}}</p>
   {{end}}
 
-  {{if .EmployeeInviteURL}}
-  <div class="employee-invite">
-    <div class="employee-invite-copy">
-      <strong>Mời liên kết Telegram</strong>
+  <div class="telegram-owner-link">
+    <div class="telegram-owner-copy">
+      <strong>Link mời nhân viên</strong>
+      {{if .CanCreateLink}}
       <span>Gửi link để nhân viên mở bot và liên kết tài khoản với quán.</span>
+      {{else}}
+      <span>Chưa cấu hình bot — không tạo được link mời nhân viên.</span>
+      {{end}}
     </div>
-    <div class="employee-invite-actions">
+    <div class="telegram-owner-actions">
+      {{if not .EmployeeInviteURL}}
+      {{if .CanCreateLink}}
       <button
         type="button"
-        class="btn btn-ghost btn-sm"
-        data-copy-text="{{.EmployeeInviteURL}}"
-      >Sao chép link</button>
-      <a
         class="btn btn-primary btn-sm"
-        href="{{.EmployeeInviteShareURL}}"
-        target="_blank"
-        rel="noopener noreferrer"
-      >Gửi qua Telegram</a>
+        hx-post="/dashboard/telegram/employees/link"
+        hx-target="#telegram-employees"
+        hx-swap="outerHTML"
+      >Tạo link telegram</button>
+      {{end}}
+      {{end}}
     </div>
   </div>
-  {{else}}
-  <p class="panel-meta">Chưa cấu hình bot — không tạo được link mời nhân viên.</p>
+
+  {{if .EmployeeInviteURL}}
+  <div class="telegram-owner-link-result">
+    <code class="telegram-owner-link-url" title="{{.EmployeeInviteURL}}">{{.EmployeeInviteURL}}</code>
+    <button
+      type="button"
+      class="btn btn-ghost btn-sm"
+      data-copy-text="{{.EmployeeInviteURL}}"
+    >Sao chép link</button>
+  </div>
   {{end}}
 
   {{if .Employees}}
