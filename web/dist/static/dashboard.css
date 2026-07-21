@@ -570,6 +570,31 @@ body {
   margin-bottom: 0;
 }
 
+.telegram-employees {
+  display: grid;
+  gap: 12px;
+}
+
+.telegram-employees .dashboard-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 0;
+}
+
+.telegram-employees .dashboard-section-header .employees-heading {
+  margin-bottom: 0;
+}
+
+.telegram-employees .employee-invite {
+  margin: 0;
+}
+
+.telegram-employee-list {
+  margin-top: 4px;
+}
+
 .employees-heading {
   margin: 0 0 12px;
   font-size: 1rem;
