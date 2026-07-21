@@ -1,8 +1,8 @@
 {{/* Owner Telegram linking fragment for the Liên kết Telegram tab.
-     HTMX endpoints swap this root (#telegram-setup) only — never the tab panel. */}}
+     HTMX endpoints swap this root (#telegram-setup) only — never the tab panel.
+     Section title "Chủ quán" lives outside this fragment (in telegram_panel.html). */}}
 <div id="telegram-setup" class="telegram-setup" data-telegram-owner-setup>
-  <div class="dashboard-section-header">
-    <h3 class="employees-heading">Chủ quán</h3>
+  <div class="dashboard-section-header telegram-card-toolbar">
     <span class="status-dot status-dot-{{if .OwnerLinked}}active{{else}}muted{{end}}">
       {{if .OwnerLinked}}Đã liên kết{{else}}Chưa liên kết{{end}}
     </span>
