@@ -121,7 +121,7 @@ func TestStoreDraftConfirmWrongUser(t *testing.T) {
 	if err := bot.handleCallback(ctx, q); err != nil {
 		t.Fatal(err)
 	}
-	if msgAPI.answers[0] != "This confirmation is not yours." {
+	if msgAPI.answers[0] != msgConfirmNotYours {
 		t.Fatalf("answer = %q", msgAPI.answers[0])
 	}
 	if _, ok, _ := drafts.Get(ctx, draftID); !ok {

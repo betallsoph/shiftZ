@@ -53,7 +53,7 @@ func TestHandleAvailabilityTextCreatesDraft(t *testing.T) {
 		t.Fatal("expected confirm keyboard")
 	}
 	buttons := msgAPI.messages[0].markup.InlineKeyboard[0]
-	if len(buttons) != 2 || buttons[0].Text != "Confirm" || buttons[1].Text != "Cancel" {
+	if len(buttons) != 2 || buttons[0].Text != btnConfirm || buttons[1].Text != btnCancel {
 		t.Fatalf("buttons = %+v", buttons)
 	}
 	if !strings.HasPrefix(buttons[0].Data, availConfirmPrefix) {
@@ -112,7 +112,7 @@ func TestHandleAvailabilityConfirmSavesAndDeletesDraft(t *testing.T) {
 	if _, ok, _ := drafts.Get(context.Background(), draftID); ok {
 		t.Fatal("draft should be deleted after confirm")
 	}
-	if msgAPI.answers[0] != "Availability saved." {
+	if msgAPI.answers[0] != msgAvailabilitySaved {
 		t.Fatalf("answer = %q", msgAPI.answers[0])
 	}
 }
@@ -155,7 +155,7 @@ func TestHandleAvailabilityCancelDoesNotSave(t *testing.T) {
 	if _, ok, _ := drafts.Get(context.Background(), draftID); ok {
 		t.Fatal("draft should be deleted after cancel")
 	}
-	if msgAPI.answers[0] != "Discarded." {
+	if msgAPI.answers[0] != msgDraftDiscarded {
 		t.Fatalf("answer = %q", msgAPI.answers[0])
 	}
 }
@@ -177,7 +177,7 @@ func TestHandleAvailabilityConfirmExpiredDraft(t *testing.T) {
 	if err := bot.handleCallback(context.Background(), q); err != nil {
 		t.Fatal(err)
 	}
-	if !strings.Contains(msgAPI.answers[0], "expired") {
+	if !strings.Contains(msgAPI.answers[0], "hết hạn") {
 		t.Fatalf("answer = %q", msgAPI.answers[0])
 	}
 }
@@ -196,7 +196,7 @@ func TestHandleAvailabilityConfirmWrongUser(t *testing.T) {
 	if err := bot.handleCallback(context.Background(), q); err != nil {
 		t.Fatal(err)
 	}
-	if msgAPI.answers[0] != "This confirmation is not yours." {
+	if msgAPI.answers[0] != msgConfirmNotYours {
 		t.Fatalf("answer = %q", msgAPI.answers[0])
 	}
 }
@@ -239,7 +239,7 @@ func TestHandleAvailabilityTextClarificationNoDraft(t *testing.T) {
 	if len(msgAPI.messages) != 1 {
 		t.Fatalf("messages = %d", len(msgAPI.messages))
 	}
-	if !strings.Contains(msgAPI.messages[0].text, "clarification") {
+	if !strings.Contains(msgAPI.messages[0].text, "hỏi thêm") {
 		t.Fatalf("message = %q", msgAPI.messages[0].text)
 	}
 	if msgAPI.messages[0].markup != nil {
@@ -259,7 +259,7 @@ func TestHandleAvailabilityTextNoProvider(t *testing.T) {
 	if err := bot.handleAvailabilityText(context.Background(), msg, msg.Text); err != nil {
 		t.Fatal(err)
 	}
-	if !strings.Contains(msgAPI.messages[0].text, "isn't configured") {
+	if !strings.Contains(msgAPI.messages[0].text, "Chưa cấu hình") {
 		t.Fatalf("message = %q", msgAPI.messages[0].text)
 	}
 }
@@ -618,7 +618,7 @@ func TestHandleStartJoinSuccess(t *testing.T) {
 	if len(msgAPI.messages) != 1 {
 		t.Fatalf("messages = %d", len(msgAPI.messages))
 	}
-	if !strings.Contains(msgAPI.messages[0].text, "Welcome, Anna") {
+	if !strings.Contains(msgAPI.messages[0].text, "Chào Anna") || !strings.Contains(msgAPI.messages[0].text, "nha") {
 		t.Fatalf("message = %q", msgAPI.messages[0].text)
 	}
 }
