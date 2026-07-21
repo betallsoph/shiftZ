@@ -6,7 +6,7 @@
     <title>shiftbot</title>
     <link rel="stylesheet" href="/static/dashboard.css?v=20260722-3" />
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
-    <script src="/static/dashboard.js?v=20260722-2" defer></script>
+    <script src="/static/dashboard.js?v=20260722-3" defer></script>
   </head>
   <body class="roomio-grid-bg dashboard-page">
     <header class="dashboard-topbar">
@@ -41,6 +41,9 @@
             <div id="incident-report-status"></div>
           </details>
           {{end}}
+          {{if .ShopName}}
+          <p class="dashboard-shop-name" title="{{.ShopName}}">{{.ShopName}}</p>
+          {{end}}
           <form method="post" action="/logout" class="logout-form">
             <button type="submit" class="text-button">Đăng xuất</button>
           </form>
@@ -49,10 +52,6 @@
     </header>
 
     <main class="dashboard-container">
-      <section class="dashboard-intro">
-        <h1 class="dashboard-shop-title">{{.ShopName}}</h1>
-      </section>
-
       <nav class="dashboard-tabs" aria-label="Điều hướng dashboard">
         <a href="#schedule-section" data-tab-link>Lịch tuần</a>
         <a href="#employees-panel" data-tab-link>Nhân viên</a>

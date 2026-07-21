@@ -11,6 +11,32 @@ import (
 	"github.com/betallsoph/shiftz/internal/store"
 )
 
+func TestShopNameRendersInTopbar(t *testing.T) {
+	shopID := uuid.New()
+	srv, mux := newTelegramTestServer(t)
+	srv.shops = &fakeShops{shop: &store.Shop{ID: shopID, Name: "Boom Box Lê Văn Lương", Timezone: "UTC"}}
+
+	body := dashboardHTML(t, srv, mux, shopID)
+
+	if !strings.Contains(body, `class="dashboard-shop-name"`) {
+		t.Fatalf("shop name missing from topbar, body = %q", body)
+	}
+	if !strings.Contains(body, "Boom Box Lê Văn Lương") {
+		t.Fatalf("expected shop name text, body = %q", body)
+	}
+	if strings.Contains(body, "dashboard-shop-title") || strings.Contains(body, "dashboard-intro") {
+		t.Fatalf("large shop title should be removed from page body, body = %q", body)
+	}
+	nameIdx := strings.Index(body, `class="dashboard-shop-name"`)
+	logoutIdx := strings.Index(body, "Đăng xuất")
+	if nameIdx < 0 || logoutIdx < 0 || nameIdx > logoutIdx {
+		t.Fatalf("shop name should appear before logout in header markup")
+	}
+	if !strings.Contains(body, `<h2 class="dashboard-section-title">Xếp lịch</h2>`) {
+		t.Fatalf("missing schedule section title, body = %q", body)
+	}
+}
+
 func TestTelegramTabRenders(t *testing.T) {
 	shopID := uuid.New()
 	srv, mux := newTelegramTestServer(t)
