@@ -4,9 +4,9 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>shiftbot</title>
-    <link rel="stylesheet" href="/static/dashboard.css?v=20260716-26" />
+    <link rel="stylesheet" href="/static/dashboard.css?v=20260722-1" />
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
-    <script src="/static/dashboard.js?v=20260716-12" defer></script>
+    <script src="/static/dashboard.js?v=20260722-1" defer></script>
   </head>
   <body class="roomio-grid-bg dashboard-page">
     <header class="dashboard-topbar">
@@ -57,6 +57,7 @@
         <a href="#schedule-section" data-tab-link>Lịch tuần</a>
         <a href="#employees-panel" data-tab-link>Nhân viên</a>
         <a href="#shifts-panel" data-tab-link>Ca làm việc</a>
+        <a href="#telegram-panel" data-tab-link>Liên kết Telegram</a>
       </nav>
 
       <section id="schedule-section" class="dashboard-view is-active" data-dashboard-view="schedule">
@@ -98,6 +99,7 @@
 
       {{template "employees_panel.html" .Employees}}
       {{template "shifts_panel.html" .Shifts}}
+      {{template "telegram_panel.html" .Telegram}}
     </main>
   </body>
 </html>

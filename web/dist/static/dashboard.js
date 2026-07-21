@@ -206,6 +206,7 @@
     'schedule-section',
     'employees-panel',
     'shifts-panel',
+    'telegram-panel',
   ];
 
   function initDashboardTabs() {

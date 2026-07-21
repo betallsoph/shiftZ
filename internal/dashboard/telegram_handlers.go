@@ -14,7 +14,13 @@ type ownerLinkIssuer interface {
 	IssueOwnerLinkToken(ctx context.Context, shopID uuid.UUID) (string, error)
 }
 
-// TelegramSetupView is the owner Telegram connection status in the employees panel.
+// TelegramPanelView is the dedicated Telegram linking tab.
+type TelegramPanelView struct {
+	IsActive bool
+	Owner    TelegramSetupView
+}
+
+// TelegramSetupView is the owner Telegram connection status in the Telegram panel.
 type TelegramSetupView struct {
 	OwnerLinked         bool
 	OwnerTelegramID     int64

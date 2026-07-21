@@ -1,0 +1,14 @@
+<section id="telegram-panel" class="dashboard-view{{if .IsActive}} is-active{{end}}" data-dashboard-view="telegram">
+  <h2 class="dashboard-section-title">Liên kết Telegram</h2>
+  <div class="dashboard-tool telegram-panel">
+    <section class="telegram-panel-owner" aria-label="Liên kết Telegram chủ quán">
+      {{template "telegram_setup.html" .Owner}}
+    </section>
+
+    <hr class="telegram-panel-divider" />
+
+    <section class="telegram-panel-employees" aria-label="Liên kết Telegram nhân viên">
+      {{template "telegram_employees.html" .}}
+    </section>
+  </div>
+</section>

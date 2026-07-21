@@ -558,15 +558,40 @@ body {
   margin-bottom: 16px;
 }
 
-.employees-telegram-block {
-  margin: 16px 0;
+.telegram-panel {
+  margin-bottom: 16px;
 }
 
-.employees-telegram-block .dashboard-section-header {
+.telegram-panel-owner {
+  margin: 0;
+}
+
+.telegram-panel-owner .dashboard-section-header {
   margin-bottom: 8px;
 }
 
-.employees-telegram-block .dashboard-section-header .employees-heading {
+.telegram-panel-owner .dashboard-section-header .employees-heading {
+  margin-bottom: 0;
+}
+
+.telegram-panel-divider {
+  display: block;
+  width: 3rem;
+  height: 0;
+  margin: 18px 0;
+  border: 0;
+  border-top: 1px solid rgba(24, 24, 27, 0.16);
+}
+
+.telegram-panel-employees {
+  margin: 0;
+}
+
+.telegram-employees .dashboard-section-header {
+  margin-bottom: 8px;
+}
+
+.telegram-employees .dashboard-section-header .employees-heading {
   margin-bottom: 0;
 }
 

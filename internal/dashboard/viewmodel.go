@@ -21,6 +21,7 @@ type PageData struct {
 	ShopName              string
 	Shifts                ShiftsPanelView
 	Employees             EmployeesPanelView
+	Telegram              TelegramPanelView
 	IncidentReportEnabled bool
 }
 

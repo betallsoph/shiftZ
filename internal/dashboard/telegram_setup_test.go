@@ -28,6 +28,27 @@ func TestDashboardShowsLinkedOwnerTelegram(t *testing.T) {
 	mux.ServeHTTP(rec, req)
 
 	body := rec.Body.String()
+	if !strings.Contains(body, `id="telegram-panel"`) {
+		t.Fatalf("missing telegram panel tab, body = %q", body)
+	}
+	if !strings.Contains(body, `href="#telegram-panel"`) {
+		t.Fatalf("missing telegram tab link, body = %q", body)
+	}
+	if !strings.Contains(body, `id="telegram-employees"`) {
+		t.Fatalf("missing employee telegram stub, body = %q", body)
+	}
+	employeesIdx := strings.Index(body, `id="employees-panel"`)
+	telegramSetupIdx := strings.Index(body, `id="telegram-setup"`)
+	if employeesIdx < 0 || telegramSetupIdx < 0 {
+		t.Fatalf("missing employees or telegram setup sections, body = %q", body)
+	}
+	if telegramSetupIdx < employeesIdx {
+		t.Fatalf("telegram setup should live in telegram panel, not before employees panel")
+	}
+	employeesEnd := strings.Index(body[employeesIdx:], `id="shifts-panel"`)
+	if employeesEnd > 0 && telegramSetupIdx < employeesIdx+employeesEnd {
+		t.Fatalf("telegram setup should not be inside employees panel")
+	}
 	if !strings.Contains(body, "Đã liên kết") {
 		t.Fatalf("missing owner linked status, body = %q", body)
 	}

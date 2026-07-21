@@ -42,7 +42,6 @@ type EmployeesPanelView struct {
 	Employees              []EmployeeRowView
 	EmployeeInviteURL      string
 	EmployeeInviteShareURL string
-	Telegram               TelegramSetupView
 }
 
 type employeePendingEdit struct {
@@ -64,7 +63,6 @@ func buildEmployeesPanelView(
 	panelErr string,
 	inviteURL string,
 	inviteShareURL string,
-	telegram TelegramSetupView,
 ) EmployeesPanelView {
 	rows := make([]EmployeeRowView, len(employees))
 	for i, emp := range employees {
@@ -98,7 +96,6 @@ func buildEmployeesPanelView(
 		Employees:              rows,
 		EmployeeInviteURL:      inviteURL,
 		EmployeeInviteShareURL: inviteShareURL,
-		Telegram:               telegram,
 	}
 }
 
@@ -113,18 +110,17 @@ func (s *Server) renderEmployeesPanel(ctx context.Context, shopID uuid.UUID, pen
 	shop, err := s.shops.ByID(ctx, shopID)
 	if err != nil {
 		s.log.Error("load shop for employees panel", "err", err)
-		s.renderEmployeesPanelView(w, buildEmployeesPanelView(nil, pending, "không tải được thông tin quán", "", "", TelegramSetupView{}))
+		s.renderEmployeesPanelView(w, buildEmployeesPanelView(nil, pending, "không tải được thông tin quán", "", ""))
 		return
 	}
 	inviteURL, inviteShareURL := employeeInviteLinks(s.botUsername, shop.InviteCode)
-	tg := buildTelegramSetupView(shop)
 	employees, err := s.employeeMgmt.ListAllByShop(ctx, shopID)
 	if err != nil {
 		s.log.Error("list employees", "err", err)
-		s.renderEmployeesPanelView(w, buildEmployeesPanelView(nil, pending, "không tải được danh sách nhân viên", inviteURL, inviteShareURL, tg))
+		s.renderEmployeesPanelView(w, buildEmployeesPanelView(nil, pending, "không tải được danh sách nhân viên", inviteURL, inviteShareURL))
 		return
 	}
-	s.renderEmployeesPanelView(w, buildEmployeesPanelView(employees, pending, panelErr, inviteURL, inviteShareURL, tg))
+	s.renderEmployeesPanelView(w, buildEmployeesPanelView(employees, pending, panelErr, inviteURL, inviteShareURL))
 }
 
 func (s *Server) renderEmployeesPanelView(w http.ResponseWriter, view EmployeesPanelView) {
@@ -245,11 +241,11 @@ func (s *Server) findEmployeeInShop(ctx context.Context, shopID, employeeID uuid
 	return nil, store.ErrNotFound
 }
 
-func (s *Server) loadEmployeesPanelView(ctx context.Context, shop *store.Shop, telegram TelegramSetupView, inviteURL, inviteShareURL string) EmployeesPanelView {
+func (s *Server) loadEmployeesPanelView(ctx context.Context, shop *store.Shop, inviteURL, inviteShareURL string) EmployeesPanelView {
 	employees, err := s.employeeMgmt.ListAllByShop(ctx, shop.ID)
 	if err != nil {
 		s.log.Error("list employees for page", "err", err)
-		return buildEmployeesPanelView(nil, nil, "", inviteURL, inviteShareURL, telegram)
+		return buildEmployeesPanelView(nil, nil, "", inviteURL, inviteShareURL)
 	}
-	return buildEmployeesPanelView(employees, nil, "", inviteURL, inviteShareURL, telegram)
+	return buildEmployeesPanelView(employees, nil, "", inviteURL, inviteShareURL)
 }
