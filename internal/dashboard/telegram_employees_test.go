@@ -77,6 +77,9 @@ func TestTelegramEmployeesRefreshShowsInviteAndStatus(t *testing.T) {
 	if strings.Contains(body, "Tạo nhân viên") && strings.Contains(body, `name="display_name"`) {
 		t.Fatalf("employee create form must not appear here, body = %q", body)
 	}
+	if strings.Contains(body, `telegram-card-title`) || strings.Contains(body, "Nhân viên</h3>") {
+		t.Fatalf("employees title must stay outside #telegram-employees swap root, body = %q", body)
+	}
 }
 
 func TestTelegramEmployeesRefreshRequiresAuth(t *testing.T) {

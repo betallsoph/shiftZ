@@ -83,7 +83,7 @@ func TestEmployeesPanelOmitsOwnerTelegramSetup(t *testing.T) {
 	}
 }
 
-func TestTelegramPanelContainsOwnerEmployeesAndDivider(t *testing.T) {
+func TestTelegramPanelContainsTwoCardsWithOutsideTitles(t *testing.T) {
 	shopID := uuid.New()
 	srv, mux := newTelegramTestServer(t)
 	srv.shops = &fakeShops{shop: &store.Shop{
@@ -95,28 +95,58 @@ func TestTelegramPanelContainsOwnerEmployeesAndDivider(t *testing.T) {
 	panel := sectionBetween(t, body, `id="telegram-panel"`, `</main>`)
 
 	ownerIdx := strings.Index(panel, `class="telegram-panel-owner"`)
-	dividerIdx := strings.Index(panel, `class="telegram-panel-divider"`)
 	employeesIdx := strings.Index(panel, `class="telegram-panel-employees"`)
 	setupIdx := strings.Index(panel, `id="telegram-setup"`)
 	employeeStubIdx := strings.Index(panel, `id="telegram-employees"`)
+	ownerTitleIdx := strings.Index(panel, `<h3 class="telegram-card-title">Chủ quán</h3>`)
+	employeesTitleIdx := strings.Index(panel, `<h3 class="telegram-card-title">Nhân viên</h3>`)
 
-	if ownerIdx < 0 || dividerIdx < 0 || employeesIdx < 0 {
-		t.Fatalf("missing owner/divider/employees structure in panel = %q", panel)
+	if ownerIdx < 0 || employeesIdx < 0 {
+		t.Fatalf("missing owner/employees structure in panel = %q", panel)
 	}
-	if !(ownerIdx < dividerIdx && dividerIdx < employeesIdx) {
-		t.Fatalf("expected owner → divider → employees order; got owner=%d divider=%d employees=%d", ownerIdx, dividerIdx, employeesIdx)
+	if ownerIdx >= employeesIdx {
+		t.Fatalf("expected owner section before employees; got owner=%d employees=%d", ownerIdx, employeesIdx)
 	}
-	if setupIdx < 0 || setupIdx < ownerIdx || setupIdx > dividerIdx {
-		t.Fatalf("owner telegram setup should sit in owner section before divider; setup=%d", setupIdx)
+	if ownerTitleIdx < 0 || employeesTitleIdx < 0 {
+		t.Fatalf("missing outside card titles in panel = %q", panel)
 	}
-	if employeeStubIdx < 0 || employeeStubIdx < employeesIdx {
-		t.Fatalf("employee telegram section missing after divider; employees=%d stub=%d", employeesIdx, employeeStubIdx)
+	if !(ownerIdx < ownerTitleIdx && ownerTitleIdx < setupIdx && setupIdx < employeesIdx) {
+		t.Fatalf("owner title should sit outside #telegram-setup; owner=%d title=%d setup=%d employees=%d", ownerIdx, ownerTitleIdx, setupIdx, employeesIdx)
 	}
-	if !strings.Contains(panel, "<hr class=\"telegram-panel-divider\"") {
-		t.Fatalf("missing short horizontal divider markup, panel = %q", panel)
+	if !(employeesIdx < employeesTitleIdx && employeesTitleIdx < employeeStubIdx) {
+		t.Fatalf("employees title should sit outside #telegram-employees; employees=%d title=%d stub=%d", employeesIdx, employeesTitleIdx, employeeStubIdx)
+	}
+	if strings.Contains(panel, "telegram-panel-divider") {
+		t.Fatalf("in-card divider should be removed now that sections are separate cards, panel = %q", panel)
+	}
+	cardCount := strings.Count(panel, `class="dashboard-tool telegram-panel-card"`)
+	if cardCount != 2 {
+		t.Fatalf("expected two dashboard-tool cards, got %d in panel = %q", cardCount, panel)
 	}
 	if !strings.Contains(panel, "Đã liên kết") {
 		t.Fatalf("owner section missing linked status, panel = %q", panel)
+	}
+
+	// Titles must not live inside the HTMX-swapped roots.
+	setupStart := strings.Index(panel, `<div id="telegram-setup"`)
+	if setupStart < 0 {
+		t.Fatalf("missing #telegram-setup open tag")
+	}
+	ownerSectionEnd := strings.Index(panel[setupStart:], `</section>`)
+	if ownerSectionEnd < 0 {
+		t.Fatalf("missing owner section close after setup")
+	}
+	setupFragment := panel[setupStart : setupStart+ownerSectionEnd]
+	if strings.Contains(setupFragment, `telegram-card-title`) || strings.Contains(setupFragment, "Chủ quán</h3>") {
+		t.Fatalf("owner title must stay outside #telegram-setup swap root, fragment = %q", setupFragment)
+	}
+	employeesOpen := strings.Index(panel, `<div id="telegram-employees"`)
+	if employeesOpen < 0 {
+		t.Fatalf("missing #telegram-employees open tag")
+	}
+	employeesFragment := panel[employeesOpen:]
+	if strings.Contains(employeesFragment, `telegram-card-title`) || strings.Contains(employeesFragment, "Nhân viên</h3>") {
+		t.Fatalf("employees title must stay outside #telegram-employees swap root, fragment = %q", employeesFragment)
 	}
 }
 

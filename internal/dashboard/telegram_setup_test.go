@@ -180,6 +180,8 @@ func assertOwnerSetupFragmentOnly(t *testing.T, body string) {
 		`id="shifts-panel"`,
 		`data-dashboard-view`,
 		`dashboard-view is-active`,
+		`telegram-card-title`,
+		`Chủ quán</h3>`,
 	} {
 		if strings.Contains(body, needle) {
 			t.Fatalf("owner HTMX response must swap #telegram-setup only, found %q in body = %q", needle, body)

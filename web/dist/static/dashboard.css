@@ -563,7 +563,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: 0;
+  gap: 24px;
   margin-bottom: 16px;
 }
 
@@ -571,28 +571,34 @@ body {
 .telegram-panel-employees {
   margin: 0;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.telegram-panel-owner .dashboard-section-header,
-.telegram-employees .dashboard-section-header {
+.telegram-card-title {
+  margin: 0;
+  color: #18181b;
+  font-family: var(--font-sans);
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.telegram-panel-card {
+  margin: 0;
+}
+
+.telegram-card-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
   margin-bottom: 8px;
 }
 
-.telegram-panel-owner .dashboard-section-header .employees-heading,
-.telegram-employees .dashboard-section-header .employees-heading {
-  margin-bottom: 0;
-}
-
-/* Short, thin rule between owner setup and employee Telegram linking. */
-.telegram-panel-divider {
-  display: block;
-  width: 4.5rem;
-  max-width: 28%;
-  height: 0;
-  margin: 20px 0;
-  border: 0;
-  border-top: 1px solid rgba(24, 24, 27, 0.18);
-  align-self: flex-start;
+.telegram-setup .telegram-card-toolbar {
+  justify-content: flex-start;
 }
 
 .telegram-employees {
@@ -602,18 +608,6 @@ body {
 
 .telegram-employees > .panel-meta {
   margin: 0;
-}
-
-.telegram-employees .dashboard-section-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 0;
-}
-
-.telegram-employees .dashboard-section-header .employees-heading {
-  margin-bottom: 0;
 }
 
 .telegram-employees .employee-invite {
